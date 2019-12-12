@@ -1,0 +1,28 @@
+{
+  "extends": ["tslint:recommended", "tslint-react", "tslint-config-prettier"],
+  "rules": {
+    "trailing-comma": [false, {
+      "multiline": "always",
+      "singleline": "never"
+    }],
+    "object-literal-sort-keys": false,
+    "ordered-imports": [
+      false
+    ],
+    "quotemark": [
+      true,
+      "single",
+      "jsx-double",
+      "avoid-escape"
+    ],
+    "variable-name": [false],
+    "max-line-length": [false],
+    "arrow-parens": false,
+    "max-classes-per-file": [false],
+    "object-literal-key-quotes": [false],
+    "no-console": [true, "log"],
+    "jsx-no-multiline-js": false,
+    "jsx-no-lambda": false,
+    "jsx-no-bind": false
+  }
+}
