@@ -1,2 +1,2 @@
 # aol
-OpenbLayers source extention
+OpenLayers source extention
