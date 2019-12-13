@@ -32,6 +32,10 @@ export class Xyz extends OlXyz implements ITileImage {
     return this.options;
   }
 
+  public getLayerTypeName(): string {
+    return 'Tile';
+  }
+
   public isSnapshotable(): boolean {
     return this.options.snapshotable == null ? true : this.options.snapshotable; // true by default
   }

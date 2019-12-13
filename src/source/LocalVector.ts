@@ -67,6 +67,10 @@ export class LocalVector extends Vector {
     return options;
   }
 
+  public getLayerTypeName(): string {
+    return 'Vector';
+  }
+
   public isSnapshotable(): boolean {
     return this.options.snapshotable == null ? true : this.options.snapshotable; // true by default
   }

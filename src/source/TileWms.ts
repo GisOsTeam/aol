@@ -23,6 +23,10 @@ export class TileWms extends OlTileWMS implements ITileImage {
     return this.options;
   }
 
+  public getLayerTypeName(): string {
+    return 'TileImage';
+  }
+
   public isSnapshotable(): boolean {
     return this.options.snapshotable == null ? true : this.options.snapshotable; // true by default
   }

@@ -31,6 +31,10 @@ export abstract class Vector extends OlVector implements IVector {
     return this.options;
   }
 
+  public getLayerTypeName(): string {
+    return 'Vector';
+  }
+
   public isSnapshotable(): boolean {
     return this.options.snapshotable == null ? true : this.options.snapshotable; // true by default
   }

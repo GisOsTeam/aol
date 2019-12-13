@@ -8,6 +8,7 @@ import { fromExtent } from 'ol/geom/Polygon';
 export interface IExtended extends Source {
   getSourceTypeName(): string;
   getSourceOptions(): any;
+  getLayerTypeName(): string;
   isSnapshotable(): boolean;
   isListable(): boolean;
   query(identifyRequest: IQueryRequest): Promise<IQueryResponse>;

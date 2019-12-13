@@ -19,6 +19,10 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IImage {
     return this.options;
   }
 
+  public getLayerTypeName(): string {
+    return 'Image';
+  }
+
   public isSnapshotable(): boolean {
     return this.options.snapshotable == null ? true : this.options.snapshotable; // true by default
   }

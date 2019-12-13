@@ -16,6 +16,10 @@ export class ExternalVector extends Vector {
     return this.options;
   }
 
+  public getLayerTypeName(): string {
+    return 'Vector';
+  }
+
   public isSnapshotable(): boolean {
     return this.options.snapshotable == null ? true : this.options.snapshotable; // true by default
   }

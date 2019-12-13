@@ -17,6 +17,10 @@ export abstract class VectorTile extends OlVectorTile implements IExtended {
     return this.options;
   }
 
+  public getLayerTypeName(): string {
+    return 'VectorTile';
+  }
+
   public isSnapshotable(): boolean {
     return this.options.snapshotable == null ? true : this.options.snapshotable; // true by default
   }
