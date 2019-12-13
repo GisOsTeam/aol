@@ -1,9 +1,9 @@
 import { Pixel } from 'ol/pixel';
-import { Map, Feature } from 'ol';
+import { Map } from 'ol';
 import OlBaseLayer from 'ol/layer/Base';
 import Layer from 'ol/layer/Layer';
-import { IQueryResponse, constructQueryRequestFromPixel, IExtended } from "./IExtended";
-import { walk } from "../utils";
+import { IQueryResponse, constructQueryRequestFromPixel, IExtended } from "../IExtended";
+import { walk } from "../../utils";
 
 export function identify (pixel: Pixel, map: Map) : Promise<IQueryResponse[]> {
     if (map && pixel) {

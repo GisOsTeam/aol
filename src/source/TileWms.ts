@@ -24,7 +24,7 @@ export class TileWms extends OlTileWMS implements ITileImage {
   }
 
   public getLayerTypeName(): string {
-    return 'TileImage';
+    return 'Tile';
   }
 
   public isSnapshotable(): boolean {
