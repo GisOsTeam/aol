@@ -28,6 +28,7 @@ import Circle from 'ol/geom/Circle';
 import booleanDisjoint from '@turf/boolean-disjoint';
 import * as shapefile2geojson from 'shapefile2geojson';
 import { addProjection } from './ProjectionInfo';
+import { applyStyle } from 'ol-mapbox-style';
 
 const geoJSONFormat = new GeoJSON();
 const kmlFormat = new KML({ extractStyles: true, showPointNames: false });
@@ -241,13 +242,7 @@ export function loadKML(file: File, Map: Map): Promise<LocalVector> {
       const features: Feature[] = kmlFormat.readFeatures(kmlString, {
         featureProjection: Map.getView().getProjection()
       }) as Feature[];
-      const layerProps = {
-        uid: uid(),
-        name,
-        layerStyles: getDefaultLayerStyles(),
-        type: 'OVERLAY'
-      };
-      const localVectorSource = createSource('LocalVector', {}) as LocalVector;
+      const localVectorSource = createSource('LocalVector', { name }) as LocalVector;
       localVectorSource.addFeatures(features);
       resolve(localVectorSource);
     };
@@ -303,13 +298,7 @@ export function loadKMZ(file: File, Map: Map): Promise<LocalVector> {
           const features: Feature[] = kmlFormat.readFeatures(kmlString, {
             featureProjection: Map.getView().getProjection()
           }) as Feature[];
-          const layerProps = {
-            uid: uid(),
-            name,
-            layerStyles: getDefaultLayerStyles(),
-            type: 'OVERLAY'
-          };
-          const localVectorSource = createSource('LocalVector', {}) as LocalVector;
+          const localVectorSource = createSource('LocalVector', { name }) as LocalVector;
           localVectorSource.addFeatures(features);
           resolve(localVectorSource);
         },
@@ -372,13 +361,7 @@ export function loadZippedShapefile(file: File, Map: Map): Promise<LocalVector> 
             dataProjection,
             featureProjection
           }) as Feature[];
-          const layerProps = {
-            uid: uid(),
-            name,
-            layerStyles: getDefaultLayerStyles(),
-            type: 'OVERLAY'
-          };
-          const localVectorSource = createSource('LocalVector', {}) as LocalVector;
+          const localVectorSource = createSource('LocalVector', { name }) as LocalVector;
           localVectorSource.addFeatures(features);
           resolve(localVectorSource);
         });
@@ -393,12 +376,7 @@ export function loadZippedShapefile(file: File, Map: Map): Promise<LocalVector> 
 /**
  * Load WMS.
  */
-export function loadWMS(
-  title: string,
-  serverUrl: string,
-  types: IFeatureType<string>[],
-  gisProxyUrl: string
-): Promise<ImageWms> {
+export function loadWMS(serverUrl: string, types: IFeatureType<string>[], gisProxyUrl: string): Promise<ImageWms> {
   return new Promise<ImageWms>(resolve => {
     let url = serverUrl;
     if (gisProxyUrl != null && gisProxyUrl !== '') {
@@ -407,11 +385,6 @@ export function loadWMS(
         .replace('/', '%2F')
         .replace('+', '%2B')}`;
     }
-    const layerProps = {
-      uid: uid(),
-      name: title,
-      type: 'OVERLAY'
-    };
     const imageWms = createSource('', { types, url }) as ImageWms;
     resolve(imageWms);
   });
@@ -455,4 +428,24 @@ export function createSource(sourceTypeName: string, sourceOptions: any): IExten
       break;
   }
   return source;
+}
+
+/**
+ * Apply MB style.
+ */
+export function applyLayerStyles(layer: BaseLayer, layerStyles: LayerStyles, id: string) {
+  if (layerStyles == null && 'setStyle' in layer) {
+    (layer as any).setStyle(undefined);
+    return;
+  }
+  const mbstyle = {
+    version: 8,
+    sources: {} as any,
+    layers: [] as any[]
+  };
+  mbstyle.sources[id] = { type: 'vector' };
+  layerStyles.forEach(style => {
+    mbstyle.layers.push({ ...style, source: id });
+  });
+  applyStyle(layer, mbstyle, id);
 }
