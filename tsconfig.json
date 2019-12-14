@@ -15,8 +15,7 @@
     ]
   },
   "include": [
-    "./src/**/*.ts",
-    "./src/**/*.tsx"
+    "./src/**/*.ts"
   ],
   "exclude": [
     "./src/sample/**/*"
