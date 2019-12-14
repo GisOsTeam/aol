@@ -2,6 +2,8 @@ import OlTileArcGISRest from 'ol/source/TileArcGISRest';
 import Feature from 'ol/Feature';
 import { IQueryRequest, IQueryResponse, IFeatureType } from './IExtended';
 import { ITileImage } from './ITileImage';
+import { SourceType, SourceTypeEnum } from './types/sourceType';
+import { LayerType, LayerTypeEnum } from './types/layerType';
 
 export class TileArcGISRest extends OlTileArcGISRest implements ITileImage {
   protected options: any;
@@ -11,16 +13,16 @@ export class TileArcGISRest extends OlTileArcGISRest implements ITileImage {
     this.options = options;
   }
 
-  public getSourceTypeName(): string {
-    return 'TileArcGISRest';
+  public getSourceTypeName(): SourceType {
+    return SourceTypeEnum.TileArcGISRest;
   }
 
   public getSourceOptions(): any {
     return this.options;
   }
 
-  public getLayerTypeName(): string {
-    return 'Tile';
+  public getLayerTypeName(): LayerType {
+    return LayerTypeEnum.Tile;
   }
 
   public isSnapshotable(): boolean {

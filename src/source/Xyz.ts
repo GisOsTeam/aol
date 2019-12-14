@@ -1,6 +1,8 @@
 import OlXyz from 'ol/source/XYZ';
-import { IQueryRequest, IQueryResponse, IFeatureType } from './IExtended';
+import { IFeatureType, IQueryRequest, IQueryResponse } from './IExtended';
 import { ITileImage } from './ITileImage';
+import { SourceType, SourceTypeEnum } from './types/sourceType';
+import { LayerType, LayerTypeEnum } from './types/layerType';
 
 export class Xyz extends OlXyz implements ITileImage {
   protected options: any;
@@ -24,16 +26,16 @@ export class Xyz extends OlXyz implements ITileImage {
     });
   }
 
-  public getSourceTypeName(): string {
-    return 'Xyz';
+  public getSourceTypeName(): SourceType {
+    return SourceTypeEnum.Xyz;
   }
 
   public getSourceOptions(): any {
     return this.options;
   }
 
-  public getLayerTypeName(): string {
-    return 'Tile';
+  public getLayerTypeName(): LayerType {
+    return LayerTypeEnum.Tile;
   }
 
   public isSnapshotable(): boolean {

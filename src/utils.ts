@@ -5,14 +5,14 @@ import View from 'ol/View';
 import Geometry from 'ol/geom/Geometry';
 import SimpleGeometry from 'ol/geom/SimpleGeometry';
 import {
-  IFeatureType,
-  LocalVector,
-  IExtended,
   ExternalVector,
+  IExtended,
+  IFeatureType,
+  ImageArcGISRest,
   ImageStatic,
   ImageWms,
+  LocalVector,
   QueryArcGISRest,
-  ImageArcGISRest,
   TileArcGISRest,
   TileWms,
   Wfs,
@@ -29,6 +29,7 @@ import booleanDisjoint from '@turf/boolean-disjoint';
 import * as shapefile2geojson from 'shapefile2geojson';
 import { addProjection } from './ProjectionInfo';
 import { applyStyle } from 'ol-mapbox-style';
+import { SourceType, SourceTypeEnum } from './source/types/sourceType';
 
 const geoJSONFormat = new GeoJSON();
 const kmlFormat = new KML({ extractStyles: true, showPointNames: false });
@@ -242,7 +243,7 @@ export function loadKML(file: File, Map: Map): Promise<LocalVector> {
       const features: Feature[] = kmlFormat.readFeatures(kmlString, {
         featureProjection: Map.getView().getProjection()
       }) as Feature[];
-      const localVectorSource = createSource('LocalVector', { name }) as LocalVector;
+      const localVectorSource = createSource(SourceTypeEnum.LocalVector, { name }) as LocalVector;
       localVectorSource.addFeatures(features);
       resolve(localVectorSource);
     };
@@ -393,37 +394,37 @@ export function loadWMS(serverUrl: string, types: IFeatureType<string>[], gisPro
 /**
  * Create source from options.
  */
-export function createSource(sourceTypeName: string, sourceOptions: any): IExtended {
+export function createSource(sourceTypeName: SourceType, sourceOptions: any): IExtended {
   let source: IExtended;
   switch (sourceTypeName) {
-    case 'ExternalVector':
+    case SourceTypeEnum.ExternalVector:
       source = new ExternalVector(sourceOptions);
       break;
-    case 'ImageArcGISRest':
+    case SourceTypeEnum.ImageArcGISRest:
       source = new ImageArcGISRest(sourceOptions);
       break;
-    case 'ImageStatic':
+    case SourceTypeEnum.ImageStatic:
       source = new ImageStatic(sourceOptions);
       break;
-    case 'ImageWms':
+    case SourceTypeEnum.ImageWms:
       source = new ImageWms(sourceOptions);
       break;
-    case 'LocalVector':
+    case SourceTypeEnum.LocalVector:
       source = new LocalVector(sourceOptions);
       break;
-    case 'QueryArcGISRest':
+    case SourceTypeEnum.QueryArcGISRest:
       source = new QueryArcGISRest(sourceOptions);
       break;
-    case 'TileArcGISRest':
+    case SourceTypeEnum.TileArcGISRest:
       source = new TileArcGISRest(sourceOptions);
       break;
-    case 'TileWms':
+    case SourceTypeEnum.TileWms:
       source = new TileWms(sourceOptions);
       break;
-    case 'Wfs':
+    case SourceTypeEnum.Wfs:
       source = new Wfs(sourceOptions);
       break;
-    case 'Xyz':
+    case SourceTypeEnum.Xyz:
       source = new Xyz(sourceOptions);
       break;
   }

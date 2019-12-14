@@ -4,11 +4,13 @@ import Feature from 'ol/Feature';
 import Geometry from 'ol/geom/Geometry';
 import Projection from 'ol/proj/Projection';
 import { fromExtent } from 'ol/geom/Polygon';
+import { SourceType } from './types/sourceType';
+import { LayerType } from './types/layerType';
 
 export interface IExtended extends Source {
-  getSourceTypeName(): string;
+  getSourceTypeName(): SourceType;
   getSourceOptions(): any;
-  getLayerTypeName(): string;
+  getLayerTypeName(): LayerType;
   isSnapshotable(): boolean;
   isListable(): boolean;
   query(identifyRequest: IQueryRequest): Promise<IQueryResponse>;

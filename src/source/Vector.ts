@@ -8,6 +8,8 @@ import booleanDisjoint from '@turf/boolean-disjoint';
 import { Feature as JsonFeature } from '@turf/helpers';
 import { IQueryRequest, IQueryResponse } from './IExtended';
 import { IVector } from './IVector';
+import { LayerType, LayerTypeEnum } from './types/layerType';
+import { SourceType, SourceTypeEnum } from './types/sourceType';
 
 export abstract class Vector extends OlVector implements IVector {
   protected options: any;
@@ -23,16 +25,16 @@ export abstract class Vector extends OlVector implements IVector {
     this.options = options;
   }
 
-  public getSourceTypeName(): string {
-    return 'Vector';
+  public getSourceTypeName(): SourceType {
+    return SourceTypeEnum.Vector;
   }
 
   public getSourceOptions(): any {
     return this.options;
   }
 
-  public getLayerTypeName(): string {
-    return 'Vector';
+  public getLayerTypeName(): LayerType {
+    return LayerTypeEnum.Vector;
   }
 
   public isSnapshotable(): boolean {
