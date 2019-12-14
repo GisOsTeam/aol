@@ -1,4 +1,6 @@
 import { Vector } from './Vector';
+import { SourceType, SourceTypeEnum } from './types/sourceType';
+import { LayerType, LayerTypeEnum } from './types/layerType';
 
 export class ExternalVector extends Vector {
   protected options: any;
@@ -8,16 +10,16 @@ export class ExternalVector extends Vector {
     this.options = options;
   }
 
-  public getSourceTypeName(): string {
-    return 'ExternalVector';
+  public getSourceTypeName(): SourceType {
+    return SourceTypeEnum.ExternalVector;
   }
 
   public getSourceOptions(): any {
     return this.options;
   }
 
-  public getLayerTypeName(): string {
-    return 'Vector';
+  public getLayerTypeName(): LayerType {
+    return LayerTypeEnum.Vector;
   }
 
   public isSnapshotable(): boolean {

@@ -3,6 +3,8 @@ import { IQueryRequest, IQueryResponse, IQueryFeatureTypeResponse } from './IExt
 import { ITileImage } from './ITileImage';
 import { getLayersFromTypes } from '../utils';
 import { wmsQueryOne } from './query/wmsQuery';
+import { SourceType, SourceTypeEnum } from './types/sourceType';
+import { LayerType, LayerTypeEnum } from './types/layerType';
 
 export class TileWms extends OlTileWMS implements ITileImage {
   protected options: any;
@@ -15,16 +17,16 @@ export class TileWms extends OlTileWMS implements ITileImage {
     this.on('propertychange', this.handlePropertychange);
   }
 
-  public getSourceTypeName(): string {
-    return 'TileWms';
+  public getSourceTypeName(): SourceType {
+    return SourceTypeEnum.TileWms;
   }
 
   public getSourceOptions(): any {
     return this.options;
   }
 
-  public getLayerTypeName(): string {
-    return 'Tile';
+  public getLayerTypeName(): LayerType {
+    return LayerTypeEnum.Tile;
   }
 
   public isSnapshotable(): boolean {

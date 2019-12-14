@@ -1,5 +1,7 @@
 import OlVectorTile from 'ol/source/VectorTile';
 import { IExtended, IQueryRequest, IQueryResponse } from './IExtended';
+import { SourceType, SourceTypeEnum } from './types/sourceType';
+import { LayerType, LayerTypeEnum } from './types/layerType';
 
 export abstract class VectorTile extends OlVectorTile implements IExtended {
   protected options: any;
@@ -9,16 +11,16 @@ export abstract class VectorTile extends OlVectorTile implements IExtended {
     this.options = options;
   }
 
-  public getSourceTypeName(): string {
-    return 'VectorTile';
+  public getSourceTypeName(): SourceType {
+    return SourceTypeEnum.VectorTile;
   }
 
   public getSourceOptions(): any {
     return this.options;
   }
 
-  public getLayerTypeName(): string {
-    return 'VectorTile';
+  public getLayerTypeName(): LayerType {
+    return LayerTypeEnum.VectorTile;
   }
 
   public isSnapshotable(): boolean {

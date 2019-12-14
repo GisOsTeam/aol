@@ -2,6 +2,8 @@ import OlImageArcGISRest from 'ol/source/ImageArcGISRest';
 import Feature from 'ol/Feature';
 import { IQueryRequest, IQueryResponse, IFeatureType } from './IExtended';
 import { IImage } from './IImage';
+import { SourceType, SourceTypeEnum } from './types/sourceType';
+import { LayerType, LayerTypeEnum } from './types/layerType';
 
 export class ImageArcGISRest extends OlImageArcGISRest implements IImage {
   protected options: any;
@@ -11,16 +13,16 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IImage {
     this.options = options;
   }
 
-  public getSourceTypeName(): string {
-    return 'ImageArcGISRest';
+  public getSourceTypeName(): SourceType {
+    return SourceTypeEnum.ImageArcGISRest;
   }
 
   public getSourceOptions(): any {
     return this.options;
   }
 
-  public getLayerTypeName(): string {
-    return 'Image';
+  public getLayerTypeName(): LayerType {
+    return LayerTypeEnum.Image;
   }
 
   public isSnapshotable(): boolean {

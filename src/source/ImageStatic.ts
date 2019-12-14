@@ -2,6 +2,8 @@ import OlImageStatic from 'ol/source/ImageStatic';
 import { get as getProjection } from 'ol/proj';
 import { IQueryRequest, IQueryResponse } from './IExtended';
 import { IImage } from './IImage';
+import { SourceType, SourceTypeEnum } from './types/sourceType';
+import { LayerType, LayerTypeEnum } from './types/layerType';
 
 export class ImageStatic extends OlImageStatic implements IImage {
   protected options: any;
@@ -16,16 +18,16 @@ export class ImageStatic extends OlImageStatic implements IImage {
     }
   }
 
-  public getSourceTypeName(): string {
-    return 'ImageStatic';
+  public getSourceTypeName(): SourceType {
+    return SourceTypeEnum.ImageStatic;
   }
 
   public getSourceOptions(): any {
     return this.options;
   }
 
-  public getLayerTypeName(): string {
-    return 'Image';
+  public getLayerTypeName(): LayerType {
+    return LayerTypeEnum.Image;
   }
 
   public isSnapshotable(): boolean {

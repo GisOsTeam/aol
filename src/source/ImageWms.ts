@@ -1,8 +1,10 @@
 import OlImageWMS from 'ol/source/ImageWMS';
-import { IQueryRequest, IQueryResponse, IQueryFeatureTypeResponse } from './IExtended';
+import { IQueryFeatureTypeResponse, IQueryRequest, IQueryResponse } from './IExtended';
 import { IImage } from './IImage';
 import { getLayersFromTypes } from '../utils';
 import { wmsQueryOne } from './query/wmsQuery';
+import { LayerType, LayerTypeEnum } from './types/layerType';
+import { SourceType, SourceTypeEnum } from './types/sourceType';
 
 export class ImageWms extends OlImageWMS implements IImage {
   protected options: any;
@@ -15,16 +17,16 @@ export class ImageWms extends OlImageWMS implements IImage {
     this.on('propertychange', this.handlePropertychange);
   }
 
-  public getSourceTypeName(): string {
-    return 'ImageWms';
+  public getSourceTypeName(): SourceType {
+    return SourceTypeEnum.ImageWms;
   }
 
   public getSourceOptions(): any {
     return this.options;
   }
 
-  public getLayerTypeName(): string {
-    return 'Image';
+  public getLayerTypeName(): LayerType {
+    return LayerTypeEnum.Image;
   }
 
   public isSnapshotable(): boolean {

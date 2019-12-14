@@ -1,6 +1,8 @@
 import OlEsriJSON from 'ol/format/EsriJSON';
 import { send, IResponse } from 'bhreq';
 import { ExternalVector } from './ExternalVector';
+import { SourceType, SourceTypeEnum } from './types/sourceType';
+import { LayerType, LayerTypeEnum } from './types/layerType';
 
 export class QueryArcGISRest extends ExternalVector {
   protected options: any;
@@ -12,16 +14,16 @@ export class QueryArcGISRest extends ExternalVector {
     this.options = options;
   }
 
-  public getSourceTypeName(): string {
-    return 'QueryArcGISRest';
+  public getSourceTypeName(): SourceType {
+    return SourceTypeEnum.QueryArcGISRest;
   }
 
   public getSourceOptions(): any {
     return this.options;
   }
 
-  public getLayerTypeName(): string {
-    return 'Vector';
+  public getLayerTypeName(): LayerType {
+    return LayerTypeEnum.Vector;
   }
 
   public isSnapshotable(): boolean {

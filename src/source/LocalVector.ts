@@ -1,6 +1,8 @@
 import OlFeature from 'ol/Feature';
 import { Vector } from './Vector';
 import Wkt from 'ol/format/WKT';
+import { SourceType, SourceTypeEnum } from './types/sourceType';
+import { LayerType, LayerTypeEnum } from './types/layerType';
 
 export class LocalVector extends Vector {
   protected options: any;
@@ -43,8 +45,8 @@ export class LocalVector extends Vector {
     this.on('addfeature', this.handleAddFeature);
   }
 
-  public getSourceTypeName(): string {
-    return 'LocalVector';
+  public getSourceTypeName(): SourceType {
+    return SourceTypeEnum.LocalVector;
   }
 
   public getSourceOptions(): any {
@@ -67,8 +69,8 @@ export class LocalVector extends Vector {
     return options;
   }
 
-  public getLayerTypeName(): string {
-    return 'Vector';
+  public getLayerTypeName(): LayerType {
+    return LayerTypeEnum.Vector;
   }
 
   public isSnapshotable(): boolean {

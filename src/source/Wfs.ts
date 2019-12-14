@@ -1,6 +1,8 @@
 import OlGeoJSON from 'ol/format/GeoJSON';
 import Projection from 'ol/proj/Projection';
 import { ExternalVector } from './ExternalVector';
+import { SourceType, SourceTypeEnum } from './types/sourceType';
+import { LayerType, LayerTypeEnum } from './types/layerType';
 
 export class Wfs extends ExternalVector {
   protected options: any;
@@ -20,16 +22,16 @@ export class Wfs extends ExternalVector {
     this.options = options;
   }
 
-  public getSourceTypeName(): string {
-    return 'Wfs';
+  public getSourceTypeName(): SourceType {
+    return SourceTypeEnum.Wfs;
   }
 
   public getSourceOptions(): any {
     return this.options;
   }
 
-  public getLayerTypeName(): string {
-    return 'Vector';
+  public getLayerTypeName(): LayerType {
+    return LayerTypeEnum.Vector;
   }
 
   public isSnapshotable(): boolean {
