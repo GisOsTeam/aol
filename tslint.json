@@ -1,10 +1,25 @@
 {
-  "extends": ["tslint:recommended", "tslint-config-prettier"],
+  "extends": [
+    "tslint:recommended",
+    "tslint-config-prettier"
+  ],
   "rules": {
-    "trailing-comma": [false, {
-      "multiline": "always",
-      "singleline": "never"
-    }],
+    "arrow-parens": false,
+    "jsx-no-bind": false,
+    "jsx-no-lambda": false,
+    "jsx-no-multiline-js": false,
+    "max-classes-per-file": false,
+    "max-line-length": [
+      false
+    ],
+    "no-console": [
+      true,
+      "log"
+    ],
+    "no-empty-interface": false,
+    "object-literal-key-quotes": [
+      false
+    ],
     "object-literal-sort-keys": false,
     "ordered-imports": [
       false
@@ -15,14 +30,15 @@
       "jsx-double",
       "avoid-escape"
     ],
-    "variable-name": [false],
-    "max-line-length": [false],
-    "arrow-parens": false,
-    "max-classes-per-file": [false],
-    "object-literal-key-quotes": [false],
-    "no-console": [true, "log"],
-    "jsx-no-multiline-js": false,
-    "jsx-no-lambda": false,
-    "jsx-no-bind": false
+    "trailing-comma": [
+      false,
+      {
+        "multiline": "always",
+        "singleline": "never"
+      }
+    ],
+    "variable-name": [
+      false
+    ]
   }
 }
