@@ -16,8 +16,6 @@ export interface IExtended extends Source {
   query(identifyRequest: IQueryRequest): Promise<IQueryResponse>;
 }
 
-// TODO create aolOption extend Option from ol
-
 export interface IQueryRequest {
   mapProjection: Projection;
   geometry: Geometry;

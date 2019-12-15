@@ -7,12 +7,12 @@ import OlGeoJSON from 'ol/format/GeoJSON';
 import booleanDisjoint from '@turf/boolean-disjoint';
 import { Feature as JsonFeature } from '@turf/helpers';
 import { IQueryRequest, IQueryResponse } from './IExtended';
-import { IVector } from './IVector';
+import { IVector, IVectorOptions } from './IVector';
 import { LayerType, LayerTypeEnum } from './types/layerType';
 import { SourceType, SourceTypeEnum } from './types/sourceType';
 
 export abstract class Vector extends OlVector implements IVector {
-  protected options: any;
+  protected options: IVectorOptions;
 
   protected oldProjectionCode: string;
 
@@ -20,7 +20,7 @@ export abstract class Vector extends OlVector implements IVector {
 
   private queryGeoJSONFormat = new OlGeoJSON();
 
-  constructor(options: any = {}) {
+  constructor(options: IVectorOptions = {}) {
     super(options);
     this.options = options;
   }
@@ -29,7 +29,7 @@ export abstract class Vector extends OlVector implements IVector {
     return SourceTypeEnum.Vector;
   }
 
-  public getSourceOptions(): any {
+  public getSourceOptions(): IVectorOptions {
     return this.options;
   }
 
