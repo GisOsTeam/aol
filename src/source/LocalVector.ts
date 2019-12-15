@@ -7,7 +7,7 @@ import { LayerType, LayerTypeEnum } from './types/layerType';
 export class LocalVector extends Vector {
   protected options: any;
 
-  private strategy_: (extent: [number, number, number, number], resolution: number) => any;
+  private readonly strategy_: (extent: [number, number, number, number], resolution: number) => any;
 
   private origstrategy_: (extent: [number, number, number, number], resolution: number) => any;
 
@@ -15,8 +15,8 @@ export class LocalVector extends Vector {
 
   constructor(options: any = {}) {
     super({ ...options, useSpatialIndex: true, features: undefined });
-    const features = options['features']; // TODO load features
-    options['features'] = undefined;
+    const features = options.features; // TODO load features
+    options.features = undefined;
     this.options = options;
     this.origstrategy_ = this.strategy_;
     this.strategy_ = (extent: [number, number, number, number], resolution: number) => {
@@ -56,16 +56,16 @@ export class LocalVector extends Vector {
       const originalProjectionCode = feature.get('originalProjectionCode');
       const originalGeometry = feature.get('originalGeometry');
       const properties = { ...feature.getProperties() };
-      properties['originalProjectionCode'] = undefined;
-      properties['originalGeometry'] = undefined;
-      properties['geometry'] = undefined;
+      properties.originalProjectionCode = undefined;
+      properties.originalGeometry = undefined;
+      properties.geometry = undefined;
       features.push({
         projectionCode: originalProjectionCode,
         wkt: this.wktFormat.writeGeometry(originalGeometry),
         properties
       });
     });
-    options['features'] = features;
+    options.features = features;
     return options;
   }
 
@@ -83,7 +83,7 @@ export class LocalVector extends Vector {
 
   private reproj() {
     const features: OlFeature[] = [];
-    const extents: [number, number, number, number][] = [];
+    const extents: Array<[number, number, number, number]> = [];
     this.forEachFeature((feature: OlFeature) => {
       if (feature.getGeometry() != null) {
         const originalProjectionCode = feature.get('originalProjectionCode');

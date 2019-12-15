@@ -1,7 +1,7 @@
 export interface ISnapshot {
   view: ISnapshotView;
-  projections: Array<ISnapshotProjection>;
-  layers: Array<ISnapshotLayer>;
+  projections: ISnapshotProjection[];
+  layers: ISnapshotLayer[];
 }
 
 export interface ISnapshotView {

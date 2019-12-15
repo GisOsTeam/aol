@@ -12,7 +12,7 @@ export function wmsQueryOne(
   request: IQueryRequest
 ): Promise<IQueryFeatureTypeResponse> {
   const { mapProjection, geometry, geometryProjection, limit } = request;
-  let extent = transformExtent(geometry.getExtent(), geometryProjection, mapProjection);
+  const extent = transformExtent(geometry.getExtent(), geometryProjection, mapProjection);
   if (extent[0] > extent[2]) {
     const val = extent[0];
     extent[0] = extent[2];
@@ -30,7 +30,7 @@ export function wmsQueryOne(
   }&SLD_BODY=${encodeURIComponent(sld)}&X=1&Y=1&SRS=${mapProjection.getCode()}&WIDTH=3&HEIGHT=3&BBOX=${extent.join(
     ','
   )}&INFO_FORMAT=application/vnd.ogc.gml`;
-  if (cql != null && cql != '') {
+  if (cql !== '') {
     url += `&CQL_FILTER=${cql}`;
   }
   if (limit) {

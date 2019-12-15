@@ -2,7 +2,7 @@ export type LayerStyles = SingleLayerStyle[];
 
 export type SingleLayerStyle = ILineStyle | IFillStyle | ICircleStyle | ITextStyle | IIconStyle | ISymbolStyle;
 
-export type Expression = Array<any>;
+export type Expression = any[];
 
 export type NumberExpression = number | Expression;
 

@@ -7,7 +7,7 @@ import { LayerType, LayerTypeEnum } from './types/layerType';
 export class Xyz extends OlXyz implements ITileImage {
   protected options: any;
 
-  protected type: IFeatureType<number>[];
+  protected type: Array<IFeatureType<number>>;
 
   constructor(options: any = {}) {
     super(options);

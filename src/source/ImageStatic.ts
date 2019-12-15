@@ -38,7 +38,7 @@ export class ImageStatic extends OlImageStatic implements IImage {
     return this.options.listable == null ? true : this.options.listable; // true by default
   }
 
-  getProjection() {
+  public getProjection() {
     if (this.projectionCode != null) {
       return getProjection(this.projectionCode);
     } else {
@@ -46,7 +46,7 @@ export class ImageStatic extends OlImageStatic implements IImage {
     }
   }
 
-  query(request: IQueryRequest): Promise<IQueryResponse> {
+  public query(request: IQueryRequest): Promise<IQueryResponse> {
     return Promise.resolve({
       request,
       featureTypeResponses: [

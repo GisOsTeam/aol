@@ -35,9 +35,9 @@ const geoJSONFormat = new GeoJSON();
 const kmlFormat = new KML({ extractStyles: true, showPointNames: false });
 
 /**
- * Walk recursivly.
- * @param  {Map | LayerGroup} map or group
- * @param  {Function} fn callback function
+ * Walk recursively.
+ * @param  top {Map | GroupLayer} map or group
+ * @param  fn {Function} fn callback function
  */
 export function walk(top: Map | GroupLayer, fn: (layer: BaseLayer, idx: number, parent: GroupLayer) => boolean) {
   const group = top instanceof Map ? top.getLayerGroup() : top;
@@ -82,10 +82,8 @@ export function cloneView(view: View) {
 export function revertCoordinate(geometry: SimpleGeometry) {
   return geometry.applyTransform((input: number[], ouput: number[], dimension: number) => {
     for (let i = 0; i < input.length; i += dimension) {
-      const y = input[i];
-      const x = input[i + 1];
-      ouput[i] = x;
-      ouput[i + 1] = y;
+      ouput[i] = input[i + 1];
+      ouput[i + 1] = input[i];
     }
     return ouput;
   });
@@ -175,23 +173,26 @@ export function uid(): string {
   globalKey++;
   let d = new Date().getTime();
   if (typeof performance !== 'undefined' && typeof performance.now === 'function') {
-    d += performance.now(); //use high-precision timer if available
+    d += performance.now(); // use high-precision timer if available
   }
   return (
-    'xxxxxxxxxxxxxxxy'.replace(/[xy]/g, function(c) {
-      var r = (d + Math.random() * 16) % 16 | 0;
+    'xxxxxxxxxxxxxxxy'.replace(/[xy]/g, c => {
+      // tslint:disable-next-line:no-bitwise
+      const r = (d + Math.random() * 16) % 16 | 0;
       d = Math.floor(d / 16);
+      // tslint:disable-next-line:no-bitwise
       return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
     }) + globalKey.toString(16)
   );
 }
+
 let globalKey = 0;
 
 /**
  * Generate LAYERS param from IFeatureType array.
  * @param {IFeatureType<string>[]} types list of feature type
  */
-export function getLayersFromTypes(types: IFeatureType<string>[]): string {
+export function getLayersFromTypes(types: Array<IFeatureType<string>>): string {
   if (types == null || types.length === 0) {
     return undefined;
   } else {
@@ -234,14 +235,14 @@ export function getDefaultLayerStyles(): LayerStyles {
 /**
  * Load KML from file.
  */
-export function loadKML(file: File, Map: Map): Promise<LocalVector> {
-  return new Promise<LocalVector>((resolve, reject) => {
+export function loadKML(file: File, map: Map): Promise<LocalVector> {
+  return new Promise<LocalVector>(resolve => {
     const reader = new FileReader();
     reader.onload = () => {
       const kmlString = reader.result as string;
       const name = `${kmlFormat.readName(kmlString)} (${file.name})`;
       const features: Feature[] = kmlFormat.readFeatures(kmlString, {
-        featureProjection: Map.getView().getProjection()
+        featureProjection: map.getView().getProjection()
       }) as Feature[];
       const localVectorSource = createSource(SourceTypeEnum.LocalVector, { name }) as LocalVector;
       localVectorSource.addFeatures(features);
@@ -254,7 +255,7 @@ export function loadKML(file: File, Map: Map): Promise<LocalVector> {
 /**
  * Load KMZ from file.
  */
-export function loadKMZ(file: File, Map: Map): Promise<LocalVector> {
+export function loadKMZ(file: File, map: Map): Promise<LocalVector> {
   return new Promise<LocalVector>((resolve, reject) => {
     const zipFile = new JSZip();
     zipFile.loadAsync(file).then(zip => {
@@ -262,12 +263,12 @@ export function loadKMZ(file: File, Map: Map): Promise<LocalVector> {
         .map(name => zip.files[name])
         .map(
           entry =>
-            new Promise<{ name: string; data: string }>((resolve, reject) => {
+            new Promise<{ name: string; data: string }>(resolve2 => {
               entry.async('blob').then(blob => {
                 if (/\.(jpe?g|png|gif|bmp)$/i.test(entry.name)) {
                   const reader = new FileReader();
                   reader.onload = () => {
-                    resolve({
+                    resolve2({
                       name: entry.name,
                       data: reader.result as any
                     });
@@ -276,7 +277,7 @@ export function loadKMZ(file: File, Map: Map): Promise<LocalVector> {
                 } else {
                   const reader = new FileReader();
                   reader.onload = () => {
-                    resolve({
+                    resolve2({
                       name: entry.name,
                       data: reader.result as any
                     });
@@ -292,14 +293,14 @@ export function loadKMZ(file: File, Map: Map): Promise<LocalVector> {
           const docElement = elements.filter(element => element.name === 'doc.kml').pop();
           let kmlString = docElement.data;
           imageElements.forEach(imageElement => {
-            const name = imageElement.name.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, '\\$1');
-            kmlString = kmlString.replace(new RegExp(name, 'g'), imageElement.data);
+            const imageName = imageElement.name.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, '\\$1');
+            kmlString = kmlString.replace(new RegExp(imageName, 'g'), imageElement.data);
           });
           const name = `${kmlFormat.readName(kmlString)} (${file.name})`;
           const features: Feature[] = kmlFormat.readFeatures(kmlString, {
-            featureProjection: Map.getView().getProjection()
+            featureProjection: map.getView().getProjection()
           }) as Feature[];
-          const localVectorSource = createSource('LocalVector', { name }) as LocalVector;
+          const localVectorSource = createSource(SourceTypeEnum.LocalVector, { name }) as LocalVector;
           localVectorSource.addFeatures(features);
           resolve(localVectorSource);
         },
@@ -314,7 +315,7 @@ export function loadKMZ(file: File, Map: Map): Promise<LocalVector> {
 /**
  * Load zipped Shapefile from file.
  */
-export function loadZippedShapefile(file: File, Map: Map): Promise<LocalVector> {
+export function loadZippedShapefile(file: File, map: Map): Promise<LocalVector> {
   return new Promise<LocalVector>((resolve, reject) => {
     const zipFile = new JSZip();
     zipFile.loadAsync(file).then(
@@ -323,12 +324,12 @@ export function loadZippedShapefile(file: File, Map: Map): Promise<LocalVector> 
           .map(name => zip.files[name])
           .map(
             entry =>
-              new Promise<{ name: string; data: string }>((resolve, reject) => {
+              new Promise<{ name: string; data: string }>(resolve2 => {
                 entry.async('blob').then(blob => {
                   if (entry.name.endsWith('.prj')) {
                     const reader = new FileReader();
                     reader.onload = () => {
-                      resolve({
+                      resolve2({
                         name: entry.name,
                         data: reader.result as any
                       });
@@ -337,7 +338,7 @@ export function loadZippedShapefile(file: File, Map: Map): Promise<LocalVector> 
                   } else {
                     const reader = new FileReader();
                     reader.onload = () => {
-                      resolve({
+                      resolve2({
                         name: entry.name,
                         data: reader.result as any
                       });
@@ -353,7 +354,7 @@ export function loadZippedShapefile(file: File, Map: Map): Promise<LocalVector> 
           const prjElement = elements.filter(element => element.name.endsWith('.prj')).pop();
           const featureCollection = shapefile2geojson(shpElement.data, dbfElement.data);
           const name = shpElement.name;
-          const featureProjection = Map.getView().getProjection();
+          const featureProjection = map.getView().getProjection();
           let dataProjection = featureProjection;
           if (prjElement != null) {
             dataProjection = addProjection(prjElement.name, prjElement.data).projection;
@@ -362,7 +363,7 @@ export function loadZippedShapefile(file: File, Map: Map): Promise<LocalVector> 
             dataProjection,
             featureProjection
           }) as Feature[];
-          const localVectorSource = createSource('LocalVector', { name }) as LocalVector;
+          const localVectorSource = createSource(SourceTypeEnum.LocalVector, { name }) as LocalVector;
           localVectorSource.addFeatures(features);
           resolve(localVectorSource);
         });
@@ -377,7 +378,7 @@ export function loadZippedShapefile(file: File, Map: Map): Promise<LocalVector> 
 /**
  * Load WMS.
  */
-export function loadWMS(serverUrl: string, types: IFeatureType<string>[], gisProxyUrl: string): Promise<ImageWms> {
+export function loadWMS(serverUrl: string, types: Array<IFeatureType<string>>, gisProxyUrl: string): Promise<ImageWms> {
   return new Promise<ImageWms>(resolve => {
     let url = serverUrl;
     if (gisProxyUrl != null && gisProxyUrl !== '') {
@@ -386,7 +387,7 @@ export function loadWMS(serverUrl: string, types: IFeatureType<string>[], gisPro
         .replace('/', '%2F')
         .replace('+', '%2B')}`;
     }
-    const imageWms = createSource('', { types, url }) as ImageWms;
+    const imageWms = createSource(SourceTypeEnum.ImageWms, { types, url }) as ImageWms;
     resolve(imageWms);
   });
 }

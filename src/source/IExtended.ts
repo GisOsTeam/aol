@@ -16,6 +16,8 @@ export interface IExtended extends Source {
   query(identifyRequest: IQueryRequest): Promise<IQueryResponse>;
 }
 
+// TODO create aolOption extend Option from ol
+
 export interface IQueryRequest {
   mapProjection: Projection;
   geometry: Geometry;
@@ -54,9 +56,9 @@ export interface IFeatureType<IDT extends number | string> {
   attributes?: IAttribute[];
 }
 
-export function constructQueryRequestFromPixel(pixel: number[], tolerance: number, OlMap: OlMap): IQueryRequest {
-  const coord = OlMap.getCoordinateFromPixel(pixel);
-  const resolution = OlMap.getView().getResolution();
+export function constructQueryRequestFromPixel(pixel: number[], tolerance: number, olMap: OlMap): IQueryRequest {
+  const coord = olMap.getCoordinateFromPixel(pixel);
+  const resolution = olMap.getView().getResolution();
   const extent: [number, number, number, number] = [
     coord[0] - tolerance * resolution,
     coord[1] - tolerance * resolution,
@@ -64,9 +66,9 @@ export function constructQueryRequestFromPixel(pixel: number[], tolerance: numbe
     coord[1] + tolerance * resolution
   ];
   return {
-    mapProjection: OlMap.getView().getProjection(),
+    mapProjection: olMap.getView().getProjection(),
     geometry: fromExtent(extent),
-    geometryProjection: OlMap.getView().getProjection()
+    geometryProjection: olMap.getView().getProjection()
   };
 }
 

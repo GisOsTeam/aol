@@ -1,6 +1,6 @@
 import OlImageArcGISRest from 'ol/source/ImageArcGISRest';
 import Feature from 'ol/Feature';
-import { IQueryRequest, IQueryResponse, IFeatureType } from './IExtended';
+import { IQueryRequest, IQueryResponse } from './IExtended';
 import { IImage } from './IImage';
 import { SourceType, SourceTypeEnum } from './types/sourceType';
 import { LayerType, LayerTypeEnum } from './types/layerType';
@@ -33,7 +33,7 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IImage {
     return this.options.listable == null ? true : this.options.listable; // true by default
   }
 
-  query(request: IQueryRequest): Promise<IQueryResponse> {
+  public query(request: IQueryRequest): Promise<IQueryResponse> {
     const features = [] as Feature[];
     return Promise.resolve({
       request,
