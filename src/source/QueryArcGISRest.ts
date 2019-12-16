@@ -3,26 +3,31 @@ import { send, IResponse } from 'bhreq';
 import { ExternalVector } from './ExternalVector';
 import { SourceType, SourceTypeEnum } from './types/sourceType';
 import { LayerType, LayerTypeEnum } from './types/layerType';
+import { IExtendedOptions } from './IExtended';
 
 export class QueryArcGISRest extends ExternalVector {
   protected options: any;
 
   private esriJSONFormat = new OlEsriJSON();
 
-  constructor(options: any = {}) {
-    super(options);
-    this.options = options;
+  constructor(options: IExtendedOptions = {}) {
+    super({ ...options });
+    this.options = { ...options };
   }
 
-  public getSourceTypeName(): SourceType {
+  public getSourceType(): SourceType {
     return SourceTypeEnum.QueryArcGISRest;
   }
 
-  public getSourceOptions(): any {
+  public getSourceOptions(): IExtendedOptions {
     return this.options;
   }
 
-  public getLayerTypeName(): LayerType {
+  public setSourceOptions(options: IExtendedOptions): void {
+    this.options = { ...options };
+  }
+
+  public getLayerType(): LayerType {
     return LayerTypeEnum.Vector;
   }
 

@@ -6,13 +6,13 @@ import Circle from 'ol/geom/Circle';
 import OlGeoJSON from 'ol/format/GeoJSON';
 import booleanDisjoint from '@turf/boolean-disjoint';
 import { Feature as JsonFeature } from '@turf/helpers';
-import { IQueryRequest, IQueryResponse } from './IExtended';
-import { IVector, IVectorOptions } from './IVector';
+import { IQueryRequest, IQueryResponse, IExtendedOptions } from './IExtended';
+import { IVector } from './IVector';
 import { LayerType, LayerTypeEnum } from './types/layerType';
 import { SourceType, SourceTypeEnum } from './types/sourceType';
 
 export abstract class Vector extends OlVector implements IVector {
-  protected options: IVectorOptions;
+  protected options: IExtendedOptions;
 
   protected oldProjectionCode: string;
 
@@ -20,20 +20,24 @@ export abstract class Vector extends OlVector implements IVector {
 
   private queryGeoJSONFormat = new OlGeoJSON();
 
-  constructor(options: IVectorOptions = {}) {
-    super(options);
-    this.options = options;
+  constructor(options: IExtendedOptions = {}) {
+    super({ ...options } as any);
+    this.options = { ...options };
   }
 
-  public getSourceTypeName(): SourceType {
+  public getSourceType(): SourceType {
     return SourceTypeEnum.Vector;
   }
 
-  public getSourceOptions(): IVectorOptions {
+  public getSourceOptions(): IExtendedOptions {
     return this.options;
   }
 
-  public getLayerTypeName(): LayerType {
+  public setSourceOptions(options: IExtendedOptions): void {
+    this.options = options;
+  }
+
+  public getLayerType(): LayerType {
     return LayerTypeEnum.Vector;
   }
 

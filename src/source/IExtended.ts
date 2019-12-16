@@ -7,10 +7,17 @@ import { fromExtent } from 'ol/geom/Polygon';
 import { SourceType } from './types/sourceType';
 import { LayerType } from './types/layerType';
 
+export interface IExtendedOptions {
+  [key: string]: any;
+  snapshotable?: boolean;
+  listable?: boolean;
+}
+
 export interface IExtended extends Source {
-  getSourceTypeName(): SourceType;
-  getSourceOptions(): any;
-  getLayerTypeName(): LayerType;
+  getSourceType(): SourceType;
+  getSourceOptions(): IExtendedOptions;
+  setSourceOptions(options: IExtendedOptions): void;
+  getLayerType(): LayerType;
   isSnapshotable(): boolean;
   isListable(): boolean;
   query(identifyRequest: IQueryRequest): Promise<IQueryResponse>;

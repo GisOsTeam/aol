@@ -1,24 +1,27 @@
 import { Vector } from './Vector';
 import { SourceType, SourceTypeEnum } from './types/sourceType';
 import { LayerType, LayerTypeEnum } from './types/layerType';
-import { IVectorOptions } from './IVector';
+import { IExtendedOptions } from './IExtended';
 
 export class ExternalVector extends Vector {
-
-  constructor(options: IVectorOptions = {}) {
+  constructor(options: IExtendedOptions = {}) {
     super({ ...options, useSpatialIndex: false });
     this.options = options;
   }
 
-  public getSourceTypeName(): SourceType {
+  public getSourceType(): SourceType {
     return SourceTypeEnum.ExternalVector;
   }
 
-  public getSourceOptions(): IVectorOptions {
+  public getSourceOptions(): IExtendedOptions {
     return this.options;
   }
 
-  public getLayerTypeName(): LayerType {
+  public setSourceOptions(options: any): void {
+    this.options = { ...options };
+  }
+
+  public getLayerType(): LayerType {
     return LayerTypeEnum.Vector;
   }
 

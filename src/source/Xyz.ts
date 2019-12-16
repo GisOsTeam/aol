@@ -1,18 +1,15 @@
 import OlXyz from 'ol/source/XYZ';
-import { IFeatureType, IQueryRequest, IQueryResponse } from './IExtended';
+import { IFeatureType, IQueryRequest, IQueryResponse, IExtendedOptions } from './IExtended';
 import { ITileImage } from './ITileImage';
 import { SourceType, SourceTypeEnum } from './types/sourceType';
 import { LayerType, LayerTypeEnum } from './types/layerType';
 
 export class Xyz extends OlXyz implements ITileImage {
-  protected options: any;
+  protected options: IExtendedOptions;
 
-  protected type: Array<IFeatureType<number>>;
-
-  constructor(options: any = {}) {
-    super(options);
-    this.options = options;
-    this.type = options.type ? options.type : null;
+  constructor(options: IExtendedOptions = {}) {
+    super({ ...options } as any);
+    this.options = { ...options };
   }
 
   public query(request: IQueryRequest): Promise<IQueryResponse> {
@@ -26,15 +23,19 @@ export class Xyz extends OlXyz implements ITileImage {
     });
   }
 
-  public getSourceTypeName(): SourceType {
+  public getSourceType(): SourceType {
     return SourceTypeEnum.Xyz;
   }
 
-  public getSourceOptions(): any {
+  public getSourceOptions(): IExtendedOptions {
     return this.options;
   }
 
-  public getLayerTypeName(): LayerType {
+  public setSourceOptions(options: IExtendedOptions): void {
+    this.options = { ...options };
+  }
+
+  public getLayerType(): LayerType {
     return LayerTypeEnum.Tile;
   }
 

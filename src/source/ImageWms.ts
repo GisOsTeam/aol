@@ -1,5 +1,5 @@
 import OlImageWMS from 'ol/source/ImageWMS';
-import { IQueryFeatureTypeResponse, IQueryRequest, IQueryResponse } from './IExtended';
+import { IQueryFeatureTypeResponse, IQueryRequest, IQueryResponse, IExtendedOptions } from './IExtended';
 import { IImage } from './IImage';
 import { getLayersFromTypes } from '../utils';
 import { wmsQueryOne } from './query/wmsQuery';
@@ -7,25 +7,33 @@ import { LayerType, LayerTypeEnum } from './types/layerType';
 import { SourceType, SourceTypeEnum } from './types/sourceType';
 
 export class ImageWms extends OlImageWMS implements IImage {
-  protected options: any;
+  protected options: IExtendedOptions;
 
-  constructor(options: any = {}) {
-    super({ ...options });
-    this.options = options;
+  constructor(options: IExtendedOptions = {}) {
+    super({ ...options } as any);
+    this.options = { ...options };
     this.set('types', options.types);
     this.updateParams({ ...this.getParams(), LAYERS: getLayersFromTypes(options.types) });
     this.on('propertychange', this.handlePropertychange);
   }
 
-  public getSourceTypeName(): SourceType {
+  public getSourceType(): SourceType {
     return SourceTypeEnum.ImageWms;
   }
 
-  public getSourceOptions(): any {
+  public getSourceOptions(): IExtendedOptions {
     return this.options;
   }
 
-  public getLayerTypeName(): LayerType {
+  public setSourceOptions(options: IExtendedOptions): void {
+    this.options = { ...options };
+    this.un('propertychange', this.handlePropertychange);
+    this.set('types', options.types);
+    this.updateParams({ ...this.getParams(), LAYERS: getLayersFromTypes(options.types) });
+    this.on('propertychange', this.handlePropertychange);
+  }
+
+  public getLayerType(): LayerType {
     return LayerTypeEnum.Image;
   }
 

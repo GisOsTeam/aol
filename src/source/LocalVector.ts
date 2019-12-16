@@ -3,21 +3,24 @@ import { Vector } from './Vector';
 import Wkt from 'ol/format/WKT';
 import { SourceType, SourceTypeEnum } from './types/sourceType';
 import { LayerType, LayerTypeEnum } from './types/layerType';
-import { IVectorOptions } from './IVector';
+import { IExtendedOptions } from './IExtended';
+
+export interface ILocalVectordOptions extends IExtendedOptions {
+  initialFeatures: OlFeature[];
+}
 
 export class LocalVector extends Vector {
-
   private readonly strategy_: (extent: [number, number, number, number], resolution: number) => any;
 
   private origstrategy_: (extent: [number, number, number, number], resolution: number) => any;
 
   private wktFormat = new Wkt();
 
-  constructor(options: IVectorOptions = {}) {
+  constructor(options: IExtendedOptions = {}) {
     super({ ...options, useSpatialIndex: true, features: undefined });
-    const features = options.features; // TODO load features
-    options.features = undefined;
-    this.options = options;
+    const initialFeatures = options.initialFeatures;
+    options.initialFeatures = undefined;
+    this.options = { ...options };
     this.origstrategy_ = this.strategy_;
     this.strategy_ = (extent: [number, number, number, number], resolution: number) => {
       if (this.oldProjectionCode !== this.actualProjectionCode) {
@@ -25,9 +28,9 @@ export class LocalVector extends Vector {
       }
       return this.origstrategy_.call(this, extent, resolution);
     };
-    if (features != null) {
+    if (initialFeatures != null) {
       // Load features from snapshot
-      features.forEach((feature: any) => {
+      initialFeatures.forEach((feature: any) => {
         const projectionCode = feature.projectionCode;
         const wkt = feature.wkt;
         const properties = feature.properties;
@@ -45,11 +48,11 @@ export class LocalVector extends Vector {
     this.on('addfeature', this.handleAddFeature);
   }
 
-  public getSourceTypeName(): SourceType {
+  public getSourceType(): SourceType {
     return SourceTypeEnum.LocalVector;
   }
 
-  public getSourceOptions(): IVectorOptions {
+  public getSourceOptions(): IExtendedOptions {
     const options = this.options;
     const features: any[] = [];
     this.forEachFeature((feature: OlFeature) => {
@@ -69,7 +72,11 @@ export class LocalVector extends Vector {
     return options;
   }
 
-  public getLayerTypeName(): LayerType {
+  public setSourceOptions(options: IExtendedOptions): void {
+    this.options = { ...options };
+  }
+
+  public getLayerType(): LayerType {
     return LayerTypeEnum.Vector;
   }
 

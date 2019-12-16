@@ -1,32 +1,39 @@
 import OlImageStatic from 'ol/source/ImageStatic';
 import { get as getProjection } from 'ol/proj';
-import { IQueryRequest, IQueryResponse } from './IExtended';
+import { IQueryRequest, IQueryResponse, IExtendedOptions } from './IExtended';
 import { IImage } from './IImage';
 import { SourceType, SourceTypeEnum } from './types/sourceType';
 import { LayerType, LayerTypeEnum } from './types/layerType';
 
 export class ImageStatic extends OlImageStatic implements IImage {
-  protected options: any;
+  protected options: IExtendedOptions;
 
   private projectionCode: string;
 
-  constructor(options: any = {}) {
-    super(options);
+  constructor(options: IExtendedOptions = {}) {
+    super({ ...options } as any);
     this.options = options;
     if (typeof options.projection === 'string') {
       this.projectionCode = options.projection;
     }
   }
 
-  public getSourceTypeName(): SourceType {
+  public getSourceType(): SourceType {
     return SourceTypeEnum.ImageStatic;
   }
 
-  public getSourceOptions(): any {
+  public getSourceOptions(): IExtendedOptions {
     return this.options;
   }
 
-  public getLayerTypeName(): LayerType {
+  public setSourceOptions(options: IExtendedOptions): void {
+    this.options = { ...options };
+    if (typeof options.projection === 'string') {
+      this.projectionCode = options.projection;
+    }
+  }
+
+  public getLayerType(): LayerType {
     return LayerTypeEnum.Image;
   }
 

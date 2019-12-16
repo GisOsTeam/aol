@@ -3,34 +3,39 @@ import Projection from 'ol/proj/Projection';
 import { ExternalVector } from './ExternalVector';
 import { SourceType, SourceTypeEnum } from './types/sourceType';
 import { LayerType, LayerTypeEnum } from './types/layerType';
+import { IExtendedOptions } from './IExtended';
 
 export class Wfs extends ExternalVector {
-  protected options: any;
+  protected options: IExtendedOptions;
 
-  constructor(options: any = {}) {
+  constructor(options: IExtendedOptions = {}) {
     super({
       ...options,
       format: new OlGeoJSON(),
       url: (extent: [number, number, number, number], projection: Projection) => {
-        return `${this.getUrl()}?service=WFS&version=1.1.0&request=GetFeature&typename=${
+        return `${this.getUrl()}?service=WFS&version=1.1.0&request=GetFeature&Type=${
           this.options.type.id
         }&outputFormat=application/json&srsname=${projection.getCode()}&bbox=${extent.join(
           ','
         )},${projection.getCode()}`;
       }
     });
-    this.options = options;
+    this.options = { ...options };
   }
 
-  public getSourceTypeName(): SourceType {
+  public getSourceType(): SourceType {
     return SourceTypeEnum.Wfs;
   }
 
-  public getSourceOptions(): any {
+  public getSourceOptions(): IExtendedOptions {
     return this.options;
   }
 
-  public getLayerTypeName(): LayerType {
+  public setSourceOptions(options: IExtendedOptions): void {
+    this.options = { ...options };
+  }
+
+  public getLayerType(): LayerType {
     return LayerTypeEnum.Vector;
   }
 

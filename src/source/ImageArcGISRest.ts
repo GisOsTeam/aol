@@ -1,27 +1,31 @@
 import OlImageArcGISRest from 'ol/source/ImageArcGISRest';
 import Feature from 'ol/Feature';
-import { IQueryRequest, IQueryResponse } from './IExtended';
+import { IQueryRequest, IQueryResponse, IExtendedOptions } from './IExtended';
 import { IImage } from './IImage';
 import { SourceType, SourceTypeEnum } from './types/sourceType';
 import { LayerType, LayerTypeEnum } from './types/layerType';
 
 export class ImageArcGISRest extends OlImageArcGISRest implements IImage {
-  protected options: any;
+  protected options: IExtendedOptions;
 
-  constructor(options: any = {}) {
-    super(options);
+  constructor(options: IExtendedOptions = {}) {
+    super({ ...options } as any);
     this.options = options;
   }
 
-  public getSourceTypeName(): SourceType {
+  public getSourceType(): SourceType {
     return SourceTypeEnum.ImageArcGISRest;
   }
 
-  public getSourceOptions(): any {
+  public getSourceOptions(): IExtendedOptions {
     return this.options;
   }
 
-  public getLayerTypeName(): LayerType {
+  public setSourceOptions(options: IExtendedOptions): void {
+    this.options = { ...options };
+  }
+
+  public getLayerType(): LayerType {
     return LayerTypeEnum.Image;
   }
 

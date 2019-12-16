@@ -1,26 +1,29 @@
 import OlVectorTile from 'ol/source/VectorTile';
-import { IExtended, IQueryRequest, IQueryResponse } from './IExtended';
+import { IExtended, IQueryRequest, IQueryResponse, IExtendedOptions } from './IExtended';
 import { SourceType, SourceTypeEnum } from './types/sourceType';
 import { LayerType, LayerTypeEnum } from './types/layerType';
-import { IVectorTileOptions } from './IVectorTile';
 
 export abstract class VectorTile extends OlVectorTile implements IExtended {
-  protected options: IVectorTileOptions;
+  protected options: IExtendedOptions;
 
-  constructor(options: IVectorTileOptions = {}) {
-    super(options);
-    this.options = options;
+  constructor(options: IExtendedOptions = {}) {
+    super({ ...options } as any);
+    this.options = { ...options };
   }
 
-  public getSourceTypeName(): SourceType {
+  public getSourceType(): SourceType {
     return SourceTypeEnum.VectorTile;
   }
 
-  public getSourceOptions(): IVectorTileOptions {
+  public getSourceOptions(): IExtendedOptions {
     return this.options;
   }
 
-  public getLayerTypeName(): LayerType {
+  public setSourceOptions(options: IExtendedOptions): void {
+    this.options = { ...options };
+  }
+
+  public getLayerType(): LayerType {
     return LayerTypeEnum.VectorTile;
   }
 

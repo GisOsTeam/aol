@@ -1,6 +1,6 @@
 import OlTileArcGISRest from 'ol/source/TileArcGISRest';
 import Feature from 'ol/Feature';
-import { IQueryRequest, IQueryResponse, IFeatureType } from './IExtended';
+import { IQueryRequest, IQueryResponse, IFeatureType, IExtendedOptions } from './IExtended';
 import { ITileImage } from './ITileImage';
 import { SourceType, SourceTypeEnum } from './types/sourceType';
 import { LayerType, LayerTypeEnum } from './types/layerType';
@@ -8,20 +8,24 @@ import { LayerType, LayerTypeEnum } from './types/layerType';
 export class TileArcGISRest extends OlTileArcGISRest implements ITileImage {
   protected options: any;
 
-  constructor(options: any = {}) {
-    super(options);
-    this.options = options;
+  constructor(options: IExtendedOptions = {}) {
+    super({ ...options } as any);
+    this.options = { ...options };
   }
 
-  public getSourceTypeName(): SourceType {
+  public getSourceType(): SourceType {
     return SourceTypeEnum.TileArcGISRest;
   }
 
-  public getSourceOptions(): any {
+  public getSourceOptions(): IExtendedOptions {
     return this.options;
   }
 
-  public getLayerTypeName(): LayerType {
+  public setSourceOptions(options: IExtendedOptions): void {
+    this.options = { ...options };
+  }
+
+  public getLayerType(): LayerType {
     return LayerTypeEnum.Tile;
   }
 

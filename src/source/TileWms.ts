@@ -1,5 +1,5 @@
 import OlTileWMS from 'ol/source/TileWMS';
-import { IQueryRequest, IQueryResponse, IQueryFeatureTypeResponse } from './IExtended';
+import { IQueryRequest, IQueryResponse, IQueryFeatureTypeResponse, IExtendedOptions } from './IExtended';
 import { ITileImage } from './ITileImage';
 import { getLayersFromTypes } from '../utils';
 import { wmsQueryOne } from './query/wmsQuery';
@@ -11,21 +11,29 @@ export class TileWms extends OlTileWMS implements ITileImage {
 
   constructor(options: any = {}) {
     super({ ...options });
-    this.options = options;
+    this.options = { ...options };
     this.set('types', options.types);
     this.updateParams({ ...this.getParams(), LAYERS: getLayersFromTypes(options.types) });
     this.on('propertychange', this.handlePropertychange);
   }
 
-  public getSourceTypeName(): SourceType {
+  public getSourceType(): SourceType {
     return SourceTypeEnum.TileWms;
   }
 
-  public getSourceOptions(): any {
+  public getSourceOptions(): IExtendedOptions {
     return this.options;
   }
 
-  public getLayerTypeName(): LayerType {
+  public setSourceOptions(options: IExtendedOptions): void {
+    this.options = { ...options };
+    this.un('propertychange', this.handlePropertychange);
+    this.set('types', options.types);
+    this.updateParams({ ...this.getParams(), LAYERS: getLayersFromTypes(options.types) });
+    this.on('propertychange', this.handlePropertychange);
+  }
+
+  public getLayerType(): LayerType {
     return LayerTypeEnum.Tile;
   }
 
