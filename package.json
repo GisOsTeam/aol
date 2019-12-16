@@ -6,12 +6,13 @@
   "typings": "index.d.ts",
   "module": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "prettier": "prettier --single-quote --print-width 120 --write --parser typescript '{src, test}/**/*.ts'",
-    "lint": "npm run prettier && tslint -c tslint.json -p tsconfig.json -s '{src, test}/**/*.{ts}'",
     "build": "rimraf lib && npm run lint && tsc -p tsconfig.json && cp ./package.json lib",
+    "jest": "jest",
+    "lint": "npm run prettier && tslint -c tslint.json -p tsconfig.json -s '{src, test}/**/*.{ts}'",
     "prepublishOnly": "[[ \"$PWD\" =~ /lib ]]",
-    "pub": "pushd ./ && npm run build && cd lib && npm publish && popd"
+    "prettier": "prettier --single-quote --print-width 120 --write --parser typescript '{src, test}/**/*.ts'",
+    "pub": "pushd ./ && npm run build && cd lib && npm publish && popd",
+    "test": "jest"
   },
   "husky": {
     "hooks": {
@@ -31,25 +32,22 @@
   "devDependencies": {
     "@babel/core": "^7.7.4",
     "@babel/preset-env": "^7.7.4",
+    "@types/jest": "^24.0.23",
     "@types/jszip": "^3.1.6",
     "@types/ol": "^5.3.6",
-    "awesome-typescript-loader": "^5.2.1",
-    "babel-loader": "^8.0.6",
-    "css-loader": "^3.2.1",
-    "html-webpack-plugin": "^3.2.0",
+    "babel-jest": "^24.9.0",
     "husky": "^3.1.0",
+    "jest": "^24.9.0",
+    "jest-canvas-mock": "^2.2.0",
     "ol": "6.1.1",
     "prettier": "^1.19.1",
     "proj4": "2.6.0",
     "rimraf": "^3.0.0",
     "source-map-loader": "^0.2.4",
-    "style-loader": "^1.0.1",
+    "ts-jest": "^24.2.0",
     "tslint": "^5.20.1",
     "tslint-config-prettier": "^1.18.0",
-    "typescript": "3.7.3",
-    "webpack": "^4.41.2",
-    "webpack-cli": "^3.3.10",
-    "webpack-dev-server": "^3.9.0"
+    "typescript": "3.7.3"
   },
   "dependencies": {
     "@turf/turf": "^5.1.6",

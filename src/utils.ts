@@ -79,11 +79,13 @@ export function cloneView(view: View) {
  * Reverse coordinates.
  * @param {SimpleGeometry} geometry
  */
-export function revertCoordinate(geometry: SimpleGeometry) {
+export function revertCoordinate(geometry: SimpleGeometry): void {
   return geometry.applyTransform((input: number[], ouput: number[], dimension: number) => {
     for (let i = 0; i < input.length; i += dimension) {
-      ouput[i] = input[i + 1];
-      ouput[i + 1] = input[i];
+      const y = input[i];
+      const x = input[i + 1];
+      ouput[i] = x;
+      ouput[i + 1] = y;
     }
     return ouput;
   });
