@@ -58,9 +58,10 @@ export abstract class Vector extends OlVector implements IVector {
   }
 
   public query(request: IQueryRequest): Promise<IQueryResponse> {
-    const { mapProjection, geometry, geometryProjection, limit } = request;
+    const { olMap, geometry, geometryProjection, limit } = request;
     const features = [] as Feature[];
     let destGeometry = null;
+    const mapProjection = olMap.getView().getProjection();
     if (geometry != null) {
       if (mapProjection != null && geometryProjection != null) {
         destGeometry = geometry.transform(geometryProjection, mapProjection);
