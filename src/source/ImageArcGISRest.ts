@@ -1,9 +1,9 @@
 import OlImageArcGISRest from 'ol/source/ImageArcGISRest';
-import Feature from 'ol/Feature';
-import { IQueryRequest, IQueryResponse, IExtendedOptions } from './IExtended';
+import { IQueryRequest, IQueryResponse, IExtendedOptions, IQueryFeatureTypeResponse } from './IExtended';
 import { IImage } from './IImage';
 import { SourceType, SourceTypeEnum } from './types/sourceType';
 import { LayerType, LayerTypeEnum } from './types/layerType';
+import { agsQueryOne } from './query/agsQuery';
 
 export class ImageArcGISRest extends OlImageArcGISRest implements IImage {
   protected options: IExtendedOptions;
@@ -38,14 +38,15 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IImage {
   }
 
   public query(request: IQueryRequest): Promise<IQueryResponse> {
-    const features = [] as Feature[];
-    return Promise.resolve({
-      request,
-      featureTypeResponses: [
-        {
-          features
-        }
-      ]
+    const promises: Array<Promise<IQueryFeatureTypeResponse>> = [];
+    for (const type of this.options.types) {
+      promises.push(agsQueryOne(this.getUrl(), type, request));
+    }
+    return Promise.all(promises).then((featureTypeResponses: IQueryFeatureTypeResponse[]) => {
+      return {
+        request,
+        featureTypeResponses
+      };
     });
   }
 }

@@ -24,7 +24,7 @@ export interface IExtended extends Source {
 }
 
 export interface IQueryRequest {
-  mapProjection: Projection;
+  olMap: OlMap;
   geometry: Geometry;
   geometryProjection: Projection;
   filters?: IFilter[];
@@ -71,7 +71,7 @@ export function constructQueryRequestFromPixel(pixel: number[], tolerance: numbe
     coord[1] + tolerance * resolution
   ];
   return {
-    mapProjection: olMap.getView().getProjection(),
+    olMap,
     geometry: fromExtent(extent),
     geometryProjection: olMap.getView().getProjection()
   };
