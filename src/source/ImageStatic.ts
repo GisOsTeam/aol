@@ -4,13 +4,16 @@ import { IQueryRequest, IQueryResponse, IExtendedOptions } from './IExtended';
 import { IImage } from './IImage';
 import { SourceType, SourceTypeEnum } from './types/sourceType';
 import { LayerType, LayerTypeEnum } from './types/layerType';
+import { Options } from 'ol/source/ImageStatic';
+
+export interface IImageStaticOptions extends IExtendedOptions, Options {}
 
 export class ImageStatic extends OlImageStatic implements IImage {
-  protected options: IExtendedOptions;
+  protected options: IImageStaticOptions;
 
   private projectionCode: string;
 
-  constructor(options: IExtendedOptions = {}) {
+  constructor(options: IImageStaticOptions) {
     super({ ...options } as any);
     this.options = options;
     if (typeof options.projection === 'string') {
@@ -22,11 +25,11 @@ export class ImageStatic extends OlImageStatic implements IImage {
     return SourceTypeEnum.ImageStatic;
   }
 
-  public getSourceOptions(): IExtendedOptions {
+  public getSourceOptions(): IImageStaticOptions {
     return this.options;
   }
 
-  public setSourceOptions(options: IExtendedOptions): void {
+  public setSourceOptions(options: IImageStaticOptions): void {
     this.options = { ...options };
     if (typeof options.projection === 'string') {
       this.projectionCode = options.projection;

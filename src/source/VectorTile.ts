@@ -2,11 +2,14 @@ import OlVectorTile from 'ol/source/VectorTile';
 import { IExtended, IQueryRequest, IQueryResponse, IExtendedOptions } from './IExtended';
 import { SourceType, SourceTypeEnum } from './types/sourceType';
 import { LayerType, LayerTypeEnum } from './types/layerType';
+import { Options } from 'ol/source/Vector';
+
+export interface IVectorTileOptions extends IExtendedOptions, Options {}
 
 export abstract class VectorTile extends OlVectorTile implements IExtended {
-  protected options: IExtendedOptions;
+  protected options: IVectorTileOptions;
 
-  constructor(options: IExtendedOptions = {}) {
+  constructor(options: IVectorTileOptions) {
     super({ ...options } as any);
     this.options = { ...options };
   }
@@ -15,11 +18,11 @@ export abstract class VectorTile extends OlVectorTile implements IExtended {
     return SourceTypeEnum.VectorTile;
   }
 
-  public getSourceOptions(): IExtendedOptions {
+  public getSourceOptions(): IVectorTileOptions {
     return this.options;
   }
 
-  public setSourceOptions(options: IExtendedOptions): void {
+  public setSourceOptions(options: IVectorTileOptions): void {
     this.options = { ...options };
   }
 

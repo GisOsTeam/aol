@@ -4,11 +4,14 @@ import { IQueryRequest, IQueryResponse, IFeatureType, IExtendedOptions } from '.
 import { ITileImage } from './ITileImage';
 import { SourceType, SourceTypeEnum } from './types/sourceType';
 import { LayerType, LayerTypeEnum } from './types/layerType';
+import { Options } from 'ol/source/TileArcGISRest';
+
+export interface ITileArcGISRestOptions extends IExtendedOptions, Options {}
 
 export class TileArcGISRest extends OlTileArcGISRest implements ITileImage {
   protected options: any;
 
-  constructor(options: IExtendedOptions = {}) {
+  constructor(options: ITileArcGISRestOptions) {
     super({ ...options } as any);
     this.options = { ...options };
   }
@@ -17,11 +20,11 @@ export class TileArcGISRest extends OlTileArcGISRest implements ITileImage {
     return SourceTypeEnum.TileArcGISRest;
   }
 
-  public getSourceOptions(): IExtendedOptions {
+  public getSourceOptions(): ITileArcGISRestOptions {
     return this.options;
   }
 
-  public setSourceOptions(options: IExtendedOptions): void {
+  public setSourceOptions(options: ITileArcGISRestOptions): void {
     this.options = { ...options };
   }
 

@@ -8,7 +8,6 @@ import { SourceType } from './types/sourceType';
 import { LayerType } from './types/layerType';
 
 export interface IExtendedOptions {
-  [key: string]: any;
   snapshotable?: boolean;
   listable?: boolean;
 }
