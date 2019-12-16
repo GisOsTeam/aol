@@ -1,13 +1,16 @@
 import OlXyz from 'ol/source/XYZ';
-import { IFeatureType, IQueryRequest, IQueryResponse, IExtendedOptions } from './IExtended';
+import { IQueryRequest, IQueryResponse, IExtendedOptions } from './IExtended';
 import { ITileImage } from './ITileImage';
 import { SourceType, SourceTypeEnum } from './types/sourceType';
 import { LayerType, LayerTypeEnum } from './types/layerType';
+import { Options } from 'ol/source/XYZ';
+
+export interface IXyzOptions extends IExtendedOptions, Options {}
 
 export class Xyz extends OlXyz implements ITileImage {
-  protected options: IExtendedOptions;
+  protected options: IXyzOptions;
 
-  constructor(options: IExtendedOptions = {}) {
+  constructor(options: IXyzOptions) {
     super({ ...options } as any);
     this.options = { ...options };
   }
@@ -27,11 +30,11 @@ export class Xyz extends OlXyz implements ITileImage {
     return SourceTypeEnum.Xyz;
   }
 
-  public getSourceOptions(): IExtendedOptions {
+  public getSourceOptions(): IXyzOptions {
     return this.options;
   }
 
-  public setSourceOptions(options: IExtendedOptions): void {
+  public setSourceOptions(options: IXyzOptions): void {
     this.options = { ...options };
   }
 

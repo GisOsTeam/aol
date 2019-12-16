@@ -1,15 +1,20 @@
 import OlTileWMS from 'ol/source/TileWMS';
-import { IQueryRequest, IQueryResponse, IQueryFeatureTypeResponse, IExtendedOptions } from './IExtended';
+import { IQueryRequest, IQueryResponse, IQueryFeatureTypeResponse, IExtendedOptions, IFeatureType } from './IExtended';
 import { ITileImage } from './ITileImage';
 import { getLayersFromTypes } from '../utils';
 import { wmsQueryOne } from './query/wmsQuery';
 import { SourceType, SourceTypeEnum } from './types/sourceType';
 import { LayerType, LayerTypeEnum } from './types/layerType';
+import { Options } from 'ol/source/TileWMS';
+
+export interface ITileWmsOptions extends IExtendedOptions, Options {
+  types: Array<IFeatureType<string>>;
+}
 
 export class TileWms extends OlTileWMS implements ITileImage {
-  protected options: any;
+  protected options: ITileWmsOptions;
 
-  constructor(options: any = {}) {
+  constructor(options: ITileWmsOptions) {
     super({ ...options });
     this.options = { ...options };
     this.set('types', options.types);
@@ -21,11 +26,11 @@ export class TileWms extends OlTileWMS implements ITileImage {
     return SourceTypeEnum.TileWms;
   }
 
-  public getSourceOptions(): IExtendedOptions {
+  public getSourceOptions(): ITileWmsOptions {
     return this.options;
   }
 
-  public setSourceOptions(options: IExtendedOptions): void {
+  public setSourceOptions(options: ITileWmsOptions): void {
     this.options = { ...options };
     this.un('propertychange', this.handlePropertychange);
     this.set('types', options.types);

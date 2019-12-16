@@ -4,13 +4,16 @@ import { ExternalVector } from './ExternalVector';
 import { SourceType, SourceTypeEnum } from './types/sourceType';
 import { LayerType, LayerTypeEnum } from './types/layerType';
 import { IExtendedOptions } from './IExtended';
+import { Options } from 'ol/source/Vector';
+
+export interface IQueryArcGISRestOptions extends IExtendedOptions, Options {}
 
 export class QueryArcGISRest extends ExternalVector {
   protected options: any;
 
   private esriJSONFormat = new OlEsriJSON();
 
-  constructor(options: IExtendedOptions = {}) {
+  constructor(options: IQueryArcGISRestOptions) {
     super({ ...options });
     this.options = { ...options };
   }
@@ -19,11 +22,11 @@ export class QueryArcGISRest extends ExternalVector {
     return SourceTypeEnum.QueryArcGISRest;
   }
 
-  public getSourceOptions(): IExtendedOptions {
+  public getSourceOptions(): IQueryArcGISRestOptions {
     return this.options;
   }
 
-  public setSourceOptions(options: IExtendedOptions): void {
+  public setSourceOptions(options: IQueryArcGISRestOptions): void {
     this.options = { ...options };
   }
 

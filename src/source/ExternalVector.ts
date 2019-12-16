@@ -1,10 +1,11 @@
-import { Vector } from './Vector';
+import { Vector, IVectorOptions } from './Vector';
 import { SourceType, SourceTypeEnum } from './types/sourceType';
 import { LayerType, LayerTypeEnum } from './types/layerType';
-import { IExtendedOptions } from './IExtended';
+
+export interface IExternalVectorOptions extends IVectorOptions {}
 
 export class ExternalVector extends Vector {
-  constructor(options: IExtendedOptions = {}) {
+  constructor(options: IExternalVectorOptions) {
     super({ ...options, useSpatialIndex: false });
     this.options = options;
   }
@@ -13,11 +14,11 @@ export class ExternalVector extends Vector {
     return SourceTypeEnum.ExternalVector;
   }
 
-  public getSourceOptions(): IExtendedOptions {
+  public getSourceOptions(): IExternalVectorOptions {
     return this.options;
   }
 
-  public setSourceOptions(options: any): void {
+  public setSourceOptions(options: IExternalVectorOptions): void {
     this.options = { ...options };
   }
 

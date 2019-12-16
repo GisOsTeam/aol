@@ -10,9 +10,12 @@ import { IQueryRequest, IQueryResponse, IExtendedOptions } from './IExtended';
 import { IVector } from './IVector';
 import { LayerType, LayerTypeEnum } from './types/layerType';
 import { SourceType, SourceTypeEnum } from './types/sourceType';
+import { Options } from 'ol/source/Vector';
+
+export interface IVectorOptions extends IExtendedOptions, Options {}
 
 export abstract class Vector extends OlVector implements IVector {
-  protected options: IExtendedOptions;
+  protected options: IVectorOptions;
 
   protected oldProjectionCode: string;
 
@@ -20,7 +23,7 @@ export abstract class Vector extends OlVector implements IVector {
 
   private queryGeoJSONFormat = new OlGeoJSON();
 
-  constructor(options: IExtendedOptions = {}) {
+  constructor(options: IVectorOptions) {
     super({ ...options } as any);
     this.options = { ...options };
   }
@@ -29,11 +32,11 @@ export abstract class Vector extends OlVector implements IVector {
     return SourceTypeEnum.Vector;
   }
 
-  public getSourceOptions(): IExtendedOptions {
+  public getSourceOptions(): IVectorOptions {
     return this.options;
   }
 
-  public setSourceOptions(options: IExtendedOptions): void {
+  public setSourceOptions(options: IVectorOptions): void {
     this.options = options;
   }
 
@@ -58,9 +61,10 @@ export abstract class Vector extends OlVector implements IVector {
   }
 
   public query(request: IQueryRequest): Promise<IQueryResponse> {
-    const { mapProjection, geometry, geometryProjection, limit } = request;
+    const { olMap, geometry, geometryProjection, limit } = request;
     const features = [] as Feature[];
     let destGeometry = null;
+    const mapProjection = olMap.getView().getProjection();
     if (geometry != null) {
       if (mapProjection != null && geometryProjection != null) {
         destGeometry = geometry.transform(geometryProjection, mapProjection);

@@ -1,15 +1,20 @@
 import OlImageWMS from 'ol/source/ImageWMS';
-import { IQueryFeatureTypeResponse, IQueryRequest, IQueryResponse, IExtendedOptions } from './IExtended';
+import { IQueryFeatureTypeResponse, IQueryRequest, IQueryResponse, IExtendedOptions, IFeatureType } from './IExtended';
 import { IImage } from './IImage';
 import { getLayersFromTypes } from '../utils';
 import { wmsQueryOne } from './query/wmsQuery';
 import { LayerType, LayerTypeEnum } from './types/layerType';
 import { SourceType, SourceTypeEnum } from './types/sourceType';
+import { Options } from 'ol/source/ImageWMS';
+
+export interface IImageWMSOptions extends IExtendedOptions, Options {
+  types: Array<IFeatureType<string>>;
+}
 
 export class ImageWms extends OlImageWMS implements IImage {
-  protected options: IExtendedOptions;
+  protected options: IImageWMSOptions;
 
-  constructor(options: IExtendedOptions = {}) {
+  constructor(options: IImageWMSOptions) {
     super({ ...options } as any);
     this.options = { ...options };
     this.set('types', options.types);
@@ -21,11 +26,11 @@ export class ImageWms extends OlImageWMS implements IImage {
     return SourceTypeEnum.ImageWms;
   }
 
-  public getSourceOptions(): IExtendedOptions {
+  public getSourceOptions(): IImageWMSOptions {
     return this.options;
   }
 
-  public setSourceOptions(options: IExtendedOptions): void {
+  public setSourceOptions(options: IImageWMSOptions): void {
     this.options = { ...options };
     this.un('propertychange', this.handlePropertychange);
     this.set('types', options.types);

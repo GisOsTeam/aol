@@ -1,12 +1,11 @@
 import OlFeature from 'ol/Feature';
-import { Vector } from './Vector';
+import { Vector, IVectorOptions } from './Vector';
 import Wkt from 'ol/format/WKT';
 import { SourceType, SourceTypeEnum } from './types/sourceType';
 import { LayerType, LayerTypeEnum } from './types/layerType';
-import { IExtendedOptions } from './IExtended';
 
-export interface ILocalVectordOptions extends IExtendedOptions {
-  initialFeatures: OlFeature[];
+export interface ILocalVectordOptions extends IVectorOptions {
+  initialFeatures?: OlFeature[];
 }
 
 export class LocalVector extends Vector {
@@ -16,8 +15,8 @@ export class LocalVector extends Vector {
 
   private wktFormat = new Wkt();
 
-  constructor(options: IExtendedOptions = {}) {
-    super({ ...options, useSpatialIndex: true, features: undefined });
+  constructor(options: ILocalVectordOptions) {
+    super({ ...options, useSpatialIndex: true });
     const initialFeatures = options.initialFeatures;
     options.initialFeatures = undefined;
     this.options = { ...options };
@@ -52,7 +51,7 @@ export class LocalVector extends Vector {
     return SourceTypeEnum.LocalVector;
   }
 
-  public getSourceOptions(): IExtendedOptions {
+  public getSourceOptions(): ILocalVectordOptions {
     const options = this.options;
     const features: any[] = [];
     this.forEachFeature((feature: OlFeature) => {
@@ -72,7 +71,7 @@ export class LocalVector extends Vector {
     return options;
   }
 
-  public setSourceOptions(options: IExtendedOptions): void {
+  public setSourceOptions(options: ILocalVectordOptions): void {
     this.options = { ...options };
   }
 

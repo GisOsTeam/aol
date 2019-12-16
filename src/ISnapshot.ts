@@ -1,3 +1,5 @@
+import { SourceTypeEnum } from './source/types/sourceType';
+
 export interface ISnapshot {
   view: ISnapshotView;
   projections: ISnapshotProjection[];
@@ -19,7 +21,7 @@ export interface ISnapshotProjection {
 }
 
 export interface ISnapshotLayer {
-  sourceTypeName: string;
+  sourceType: SourceTypeEnum;
   sourceOptions: any;
   props: any;
 }

@@ -1,6 +1,6 @@
 {
   "name": "@gisosteam/aol",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "OpenLayers sources extentions",
   "main": "index.js",
   "typings": "index.d.ts",
@@ -43,7 +43,6 @@
     "prettier": "^1.19.1",
     "proj4": "2.6.0",
     "rimraf": "^3.0.0",
-    "source-map-loader": "^0.2.4",
     "ts-jest": "^24.2.0",
     "tslint": "^5.20.1",
     "tslint-config-prettier": "^1.18.0",

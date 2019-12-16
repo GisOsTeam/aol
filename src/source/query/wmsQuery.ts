@@ -11,7 +11,8 @@ export function wmsQueryOne(
   type: IFeatureType<string>,
   request: IQueryRequest
 ): Promise<IQueryFeatureTypeResponse> {
-  const { mapProjection, geometry, geometryProjection, limit } = request;
+  const { olMap, geometry, geometryProjection, limit } = request;
+  const mapProjection = olMap.getView().getProjection();
   const extent = transformExtent(geometry.getExtent(), geometryProjection, mapProjection);
   if (extent[0] > extent[2]) {
     const val = extent[0];
@@ -27,9 +28,10 @@ export function wmsQueryOne(
   const cql = ''; // TODO
   let url = `${serviceUrl}?SERVICE=WMS&VERSION=1.1.0&REQUEST=GetFeatureInfo&QUERY_LAYERS=${type.id}&LAYERS=${
     type.id
-  }&SLD_BODY=${encodeURIComponent(sld)}&X=1&Y=1&SRS=${mapProjection.getCode()}&WIDTH=3&HEIGHT=3&BBOX=${extent.join(
-    ','
-  )}&INFO_FORMAT=application/vnd.ogc.gml`;
+  }&SLD_BODY=${encodeURIComponent(sld)}&X=1&Y=1&SRS=${olMap
+    .getView()
+    .getProjection()
+    .getCode()}&WIDTH=3&HEIGHT=3&BBOX=${extent.join(',')}&INFO_FORMAT=application/vnd.ogc.gml`;
   if (cql !== '') {
     url += `&CQL_FILTER=${cql}`;
   }
@@ -39,8 +41,8 @@ export function wmsQueryOne(
   return send({ url }).then((res: IResponse) => {
     const features = [] as Feature[];
     // Search projection on results
-    let dataProjectionCode = mapProjection.getCode();
     let dataProjection = mapProjection;
+    let dataProjectionCode = mapProjection.getCode();
     const res1 = res.body.match(/\ssrsName=\"([^\"]+)\"/i);
     if (res1 && res1.length >= 2) {
       const res2 = res1[1].match(/(\d+)(?!.*\d)/g);
