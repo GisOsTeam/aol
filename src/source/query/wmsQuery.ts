@@ -28,10 +28,9 @@ export function wmsQueryOne(
   const cql = ''; // TODO
   let url = `${serviceUrl}?SERVICE=WMS&VERSION=1.1.0&REQUEST=GetFeatureInfo&QUERY_LAYERS=${type.id}&LAYERS=${
     type.id
-  }&SLD_BODY=${encodeURIComponent(sld)}&X=1&Y=1&SRS=${olMap
-    .getView()
-    .getProjection()
-    .getCode()}&WIDTH=3&HEIGHT=3&BBOX=${extent.join(',')}&INFO_FORMAT=application/vnd.ogc.gml`;
+  }&SLD_BODY=${encodeURIComponent(sld)}&X=1&Y=1&SRS=${mapProjection.getCode()}&WIDTH=3&HEIGHT=3&BBOX=${extent.join(
+    ','
+  )}&INFO_FORMAT=application/vnd.ogc.gml`;
   if (cql !== '') {
     url += `&CQL_FILTER=${cql}`;
   }
