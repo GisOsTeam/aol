@@ -16,7 +16,7 @@ export function identify(pixel: Pixel, map: Map, limit: number = 10): Promise<IQ
         const source = (layer as Layer).getSource();
         if (source && 'query' in source) {
           const extended = (source as IExtended);
-          if (extended.isListable) {
+          if (extended.isListable()) {
             promises.push(extended.query(queryRequest));
           }
         }
