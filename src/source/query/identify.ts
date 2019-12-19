@@ -15,7 +15,10 @@ export function identify(pixel: Pixel, map: Map, limit: number = 10): Promise<IQ
       if (layer.getVisible() && 'getSource' in layer) {
         const source = (layer as Layer).getSource();
         if (source && 'query' in source) {
-          promises.push((source as IExtended).query(queryRequest));
+          const extended = (source as IExtended);
+          if (extended.isListable) {
+            promises.push(extended.query(queryRequest));
+          }
         }
       }
       return true;
