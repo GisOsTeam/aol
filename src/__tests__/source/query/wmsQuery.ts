@@ -1,8 +1,8 @@
 import { wmsQueryOne } from '../../../source/query/wmsQuery';
-import { IQueryRequest, IQueryFeatureTypeResponse } from '../../../source';
 import OlMap from 'ol/Map';
 import { get as getProjection } from 'ol/proj';
 import Polygon from 'ol/geom/Polygon';
+import { IQueryFeatureTypeResponse, IQueryRequest } from '../../../source/IExtended';
 
 test('query wms', () => {
   const request: IQueryRequest = {

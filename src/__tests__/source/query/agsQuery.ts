@@ -1,8 +1,8 @@
 import { agsQueryOne } from '../../../source/query/agsQuery';
-import { IQueryRequest, IQueryFeatureTypeResponse } from '../../../source';
 import OlMap from 'ol/Map';
 import { get as getProjection } from 'ol/proj';
 import Polygon from 'ol/geom/Polygon';
+import { IQueryFeatureTypeResponse, IQueryRequest } from '../../../source/IExtended';
 
 test('query ags', () => {
   const request: IQueryRequest = {

@@ -4,35 +4,26 @@ import BaseLayer from 'ol/layer/Base';
 import View from 'ol/View';
 import Geometry from 'ol/geom/Geometry';
 import SimpleGeometry from 'ol/geom/SimpleGeometry';
-import {
-  ExternalVector,
-  IExtended,
-  IFeatureType,
-  ImageArcGISRest,
-  ImageStatic,
-  ImageWms,
-  LocalVector,
-  QueryArcGISRest,
-  TileArcGISRest,
-  TileWms,
-  Wfs,
-  Xyz
-} from './source';
-import KML from 'ol/format/KML';
 import GeoJSON, { GeoJSONGeometry } from 'ol/format/GeoJSON';
-import Feature from 'ol/Feature';
-import * as JSZip from 'jszip';
 import { LayerStyles } from './LayerStyles';
 import { fromCircle } from 'ol/geom/Polygon';
 import Circle from 'ol/geom/Circle';
 import booleanDisjoint from '@turf/boolean-disjoint';
-import * as shapefile2geojson from 'shapefile2geojson';
-import { addProjection } from './ProjectionInfo';
 import { applyStyle } from 'ol-mapbox-style';
 import { SourceType, SourceTypeEnum } from './source/types/sourceType';
+import { IFeatureType, IExtended } from './source/IExtended';
+import { ExternalVector } from './source/ExternalVector';
+import { ImageArcGISRest } from './source/ImageArcGISRest';
+import { ImageStatic } from './source/ImageStatic';
+import { ImageWms } from './source/ImageWms';
+import { LocalVector } from './source/LocalVector';
+import { QueryArcGISRest } from './source/QueryArcGISRest';
+import { TileArcGISRest } from './source/TileArcGISRest';
+import { TileWms } from './source/TileWms';
+import { Wfs } from './source/Wfs';
+import { Xyz } from './source/Xyz';
 
 const geoJSONFormat = new GeoJSON();
-const kmlFormat = new KML({ extractStyles: true, showPointNames: false });
 
 /**
  * Walk recursively.
@@ -232,166 +223,6 @@ export function getDefaultLayerStyles(): LayerStyles {
       }
     }
   ];
-}
-
-/**
- * Load KML from file.
- */
-export function loadKML(file: File, map: Map): Promise<LocalVector> {
-  return new Promise<LocalVector>(resolve => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const kmlString = reader.result as string;
-      const name = `${kmlFormat.readName(kmlString)} (${file.name})`;
-      const features: Feature[] = kmlFormat.readFeatures(kmlString, {
-        featureProjection: map.getView().getProjection()
-      }) as Feature[];
-      const localVectorSource = createSource(SourceTypeEnum.LocalVector, { name }) as LocalVector;
-      localVectorSource.addFeatures(features);
-      resolve(localVectorSource);
-    };
-    reader.readAsText(file);
-  });
-}
-
-/**
- * Load KMZ from file.
- */
-export function loadKMZ(file: File, map: Map): Promise<LocalVector> {
-  return new Promise<LocalVector>((resolve, reject) => {
-    const zipFile = new JSZip();
-    zipFile.loadAsync(file).then(zip => {
-      const promises = Object.keys(zip.files)
-        .map(name => zip.files[name])
-        .map(
-          entry =>
-            new Promise<{ name: string; data: string }>(resolve2 => {
-              entry.async('blob').then(blob => {
-                if (/\.(jpe?g|png|gif|bmp)$/i.test(entry.name)) {
-                  const reader = new FileReader();
-                  reader.onload = () => {
-                    resolve2({
-                      name: entry.name,
-                      data: reader.result as any
-                    });
-                  };
-                  reader.readAsDataURL(blob);
-                } else {
-                  const reader = new FileReader();
-                  reader.onload = () => {
-                    resolve2({
-                      name: entry.name,
-                      data: reader.result as any
-                    });
-                  };
-                  reader.readAsText(blob);
-                }
-              });
-            })
-        );
-      Promise.all(promises).then(
-        elements => {
-          const imageElements = elements.filter(element => /\.(jpe?g|png|gif|bmp)$/i.test(element.name));
-          const docElement = elements.filter(element => element.name === 'doc.kml').pop();
-          let kmlString = docElement.data;
-          imageElements.forEach(imageElement => {
-            const imageName = imageElement.name.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, '\\$1');
-            kmlString = kmlString.replace(new RegExp(imageName, 'g'), imageElement.data);
-          });
-          const name = `${kmlFormat.readName(kmlString)} (${file.name})`;
-          const features: Feature[] = kmlFormat.readFeatures(kmlString, {
-            featureProjection: map.getView().getProjection()
-          }) as Feature[];
-          const localVectorSource = createSource(SourceTypeEnum.LocalVector, { name }) as LocalVector;
-          localVectorSource.addFeatures(features);
-          resolve(localVectorSource);
-        },
-        err => {
-          reject(err);
-        }
-      );
-    });
-  });
-}
-
-/**
- * Load zipped Shapefile from file.
- */
-export function loadZippedShapefile(file: File, map: Map): Promise<LocalVector> {
-  return new Promise<LocalVector>((resolve, reject) => {
-    const zipFile = new JSZip();
-    zipFile.loadAsync(file).then(
-      zip => {
-        const promises = Object.keys(zip.files)
-          .map(name => zip.files[name])
-          .map(
-            entry =>
-              new Promise<{ name: string; data: string }>(resolve2 => {
-                entry.async('blob').then(blob => {
-                  if (entry.name.endsWith('.prj')) {
-                    const reader = new FileReader();
-                    reader.onload = () => {
-                      resolve2({
-                        name: entry.name,
-                        data: reader.result as any
-                      });
-                    };
-                    reader.readAsText(blob);
-                  } else {
-                    const reader = new FileReader();
-                    reader.onload = () => {
-                      resolve2({
-                        name: entry.name,
-                        data: reader.result as any
-                      });
-                    };
-                    reader.readAsArrayBuffer(blob);
-                  }
-                });
-              })
-          );
-        Promise.all(promises).then(elements => {
-          const dbfElement = elements.filter(element => element.name.endsWith('.dbf')).pop();
-          const shpElement = elements.filter(element => element.name.endsWith('.shp')).pop();
-          const prjElement = elements.filter(element => element.name.endsWith('.prj')).pop();
-          const featureCollection = shapefile2geojson(shpElement.data, dbfElement.data);
-          const name = shpElement.name;
-          const featureProjection = map.getView().getProjection();
-          let dataProjection = featureProjection;
-          if (prjElement != null) {
-            dataProjection = addProjection(prjElement.name, prjElement.data).projection;
-          }
-          const features: Feature[] = geoJSONFormat.readFeatures(featureCollection, {
-            dataProjection,
-            featureProjection
-          }) as Feature[];
-          const localVectorSource = createSource(SourceTypeEnum.LocalVector, { name }) as LocalVector;
-          localVectorSource.addFeatures(features);
-          resolve(localVectorSource);
-        });
-      },
-      err => {
-        reject(err);
-      }
-    );
-  });
-}
-
-/**
- * Load WMS.
- */
-export function loadWMS(serverUrl: string, types: Array<IFeatureType<string>>, gisProxyUrl: string): Promise<ImageWms> {
-  return new Promise<ImageWms>(resolve => {
-    let url = serverUrl;
-    if (gisProxyUrl != null && gisProxyUrl !== '') {
-      url = `${gisProxyUrl}/${btoa(serverUrl)
-        .replace('=', '%3D')
-        .replace('/', '%2F')
-        .replace('+', '%2B')}`;
-    }
-    const imageWms = createSource(SourceTypeEnum.ImageWms, { types, url }) as ImageWms;
-    resolve(imageWms);
-  });
 }
 
 /**
