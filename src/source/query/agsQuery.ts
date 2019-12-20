@@ -1,9 +1,10 @@
 import Feature from 'ol/Feature';
-import { get as getProjection, transformExtent } from 'ol/proj';
+import { transformExtent } from 'ol/proj';
 import EsriJSON from 'ol/format/EsriJSON';
 import { IQueryRequest, IFeatureType, IQueryFeatureTypeResponse } from '../IExtended';
 import { send, IResponse } from 'bhreq';
-import { toGeoJSONGeometry, revertCoordinate, disjoint } from '../../utils';
+import { toGeoJSONGeometry, disjoint } from '../../utils';
+import SimpleGeometry from 'ol/geom/SimpleGeometry';
 
 export function agsQueryOne(
   serviceUrl: string,
@@ -25,24 +26,18 @@ export function agsQueryOne(
   }
   const where = ''; // TODO
   const sr = mapProjection.getCode().split(':', 2)[1];
-  const mapExtent = olMap
-    .getView()
-    .calculateExtent(olMap.getSize())
-    .join(',');
-  const imageDisplay = `${this.getOlSource()
-    .getImageSize()
-    .join(',')},${Math.round(90 * this.getOlSource().getPixelRatio())}`;
-  const url = `${serviceUrl}/${type.id}/query?geometry=${extent.join(',')}
-  &geometryType=esriGeometryEnvelope&inSR=${sr}&outSR=${sr}&where=${where}&returnGeometry=true&f=json`;
+  const url = `${serviceUrl}/${type.id}/query?geometry=${extent.join(
+    ','
+  )}&geometryType=esriGeometryEnvelope&inSR=${sr}&outSR=${sr}&where=${where}&returnGeometry=true&f=json`;
   return send({ url }).then((res: IResponse) => {
     const features = [] as Feature[];
     // Read features
-    const jsonFeatures = res.body;
+    const jsonQueryRes = res.body;
     const format = new EsriJSON();
-    if (jsonFeatures && jsonFeatures.length > 0) {
-      features.forEach((feat: any) => {
+    if (jsonQueryRes != null && jsonQueryRes.features != null && jsonQueryRes.features.length > 0) {
+      jsonQueryRes.features.forEach((jsonFeature: any) => {
         if (limit == null || features.length < limit) {
-          const feature = format.readFeature(feat) as Feature;
+          const feature = format.readFeature(jsonFeature) as Feature;
           // Check intersection
           if (
             geometry == null ||

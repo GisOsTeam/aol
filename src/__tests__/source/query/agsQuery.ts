@@ -1,10 +1,10 @@
-import { wmsQueryOne } from '../../../source/query/wmsQuery';
+import { agsQueryOne } from '../../../source/query/agsQuery';
 import { IQueryRequest, IQueryFeatureTypeResponse } from '../../../source';
 import OlMap from 'ol/Map';
 import { get as getProjection } from 'ol/proj';
 import Polygon from 'ol/geom/Polygon';
 
-test('query wms', () => {
+test('query ags', () => {
   const request: IQueryRequest = {
     olMap: new OlMap({}),
     geometry: new Polygon([
@@ -18,9 +18,11 @@ test('query wms', () => {
     ]),
     geometryProjection: getProjection('EPSG:3857')
   };
-  return wmsQueryOne('https://ahocevar.com/geoserver/wms', { id: 'topp:states' }, request).then(
-    (response: IQueryFeatureTypeResponse) => {
-      return expect<number>(response.features.length).toEqual(1);
-    }
-  );
+  return agsQueryOne(
+    'https://sampleserver6.arcgisonline.com/arcgis/rest/services/USA/MapServer',
+    { id: 2 },
+    request
+  ).then((response: IQueryFeatureTypeResponse) => {
+    return expect<number>(response.features.length).toEqual(1);
+  });
 });
