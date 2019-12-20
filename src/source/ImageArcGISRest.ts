@@ -1,6 +1,7 @@
 import OlImageArcGISRest from 'ol/source/ImageArcGISRest';
 import { IQueryRequest, IQueryResponse, IExtendedOptions, IQueryFeatureTypeResponse, IFeatureType } from './IExtended';
 import { IImage } from './IImage';
+import { getAgsLayersFromTypes } from '../utils';
 import { SourceType, SourceTypeEnum } from './types/sourceType';
 import { LayerType, LayerTypeEnum } from './types/layerType';
 import { agsQueryOne } from './query/agsQuery';
@@ -16,6 +17,9 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IImage {
   constructor(options: IImageArcGISRestOptions) {
     super({ ...options } as any);
     this.options = options;
+    this.set('types', options.types);
+    this.updateParams({ ...this.getParams(), LAYERS: getAgsLayersFromTypes(options.types) });
+    this.on('propertychange', this.handlePropertychange);
   }
 
   public getSourceType(): SourceType {
@@ -54,4 +58,13 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IImage {
       };
     });
   }
+
+  private handlePropertychange = (event: any) => {
+    const key = event.key;
+    const value = event.target.get(key);
+    if (key === 'types') {
+      this.updateParams({ ...this.getParams(), LAYERS: getAgsLayersFromTypes(value) });
+      this.options.types = value;
+    }
+  };
 }

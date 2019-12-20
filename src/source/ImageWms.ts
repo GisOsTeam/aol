@@ -1,7 +1,7 @@
 import OlImageWMS from 'ol/source/ImageWMS';
 import { IQueryFeatureTypeResponse, IQueryRequest, IQueryResponse, IExtendedOptions, IFeatureType } from './IExtended';
 import { IImage } from './IImage';
-import { getLayersFromTypes } from '../utils';
+import { getWmsLayersFromTypes } from '../utils';
 import { wmsQueryOne } from './query/wmsQuery';
 import { LayerType, LayerTypeEnum } from './types/layerType';
 import { SourceType, SourceTypeEnum } from './types/sourceType';
@@ -18,7 +18,7 @@ export class ImageWms extends OlImageWMS implements IImage {
     super({ ...options } as any);
     this.options = { ...options };
     this.set('types', options.types);
-    this.updateParams({ ...this.getParams(), LAYERS: getLayersFromTypes(options.types) });
+    this.updateParams({ ...this.getParams(), LAYERS: getWmsLayersFromTypes(options.types) });
     this.on('propertychange', this.handlePropertychange);
   }
 
@@ -34,7 +34,7 @@ export class ImageWms extends OlImageWMS implements IImage {
     this.options = { ...options };
     this.un('propertychange', this.handlePropertychange);
     this.set('types', options.types);
-    this.updateParams({ ...this.getParams(), LAYERS: getLayersFromTypes(options.types) });
+    this.updateParams({ ...this.getParams(), LAYERS: getWmsLayersFromTypes(options.types) });
     this.on('propertychange', this.handlePropertychange);
   }
 
@@ -67,7 +67,7 @@ export class ImageWms extends OlImageWMS implements IImage {
     const key = event.key;
     const value = event.target.get(key);
     if (key === 'types') {
-      this.updateParams({ ...this.getParams(), LAYERS: getLayersFromTypes(value) });
+      this.updateParams({ ...this.getParams(), LAYERS: getWmsLayersFromTypes(value) });
       this.options.types = value;
     }
   };

@@ -185,11 +185,28 @@ let globalKey = 0;
  * Generate LAYERS param from IFeatureType array.
  * @param {IFeatureType<string>[]} types list of feature type
  */
-export function getLayersFromTypes(types: Array<IFeatureType<string>>): string {
+export function getWmsLayersFromTypes(types: Array<IFeatureType<string>>): string {
   if (types == null || types.length === 0) {
     return undefined;
   } else {
     return types.map(t => t.id).join(',');
+  }
+}
+
+/**
+ * Generate LAYERS param from IFeatureType array.
+ * @param {IFeatureType<number>[]} types list of feature type
+ */
+export function getAgsLayersFromTypes(types: Array<IFeatureType<number>>): string {
+  if (types == null) {
+    return 'show';
+  } else if (types.length === 0) {
+    return 'show:-1';
+  } else {
+    return `show:${types
+      .filter(t => t.id !== -1)
+      .map(t => t.id)
+      .join(',')}`;
   }
 }
 

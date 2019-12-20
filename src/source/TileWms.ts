@@ -1,7 +1,7 @@
 import OlTileWMS from 'ol/source/TileWMS';
 import { IQueryRequest, IQueryResponse, IQueryFeatureTypeResponse, IExtendedOptions, IFeatureType } from './IExtended';
 import { ITileImage } from './ITileImage';
-import { getLayersFromTypes } from '../utils';
+import { getWmsLayersFromTypes } from '../utils';
 import { wmsQueryOne } from './query/wmsQuery';
 import { SourceType, SourceTypeEnum } from './types/sourceType';
 import { LayerType, LayerTypeEnum } from './types/layerType';
@@ -18,7 +18,7 @@ export class TileWms extends OlTileWMS implements ITileImage {
     super({ ...options });
     this.options = { ...options };
     this.set('types', options.types);
-    this.updateParams({ ...this.getParams(), LAYERS: getLayersFromTypes(options.types) });
+    this.updateParams({ ...this.getParams(), LAYERS: getWmsLayersFromTypes(options.types) });
     this.on('propertychange', this.handlePropertychange);
   }
 
@@ -34,7 +34,7 @@ export class TileWms extends OlTileWMS implements ITileImage {
     this.options = { ...options };
     this.un('propertychange', this.handlePropertychange);
     this.set('types', options.types);
-    this.updateParams({ ...this.getParams(), LAYERS: getLayersFromTypes(options.types) });
+    this.updateParams({ ...this.getParams(), LAYERS: getWmsLayersFromTypes(options.types) });
     this.on('propertychange', this.handlePropertychange);
   }
 
@@ -67,7 +67,7 @@ export class TileWms extends OlTileWMS implements ITileImage {
     const key = event.key;
     const value = event.target.get(key);
     if (key === 'types') {
-      this.updateParams({ ...this.getParams(), LAYERS: getLayersFromTypes(value) });
+      this.updateParams({ ...this.getParams(), LAYERS: getWmsLayersFromTypes(value) });
       this.options.types = value;
     }
   };
