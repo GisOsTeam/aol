@@ -5,7 +5,8 @@ import Layer from 'ol/layer/Layer';
 import { IQueryResponse, constructQueryRequestFromPixel, IExtended } from '../IExtended';
 import { walk } from '../../utils';
 
-export function identify(pixel: Pixel, map: Map, limit: number = 10): Promise<IQueryResponse[]> {
+const defaultExtendedFilter = (extended: IExtended) => extended.isListable;
+export function identify(pixel: Pixel, map: Map, limit: number = 10, extendedFilter = defaultExtendedFilter): Promise<IQueryResponse[]> {
   if (map && pixel) {
     const promises: Array<Promise<IQueryResponse>> = [];
     const queryRequest = constructQueryRequestFromPixel(pixel, 2, map);
@@ -16,7 +17,7 @@ export function identify(pixel: Pixel, map: Map, limit: number = 10): Promise<IQ
         const source = (layer as Layer).getSource();
         if (source && 'query' in source) {
           const extended = (source as IExtended);
-          if (extended.isListable()) {
+          if (extendedFilter(extended)) {
             promises.push(extended.query(queryRequest));
           }
         }
