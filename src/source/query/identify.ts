@@ -6,7 +6,12 @@ import { IQueryResponse, constructQueryRequestFromPixel, IExtended } from '../IE
 import { walk } from '../../utils';
 
 export type IdentifyFilterType = (extended: IExtended) => boolean;
-export function identify(pixel: Pixel, map: Map, limit: number = 10, filter?: IdentifyFilterType): Promise<IQueryResponse[]> {
+export function identify(
+  pixel: Pixel,
+  map: Map,
+  limit: number = 10,
+  filter?: IdentifyFilterType
+): Promise<IQueryResponse[]> {
   if (map && pixel) {
     const promises: Array<Promise<IQueryResponse>> = [];
     const queryRequest = constructQueryRequestFromPixel(pixel, 2, map);
@@ -16,8 +21,8 @@ export function identify(pixel: Pixel, map: Map, limit: number = 10, filter?: Id
       if (layer.getVisible() && 'getSource' in layer) {
         const source = (layer as Layer).getSource();
         if (source && 'query' in source) {
-          const extended = (source as IExtended);
-          if (!filter || filter(extended)) {
+          const extended = source as IExtended;
+          if (!filter || filter(extended)) {
             promises.push(extended.query(queryRequest));
           }
         }
