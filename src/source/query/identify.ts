@@ -28,10 +28,12 @@ export function identify(
         if (source && 'query' in source) {
           const extended = source as IExtended;
           if (!filter || filter(extended)) {
-            promises.push(extended.query(queryRequest).then((queryResponse: IQueryResponse) => {
-              const identifyQueryResponse = {...queryResponse, olLayer};
-              return identifyQueryResponse;
-            }));
+            promises.push(
+              extended.query(queryRequest).then((queryResponse: IQueryResponse) => {
+                const identifyQueryResponse = { ...queryResponse, olLayer };
+                return identifyQueryResponse;
+              })
+            );
           }
         }
       }
