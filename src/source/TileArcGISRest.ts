@@ -46,7 +46,9 @@ export class TileArcGISRest extends OlTileArcGISRest implements ITileImage {
       request,
       featureTypeResponses: [
         {
-          features
+          type: null,
+          features: [],
+          source: this
         }
       ]
     });

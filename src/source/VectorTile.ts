@@ -43,7 +43,9 @@ export abstract class VectorTile extends OlVectorTile implements IExtended {
       request,
       featureTypeResponses: [
         {
-          features: []
+          type: null,
+          features: [],
+          source: this
         }
       ]
     });

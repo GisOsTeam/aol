@@ -18,7 +18,7 @@ test('query wms', () => {
     ]),
     geometryProjection: getProjection('EPSG:3857')
   };
-  return wmsQueryOne('https://ahocevar.com/geoserver/wms', { id: 'topp:states' }, request).then(
+  return wmsQueryOne(null, 'https://ahocevar.com/geoserver/wms', { id: 'topp:states' }, request).then(
     (response: IQueryFeatureTypeResponse) => {
       return expect<number>(response.features.length).toEqual(1);
     }

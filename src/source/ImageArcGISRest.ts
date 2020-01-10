@@ -49,7 +49,7 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IImage {
   public query(request: IQueryRequest): Promise<IQueryResponse> {
     const promises: Array<Promise<IQueryFeatureTypeResponse>> = [];
     for (const type of this.options.types) {
-      promises.push(agsQueryOne(this.getUrl(), type, request));
+      promises.push(agsQueryOne(this, this.getUrl(), type, request));
     }
     return Promise.all(promises).then((featureTypeResponses: IQueryFeatureTypeResponse[]) => {
       return {

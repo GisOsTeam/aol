@@ -19,6 +19,7 @@ test('query ags', () => {
     geometryProjection: getProjection('EPSG:3857')
   };
   return agsQueryOne(
+    null,
     'https://sampleserver6.arcgisonline.com/arcgis/rest/services/USA/MapServer',
     { id: 2 },
     request

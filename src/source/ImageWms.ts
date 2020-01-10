@@ -53,7 +53,7 @@ export class ImageWms extends OlImageWMS implements IImage {
   public query(request: IQueryRequest): Promise<IQueryResponse> {
     const promises: Array<Promise<IQueryFeatureTypeResponse>> = [];
     for (const type of this.options.types) {
-      promises.push(wmsQueryOne(this.getUrl(), type, request));
+      promises.push(wmsQueryOne(this, this.getUrl(), type, request));
     }
     return Promise.all(promises).then((featureTypeResponses: IQueryFeatureTypeResponse[]) => {
       return {

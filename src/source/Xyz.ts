@@ -20,7 +20,9 @@ export class Xyz extends OlXyz implements ITileImage {
       request,
       featureTypeResponses: [
         {
-          features: []
+          type: null,
+          features: [],
+          source: this
         }
       ]
     });

@@ -1,12 +1,13 @@
+import Source from 'ol/source/Source';
 import Feature from 'ol/Feature';
 import { transformExtent } from 'ol/proj';
 import EsriJSON from 'ol/format/EsriJSON';
 import { IQueryRequest, IFeatureType, IQueryFeatureTypeResponse } from '../IExtended';
 import { send, IResponse } from 'bhreq';
 import { toGeoJSONGeometry, disjoint } from '../../utils';
-import SimpleGeometry from 'ol/geom/SimpleGeometry';
 
 export function agsQueryOne(
+  source: Source,
   serviceUrl: string,
   type: IFeatureType<number>,
   request: IQueryRequest
@@ -52,7 +53,8 @@ export function agsQueryOne(
     }
     return Promise.resolve({
       type,
-      features
+      features,
+      source
     });
   });
 }

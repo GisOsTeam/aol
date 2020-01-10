@@ -2,6 +2,7 @@ import Projection from 'ol/proj/Projection';
 import { register } from 'ol/proj/proj4';
 import proj4 from 'proj4';
 import { transformExtent, get as getProjection } from 'ol/proj';
+import { Extent } from 'ol/extent';
 
 const projMap = new Map<string, ProjectionInfo>();
 
@@ -20,7 +21,7 @@ export function getProjectionInfos(): ProjectionInfo[] {
 export function addProjection(
   code: string,
   wkt?: string,
-  lonLatValidity?: number[],
+  lonLatValidity?: Extent,
   name?: string,
   remarks?: string
 ): ProjectionInfo {
@@ -45,7 +46,7 @@ export function addProjection(
 export class ProjectionInfo {
   public code: string;
   public wkt: string;
-  public lonLatValidity: number[];
+  public lonLatValidity: Extent;
   public name: string;
   public remarks: string;
   public projection: Projection;

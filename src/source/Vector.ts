@@ -5,7 +5,6 @@ import { fromCircle } from 'ol/geom/Polygon';
 import Circle from 'ol/geom/Circle';
 import OlGeoJSON from 'ol/format/GeoJSON';
 import booleanDisjoint from '@turf/boolean-disjoint';
-import { Feature as JsonFeature } from '@turf/helpers';
 import { IQueryRequest, IQueryResponse, IExtendedOptions } from './IExtended';
 import { IVector } from './IVector';
 import { LayerType, LayerTypeEnum } from './types/layerType';
@@ -75,11 +74,11 @@ export abstract class Vector extends OlVector implements IVector {
         destGeometry = fromCircle(geometry as Circle);
       }
       const extent = destGeometry.getExtent();
-      const jsonGeom = this.queryGeoJSONFormat.writeGeometryObject(destGeometry) as JsonFeature;
+      const jsonGeom = this.queryGeoJSONFormat.writeGeometryObject(destGeometry);
       this.forEachFeatureIntersectingExtent(extent, (feature: Feature) => {
         if (limit == null || features.length < limit) {
-          const jsonResGeom = this.queryGeoJSONFormat.writeGeometryObject(feature.getGeometry()) as JsonFeature;
-          if (!booleanDisjoint(jsonResGeom, jsonGeom)) {
+          const jsonResGeom = this.queryGeoJSONFormat.writeGeometryObject(feature.getGeometry());
+          if (!booleanDisjoint(jsonResGeom as any, jsonGeom as any)) {
             features.push(feature);
           }
         }
@@ -95,7 +94,9 @@ export abstract class Vector extends OlVector implements IVector {
       request,
       featureTypeResponses: [
         {
-          features
+          type: null,
+          features: [],
+          source: this
         }
       ]
     });

@@ -61,7 +61,9 @@ export class ImageStatic extends OlImageStatic implements IImage {
       request,
       featureTypeResponses: [
         {
-          features: []
+          type: null,
+          features: [],
+          source: this
         }
       ]
     });

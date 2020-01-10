@@ -53,7 +53,7 @@ export class TileWms extends OlTileWMS implements ITileImage {
   public query(request: IQueryRequest): Promise<IQueryResponse> {
     const promises: Array<Promise<IQueryFeatureTypeResponse>> = [];
     for (const type of this.options.types) {
-      promises.push(wmsQueryOne(this.getUrls()[0], type, request));
+      promises.push(wmsQueryOne(this, this.getUrls()[0], type, request));
     }
     return Promise.all(promises).then((featureTypeResponses: IQueryFeatureTypeResponse[]) => {
       return {
