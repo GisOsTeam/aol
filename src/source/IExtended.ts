@@ -38,7 +38,7 @@ export interface IQueryResponse {
 export interface IQueryFeatureTypeResponse {
   type: IFeatureType<any>;
   features: Feature[];
-  source: Source;
+  source: IExtended;
 }
 
 export interface IFilter {

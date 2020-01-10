@@ -1,14 +1,13 @@
-import Source from 'ol/source/Source';
 import Feature from 'ol/Feature';
 import { get as getProjection, transformExtent } from 'ol/proj';
 import WMSGetFeatureInfoFormat from 'ol/format/WMSGetFeatureInfo';
 import SimpleGeometry from 'ol/geom/SimpleGeometry';
-import { IQueryRequest, IFeatureType, IQueryFeatureTypeResponse } from '../IExtended';
+import { IQueryRequest, IFeatureType, IQueryFeatureTypeResponse, IExtended } from '../IExtended';
 import { send, IResponse } from 'bhreq';
 import { toGeoJSONGeometry, revertCoordinate, disjoint } from '../../utils';
 
 export function wmsQueryOne(
-  source: Source,
+  source: IExtended,
   serviceUrl: string,
   type: IFeatureType<string>,
   request: IQueryRequest

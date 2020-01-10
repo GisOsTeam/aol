@@ -1,14 +1,13 @@
 import OlImageStatic from 'ol/source/ImageStatic';
 import { get as getProjection } from 'ol/proj';
-import { IQueryRequest, IQueryResponse, IExtendedOptions } from './IExtended';
-import { IImage } from './IImage';
+import { IQueryRequest, IQueryResponse, IExtendedOptions, IExtended } from './IExtended';
 import { SourceType, SourceTypeEnum } from './types/sourceType';
 import { LayerType, LayerTypeEnum } from './types/layerType';
 import { Options } from 'ol/source/ImageStatic';
 
 export interface IImageStaticOptions extends IExtendedOptions, Options {}
 
-export class ImageStatic extends OlImageStatic implements IImage {
+export class ImageStatic extends OlImageStatic implements IExtended {
   protected options: IImageStaticOptions;
 
   private projectionCode: string;

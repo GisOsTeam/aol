@@ -1,6 +1,12 @@
 import OlImageArcGISRest from 'ol/source/ImageArcGISRest';
-import { IQueryRequest, IQueryResponse, IExtendedOptions, IQueryFeatureTypeResponse, IFeatureType } from './IExtended';
-import { IImage } from './IImage';
+import {
+  IQueryRequest,
+  IQueryResponse,
+  IExtendedOptions,
+  IQueryFeatureTypeResponse,
+  IFeatureType,
+  IExtended
+} from './IExtended';
 import { getAgsLayersFromTypes } from '../utils';
 import { SourceType, SourceTypeEnum } from './types/sourceType';
 import { LayerType, LayerTypeEnum } from './types/layerType';
@@ -11,7 +17,7 @@ export interface IImageArcGISRestOptions extends IExtendedOptions, Options {
   types: Array<IFeatureType<number>>;
 }
 
-export class ImageArcGISRest extends OlImageArcGISRest implements IImage {
+export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
   protected options: IImageArcGISRestOptions;
 
   constructor(options: IImageArcGISRestOptions) {

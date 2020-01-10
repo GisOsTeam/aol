@@ -1,4 +1,5 @@
 import { SourceTypeEnum } from './source/types/sourceType';
+import { Extent } from 'ol/extent';
 
 export interface ISnapshot {
   view: ISnapshotView;
@@ -15,7 +16,7 @@ export interface ISnapshotView {
 export interface ISnapshotProjection {
   code: string;
   wkt?: string;
-  lonLatValidity?: number[];
+  lonLatValidity?: Extent;
   name?: string;
   remarks?: string;
 }

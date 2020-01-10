@@ -1,6 +1,12 @@
 import OlTileWMS from 'ol/source/TileWMS';
-import { IQueryRequest, IQueryResponse, IQueryFeatureTypeResponse, IExtendedOptions, IFeatureType } from './IExtended';
-import { ITileImage } from './ITileImage';
+import {
+  IQueryRequest,
+  IQueryResponse,
+  IQueryFeatureTypeResponse,
+  IExtendedOptions,
+  IFeatureType,
+  IExtended
+} from './IExtended';
 import { getWmsLayersFromTypes } from '../utils';
 import { wmsQueryOne } from './query/wmsQuery';
 import { SourceType, SourceTypeEnum } from './types/sourceType';
@@ -11,7 +17,7 @@ export interface ITileWmsOptions extends IExtendedOptions, Options {
   types: Array<IFeatureType<string>>;
 }
 
-export class TileWms extends OlTileWMS implements ITileImage {
+export class TileWms extends OlTileWMS implements IExtended {
   protected options: ITileWmsOptions;
 
   constructor(options: ITileWmsOptions) {

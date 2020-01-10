@@ -1,6 +1,12 @@
 import OlImageWMS from 'ol/source/ImageWMS';
-import { IQueryFeatureTypeResponse, IQueryRequest, IQueryResponse, IExtendedOptions, IFeatureType } from './IExtended';
-import { IImage } from './IImage';
+import {
+  IQueryFeatureTypeResponse,
+  IQueryRequest,
+  IQueryResponse,
+  IExtendedOptions,
+  IFeatureType,
+  IExtended
+} from './IExtended';
 import { getWmsLayersFromTypes } from '../utils';
 import { wmsQueryOne } from './query/wmsQuery';
 import { LayerType, LayerTypeEnum } from './types/layerType';
@@ -11,7 +17,7 @@ export interface IImageWMSOptions extends IExtendedOptions, Options {
   types: Array<IFeatureType<string>>;
 }
 
-export class ImageWms extends OlImageWMS implements IImage {
+export class ImageWms extends OlImageWMS implements IExtended {
   protected options: IImageWMSOptions;
 
   constructor(options: IImageWMSOptions) {

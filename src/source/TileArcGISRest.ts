@@ -1,14 +1,13 @@
 import OlTileArcGISRest from 'ol/source/TileArcGISRest';
 import Feature from 'ol/Feature';
-import { IQueryRequest, IQueryResponse, IFeatureType, IExtendedOptions } from './IExtended';
-import { ITileImage } from './ITileImage';
+import { IQueryRequest, IQueryResponse, IFeatureType, IExtendedOptions, IExtended } from './IExtended';
 import { SourceType, SourceTypeEnum } from './types/sourceType';
 import { LayerType, LayerTypeEnum } from './types/layerType';
 import { Options } from 'ol/source/TileArcGISRest';
 
 export interface ITileArcGISRestOptions extends IExtendedOptions, Options {}
 
-export class TileArcGISRest extends OlTileArcGISRest implements ITileImage {
+export class TileArcGISRest extends OlTileArcGISRest implements IExtended {
   protected options: any;
 
   constructor(options: ITileArcGISRestOptions) {

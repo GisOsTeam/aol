@@ -5,15 +5,14 @@ import { fromCircle } from 'ol/geom/Polygon';
 import Circle from 'ol/geom/Circle';
 import OlGeoJSON from 'ol/format/GeoJSON';
 import booleanDisjoint from '@turf/boolean-disjoint';
-import { IQueryRequest, IQueryResponse, IExtendedOptions } from './IExtended';
-import { IVector } from './IVector';
+import { IQueryRequest, IQueryResponse, IExtendedOptions, IExtended } from './IExtended';
 import { LayerType, LayerTypeEnum } from './types/layerType';
 import { SourceType, SourceTypeEnum } from './types/sourceType';
 import { Options } from 'ol/source/Vector';
 
 export interface IVectorOptions extends IExtendedOptions, Options {}
 
-export abstract class Vector extends OlVector implements IVector {
+export abstract class Vector extends OlVector implements IExtended {
   protected options: IVectorOptions;
 
   protected oldProjectionCode: string;

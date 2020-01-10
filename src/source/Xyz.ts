@@ -1,13 +1,12 @@
 import OlXyz from 'ol/source/XYZ';
-import { IQueryRequest, IQueryResponse, IExtendedOptions } from './IExtended';
-import { ITileImage } from './ITileImage';
+import { IQueryRequest, IQueryResponse, IExtendedOptions, IExtended } from './IExtended';
 import { SourceType, SourceTypeEnum } from './types/sourceType';
 import { LayerType, LayerTypeEnum } from './types/layerType';
 import { Options } from 'ol/source/XYZ';
 
 export interface IXyzOptions extends IExtendedOptions, Options {}
 
-export class Xyz extends OlXyz implements ITileImage {
+export class Xyz extends OlXyz implements IExtended {
   protected options: IXyzOptions;
 
   constructor(options: IXyzOptions) {

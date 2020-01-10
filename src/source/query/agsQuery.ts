@@ -1,13 +1,12 @@
-import Source from 'ol/source/Source';
 import Feature from 'ol/Feature';
 import { transformExtent } from 'ol/proj';
 import EsriJSON from 'ol/format/EsriJSON';
-import { IQueryRequest, IFeatureType, IQueryFeatureTypeResponse } from '../IExtended';
+import { IQueryRequest, IFeatureType, IQueryFeatureTypeResponse, IExtended } from '../IExtended';
 import { send, IResponse } from 'bhreq';
 import { toGeoJSONGeometry, disjoint } from '../../utils';
 
 export function agsQueryOne(
-  source: Source,
+  source: IExtended,
   serviceUrl: string,
   type: IFeatureType<number>,
   request: IQueryRequest

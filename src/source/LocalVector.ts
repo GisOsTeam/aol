@@ -36,9 +36,9 @@ export class LocalVector extends Vector {
         const geometry = this.wktFormat.readGeometry(wkt);
         const olFeature = new OlFeature(geometry);
         olFeature.setProperties(properties);
-        olFeature.set('originalProjectionCode', projectionCode, true);
-        olFeature.set('originalGeometry', geometry, true);
-        geometry.set('feature', olFeature, true);
+        (olFeature as any).originalProjectionCode = projectionCode;
+        (olFeature as any).originalGeometry = geometry;
+        (geometry as any).feature = olFeature;
         olFeature.once('change:geometry', this.handleChangeFeatureGeometry);
         geometry.once('change', this.handleChangeGeometry);
         this.addFeature(olFeature);
@@ -55,8 +55,8 @@ export class LocalVector extends Vector {
     const options = this.options;
     const features: any[] = [];
     this.forEachFeature((feature: OlFeature) => {
-      const originalProjectionCode = feature.get('originalProjectionCode');
-      const originalGeometry = feature.get('originalGeometry');
+      const originalProjectionCode = (feature as any).originalProjectionCode;
+      const originalGeometry = (feature as any).originalGeometry;
       const properties = { ...feature.getProperties() };
       properties.originalProjectionCode = undefined;
       properties.originalGeometry = undefined;
@@ -84,15 +84,15 @@ export class LocalVector extends Vector {
     const extents: Array<[number, number, number, number]> = [];
     this.forEachFeature((feature: OlFeature) => {
       if (feature.getGeometry() != null) {
-        const originalProjectionCode = feature.get('originalProjectionCode');
-        const originalGeometry = feature.get('originalGeometry');
+        const originalProjectionCode = (feature as any).originalProjectionCode;
+        const originalGeometry = (feature as any).originalGeometry;
         if (
           originalProjectionCode != null &&
           originalGeometry != null &&
           originalProjectionCode !== this.actualProjectionCode
         ) {
           const geom = originalGeometry.clone();
-          geom.transform(feature.get('originalProjectionCode'), this.actualProjectionCode);
+          geom.transform((feature as any).originalProjectionCode, this.actualProjectionCode);
           feature.set(feature.getGeometryName(), geom, true);
           const extent = geom.getExtent() as [number, number, number, number];
           extents.push(extent);
@@ -116,9 +116,9 @@ export class LocalVector extends Vector {
       return;
     }
     const geometry = olFeature.getGeometry();
-    olFeature.set('originalProjectionCode', this.actualProjectionCode, true);
-    olFeature.set('originalGeometry', geometry, true);
-    geometry.set('feature', olFeature, true);
+    (olFeature as any).originalProjectionCode = this.actualProjectionCode;
+    (olFeature as any).originalGeometry = geometry;
+    (geometry as any).feature = olFeature;
     olFeature.once('change:geometry', this.handleChangeFeatureGeometry);
     geometry.once('change', this.handleChangeGeometry);
   }
@@ -140,7 +140,7 @@ export class LocalVector extends Vector {
   private handleChangeGeometry = (event: any) => {
     const geometry = event.target;
     if (geometry != null) {
-      const feature = geometry.get('feature');
+      const feature = (geometry as any).feature;
       if (feature != null) {
         feature.set(feature.getGeometryName(), geometry, true);
         this.setOriginal(feature);
