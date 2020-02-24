@@ -10,6 +10,7 @@ export type SourceType =
   | SourceTypeEnum.Vector
   | SourceTypeEnum.VectorTile
   | SourceTypeEnum.Wfs
+  | SourceTypeEnum.Wmts
   | SourceTypeEnum.Xyz;
 
 export enum SourceTypeEnum {
@@ -24,5 +25,6 @@ export enum SourceTypeEnum {
   Vector = 'Vector',
   VectorTile = 'VectorTile',
   Wfs = 'Wfs',
+  Wmts = 'Wmts',
   Xyz = 'Xyz'
 }
