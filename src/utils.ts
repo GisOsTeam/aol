@@ -185,7 +185,7 @@ let globalKey = 0;
  * Generate LAYERS param from IFeatureType array.
  * @param {IFeatureType<string>[]} types list of feature type
  */
-export function getWmsLayersFromTypes(types: Array<IFeatureType<string>>): string {
+export function getWmsLayersFromTypes(types: IFeatureType<string>[]): string {
   if (types == null || types.length === 0) {
     return undefined;
   } else {
@@ -197,7 +197,7 @@ export function getWmsLayersFromTypes(types: Array<IFeatureType<string>>): strin
  * Generate LAYERS param from IFeatureType array.
  * @param {IFeatureType<number>[]} types list of feature type
  */
-export function getAgsLayersFromTypes(types: Array<IFeatureType<number>>): string {
+export function getAgsLayersFromTypes(types: IFeatureType<number>[]): string {
   if (types == null) {
     return 'show';
   } else if (types.length === 0) {

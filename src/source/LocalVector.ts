@@ -81,7 +81,7 @@ export class LocalVector extends Vector {
 
   private reproj() {
     const features: OlFeature[] = [];
-    const extents: Array<[number, number, number, number]> = [];
+    const extents: [number, number, number, number][] = [];
     this.forEachFeature((feature: OlFeature) => {
       if (feature.getGeometry() != null) {
         const originalProjectionCode = (feature as any).originalProjectionCode;

@@ -13,7 +13,7 @@ export function identify(
   filter?: IdentifyFilterType
 ): Promise<IQueryResponse[]> {
   if (map && pixel) {
-    const promises: Array<Promise<IQueryResponse>> = [];
+    const promises: Promise<IQueryResponse>[] = [];
     const queryRequest = constructQueryRequestFromPixel(pixel, 2, map);
     queryRequest.limit = limit;
 

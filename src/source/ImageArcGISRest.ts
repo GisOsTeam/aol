@@ -14,7 +14,7 @@ import { agsQueryOne } from './query/agsQuery';
 import { Options } from 'ol/source/ImageArcGISRest';
 
 export interface IImageArcGISRestOptions extends IExtendedOptions, Options {
-  types: Array<IFeatureType<number>>;
+  types: IFeatureType<string>[];
 }
 
 export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
@@ -53,7 +53,7 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
   }
 
   public query(request: IQueryRequest): Promise<IQueryResponse> {
-    const promises: Array<Promise<IQueryFeatureTypeResponse>> = [];
+    const promises: Promise<IQueryFeatureTypeResponse>[] = [];
     for (const type of this.options.types) {
       promises.push(agsQueryOne(this, this.getUrl(), type, request));
     }

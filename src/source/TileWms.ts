@@ -14,7 +14,7 @@ import { LayerType, LayerTypeEnum } from './types/layerType';
 import { Options } from 'ol/source/TileWMS';
 
 export interface ITileWmsOptions extends IExtendedOptions, Options {
-  types: Array<IFeatureType<string>>;
+  types: IFeatureType<string>[];
 }
 
 export class TileWms extends OlTileWMS implements IExtended {
@@ -57,7 +57,7 @@ export class TileWms extends OlTileWMS implements IExtended {
   }
 
   public query(request: IQueryRequest): Promise<IQueryResponse> {
-    const promises: Array<Promise<IQueryFeatureTypeResponse>> = [];
+    const promises: Promise<IQueryFeatureTypeResponse>[] = [];
     for (const type of this.options.types) {
       promises.push(wmsQueryOne(this, this.getUrls()[0], type, request));
     }

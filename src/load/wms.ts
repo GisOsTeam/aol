@@ -6,7 +6,7 @@ import { ImageWms } from '../source/ImageWms';
 /**
  * Load WMS.
  */
-export function loadWMS(serverUrl: string, types: Array<IFeatureType<string>>, gisProxyUrl: string): Promise<ImageWms> {
+export function loadWMS(serverUrl: string, types: IFeatureType<string>[], gisProxyUrl: string): Promise<ImageWms> {
   return new Promise<ImageWms>(resolve => {
     let url = serverUrl;
     if (gisProxyUrl != null && gisProxyUrl !== '') {

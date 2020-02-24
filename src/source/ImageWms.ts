@@ -14,7 +14,7 @@ import { SourceType, SourceTypeEnum } from './types/sourceType';
 import { Options } from 'ol/source/ImageWMS';
 
 export interface IImageWMSOptions extends IExtendedOptions, Options {
-  types: Array<IFeatureType<string>>;
+  types: IFeatureType<string>[];
 }
 
 export class ImageWms extends OlImageWMS implements IExtended {
@@ -57,7 +57,7 @@ export class ImageWms extends OlImageWMS implements IExtended {
   }
 
   public query(request: IQueryRequest): Promise<IQueryResponse> {
-    const promises: Array<Promise<IQueryFeatureTypeResponse>> = [];
+    const promises: Promise<IQueryFeatureTypeResponse>[] = [];
     for (const type of this.options.types) {
       promises.push(wmsQueryOne(this, this.getUrl(), type, request));
     }
