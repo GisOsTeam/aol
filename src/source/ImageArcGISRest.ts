@@ -14,7 +14,7 @@ import { agsQueryOne } from './query/agsQuery';
 import { Options } from 'ol/source/ImageArcGISRest';
 
 export interface IImageArcGISRestOptions extends IExtendedOptions, Options {
-  types: IFeatureType<string>[];
+  types: IFeatureType<number>[];
 }
 
 export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
