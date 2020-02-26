@@ -5,7 +5,7 @@ import { SourceType, SourceTypeEnum } from './types/sourceType';
 import { LayerType, LayerTypeEnum } from './types/layerType';
 
 export interface ILocalVectordOptions extends IVectorOptions {
-  initialFeatures?: OlFeature[];
+  initialFeatures?: any[];
 }
 
 export class LocalVector extends Vector {
@@ -29,10 +29,10 @@ export class LocalVector extends Vector {
     };
     if (initialFeatures != null) {
       // Load features from snapshot
-      initialFeatures.forEach((feature: any) => {
-        const projectionCode = feature.projectionCode;
-        const wkt = feature.wkt;
-        const properties = feature.properties;
+      initialFeatures.forEach((initialFeature: any) => {
+        const projectionCode = initialFeature.projectionCode;
+        const wkt = initialFeature.wkt;
+        const properties = initialFeature.properties;
         const geometry = this.wktFormat.readGeometry(wkt);
         const olFeature = new OlFeature(geometry);
         olFeature.setProperties(properties);
@@ -52,8 +52,8 @@ export class LocalVector extends Vector {
   }
 
   public getSourceOptions(): ILocalVectordOptions {
-    const options = this.options;
-    const features: any[] = [];
+    const options = this.options as ILocalVectordOptions;
+    const initialFeatures: any[] = [];
     this.forEachFeature((feature: OlFeature) => {
       const originalProjectionCode = (feature as any).originalProjectionCode;
       const originalGeometry = (feature as any).originalGeometry;
@@ -61,13 +61,13 @@ export class LocalVector extends Vector {
       properties.originalProjectionCode = undefined;
       properties.originalGeometry = undefined;
       properties.geometry = undefined;
-      features.push({
+      initialFeatures.push({
         projectionCode: originalProjectionCode,
         wkt: this.wktFormat.writeGeometry(originalGeometry),
         properties
       });
     });
-    options.features = features;
+    options.initialFeatures = initialFeatures;
     return options;
   }
 
