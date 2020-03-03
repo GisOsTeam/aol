@@ -88,11 +88,12 @@ export class LocalVector extends Vector {
         const originalGeometry = (feature as any).originalGeometry;
         if (
           originalProjectionCode != null &&
-          originalGeometry != null &&
-          originalProjectionCode !== this.actualProjectionCode
+          originalGeometry != null
         ) {
           const geom = originalGeometry.clone();
-          geom.transform((feature as any).originalProjectionCode, this.actualProjectionCode);
+          if (originalProjectionCode !== this.actualProjectionCode) {
+            geom.transform((feature as any).originalProjectionCode, this.actualProjectionCode);
+          }
           feature.set(feature.getGeometryName(), geom, true);
           const extent = geom.getExtent() as [number, number, number, number];
           extents.push(extent);
