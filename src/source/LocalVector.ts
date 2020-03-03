@@ -86,10 +86,7 @@ export class LocalVector extends Vector {
       if (feature.getGeometry() != null) {
         const originalProjectionCode = (feature as any).originalProjectionCode;
         const originalGeometry = (feature as any).originalGeometry;
-        if (
-          originalProjectionCode != null &&
-          originalGeometry != null
-        ) {
+        if (originalProjectionCode != null && originalGeometry != null) {
           const geom = originalGeometry.clone();
           if (originalProjectionCode !== this.actualProjectionCode) {
             geom.transform((feature as any).originalProjectionCode, this.actualProjectionCode);
