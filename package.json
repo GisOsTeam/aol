@@ -1,6 +1,6 @@
 {
   "name": "@gisosteam/aol",
-  "version": "0.0.17",
+  "version": "0.0.18",
   "description": "OpenLayers sources extentions",
   "scripts": {
     "build": "rimraf lib && npm run lint && tsc -p tsconfig.json && cp ./package.json lib",
