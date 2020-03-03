@@ -58,8 +58,8 @@ export class ProjectionInfo {
 addProjection(
   'EPSG:3857',
   null,
-  null,
+  [-180.0, -85.06, 180.0, 85.06],
   'WGS 84 / Pseudo-Mercator -- Spherical Mercator, Google Maps, OpenStreetMap, Bing, ArcGIS, ESRI',
   'Uses spherical development of ellipsoidal coordinates. Relative to WGS 84 / World Mercator (CRS code 3395) errors of 0.7 percent in scale and differences in northing of up to 43km in the map (equivalent to 21km on the ground) may arise.'
 );
-addProjection('EPSG:4327', null, null, 'WGS 84 -- WGS84 - World Geodetic System 1984, used in GPS', '');
+addProjection('EPSG:4326', null, [-180.0, -90.0, 180.0, 90.0], 'WGS 84 -- WGS84 - World Geodetic System 1984, used in GPS', '');
