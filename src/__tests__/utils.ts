@@ -14,19 +14,19 @@ test('revert LinearRing coordinate', () => {
     [0, 1],
     [1, 1],
     [1, 2],
-    [2, 2]
+    [2, 2],
   ]);
   expect<number[][]>(geometryToBeReverted.getCoordinates()).toEqual([
     [0, 1],
     [1, 1],
     [1, 2],
-    [2, 2]
+    [2, 2],
   ]);
   revertCoordinate(geometryToBeReverted);
   expect<number[][]>(geometryToBeReverted.getCoordinates()).toEqual([
     [1, 0],
     [1, 1],
     [2, 1],
-    [2, 2]
+    [2, 2],
   ]);
 });

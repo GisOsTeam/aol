@@ -64,7 +64,7 @@ export class LocalVector extends Vector {
       initialFeatures.push({
         projectionCode: originalProjectionCode,
         wkt: this.wktFormat.writeGeometry(originalGeometry),
-        properties
+        properties,
       });
     });
     options.initialFeatures = initialFeatures;

@@ -62,7 +62,7 @@ export function cloneView(view: View) {
     minResolution: view.getMinResolution(),
     maxZoom: view.getMaxZoom(),
     minZoom: view.getMinZoom(),
-    resolutions: view.getResolutions()
+    resolutions: view.getResolutions(),
   });
 }
 
@@ -169,7 +169,7 @@ export function uid(): string {
     d += performance.now(); // use high-precision timer if available
   }
   return (
-    'xxxxxxxxxxxxxxxy'.replace(/[xy]/g, c => {
+    'xxxxxxxxxxxxxxxy'.replace(/[xy]/g, (c) => {
       // tslint:disable-next-line:no-bitwise
       const r = (d + Math.random() * 16) % 16 | 0;
       d = Math.floor(d / 16);
@@ -189,7 +189,7 @@ export function getWmsLayersFromTypes(types: IFeatureType<string>[]): string {
   if (types == null || types.length === 0) {
     return undefined;
   } else {
-    return types.map(t => t.id).join(',');
+    return types.map((t) => t.id).join(',');
   }
 }
 
@@ -204,8 +204,8 @@ export function getAgsLayersFromTypes(types: IFeatureType<number>[]): string {
     return 'show:-1';
   } else {
     return `show:${types
-      .filter(t => t.id !== -1)
-      .map(t => t.id)
+      .filter((t) => t.id !== -1)
+      .map((t) => t.id)
       .join(',')}`;
   }
 }
@@ -221,8 +221,8 @@ export function getDefaultLayerStyles(): LayerStyles {
         'circle-color': 'rgba(127, 127, 127, 0.2)',
         'circle-stroke-color': 'rgba(0, 0, 0, 0.9)',
         'circle-radius': 3,
-        'circle-stroke-width': 2
-      }
+        'circle-stroke-width': 2,
+      },
     },
     {
       type: 'line',
@@ -230,15 +230,15 @@ export function getDefaultLayerStyles(): LayerStyles {
         'line-color': 'rgba(0, 0, 255, 0.9)',
         'line-cap': 'butt',
         'line-join': 'miter',
-        'line-width': 2
-      }
+        'line-width': 2,
+      },
     },
     {
       type: 'fill',
       paint: {
-        'fill-color': 'rgba(127, 127, 127, 0.2)'
-      }
-    }
+        'fill-color': 'rgba(127, 127, 127, 0.2)',
+      },
+    },
   ];
 }
 
@@ -293,10 +293,10 @@ export function applyLayerStyles(layer: BaseLayer, layerStyles: LayerStyles, id:
   const mbstyle = {
     version: 8,
     sources: {} as any,
-    layers: [] as any[]
+    layers: [] as any[],
   };
   mbstyle.sources[id] = { type: 'vector' };
-  layerStyles.forEach(style => {
+  layerStyles.forEach((style) => {
     mbstyle.layers.push({ ...style, source: id });
   });
   applyStyle(layer, mbstyle, id);

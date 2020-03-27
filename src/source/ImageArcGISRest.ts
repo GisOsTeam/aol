@@ -5,7 +5,7 @@ import {
   IExtendedOptions,
   IQueryFeatureTypeResponse,
   IFeatureType,
-  IExtended
+  IExtended,
 } from './IExtended';
 import { getAgsLayersFromTypes } from '../utils';
 import { SourceType, SourceTypeEnum } from './types/sourceType';
@@ -60,7 +60,7 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
     return Promise.all(promises).then((featureTypeResponses: IQueryFeatureTypeResponse[]) => {
       return {
         request,
-        featureTypeResponses
+        featureTypeResponses,
       };
     });
   }

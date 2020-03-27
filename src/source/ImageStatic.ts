@@ -62,9 +62,9 @@ export class ImageStatic extends OlImageStatic implements IExtended {
         {
           type: null,
           features: [],
-          source: this
-        }
-      ]
+          source: this,
+        },
+      ],
     });
   }
 }

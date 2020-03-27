@@ -21,9 +21,9 @@ export class Xyz extends OlXyz implements IExtended {
         {
           type: null,
           features: [],
-          source: this
-        }
-      ]
+          source: this,
+        },
+      ],
     });
   }
 

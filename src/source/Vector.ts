@@ -95,9 +95,9 @@ export abstract class Vector extends OlVector implements IExtended {
         {
           type: null,
           features: [],
-          source: this
-        }
-      ]
+          source: this,
+        },
+      ],
     });
   }
 }

@@ -23,7 +23,7 @@ export class Wfs extends ExternalVector {
         }&outputFormat=application/json&srsname=${projection.getCode()}&bbox=${extent.join(
           ','
         )},${projection.getCode()}`;
-      }
+      },
     });
     this.options = { ...options };
   }

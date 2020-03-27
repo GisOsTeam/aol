@@ -45,9 +45,9 @@ export abstract class VectorTile extends OlVectorTile implements IExtended {
         {
           type: null,
           features: [],
-          source: this
-        }
-      ]
+          source: this,
+        },
+      ],
     });
   }
 }

@@ -17,19 +17,19 @@ export function loadZippedShapefile(file: File, map: Map): Promise<LocalVector> 
   return new Promise<LocalVector>((resolve, reject) => {
     const zipFile = new JSZip();
     zipFile.loadAsync(file).then(
-      zip => {
+      (zip) => {
         const promises = Object.keys(zip.files)
-          .map(name => zip.files[name])
+          .map((name) => zip.files[name])
           .map(
-            entry =>
-              new Promise<{ name: string; data: string }>(resolve2 => {
-                entry.async('blob').then(blob => {
+            (entry) =>
+              new Promise<{ name: string; data: string }>((resolve2) => {
+                entry.async('blob').then((blob) => {
                   if (entry.name.endsWith('.prj')) {
                     const reader = new FileReader();
                     reader.onload = () => {
                       resolve2({
                         name: entry.name,
-                        data: reader.result as any
+                        data: reader.result as any,
                       });
                     };
                     reader.readAsText(blob);
@@ -38,7 +38,7 @@ export function loadZippedShapefile(file: File, map: Map): Promise<LocalVector> 
                     reader.onload = () => {
                       resolve2({
                         name: entry.name,
-                        data: reader.result as any
+                        data: reader.result as any,
                       });
                     };
                     reader.readAsArrayBuffer(blob);
@@ -46,10 +46,10 @@ export function loadZippedShapefile(file: File, map: Map): Promise<LocalVector> 
                 });
               })
           );
-        Promise.all(promises).then(elements => {
-          const dbfElement = elements.filter(element => element.name.endsWith('.dbf')).pop();
-          const shpElement = elements.filter(element => element.name.endsWith('.shp')).pop();
-          const prjElement = elements.filter(element => element.name.endsWith('.prj')).pop();
+        Promise.all(promises).then((elements) => {
+          const dbfElement = elements.filter((element) => element.name.endsWith('.dbf')).pop();
+          const shpElement = elements.filter((element) => element.name.endsWith('.shp')).pop();
+          const prjElement = elements.filter((element) => element.name.endsWith('.prj')).pop();
           const featureCollection = shapefile2geojson(shpElement.data, dbfElement.data);
           const name = shpElement.name;
           const featureProjection = map.getView().getProjection();
@@ -59,14 +59,14 @@ export function loadZippedShapefile(file: File, map: Map): Promise<LocalVector> 
           }
           const features: Feature[] = geoJSONFormat.readFeatures(featureCollection, {
             dataProjection,
-            featureProjection
+            featureProjection,
           }) as Feature[];
           const localVectorSource = createSource(SourceTypeEnum.LocalVector, { name }) as LocalVector;
           localVectorSource.addFeatures(features);
           resolve(localVectorSource);
         });
       },
-      err => {
+      (err) => {
         reject(err);
       }
     );

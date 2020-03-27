@@ -68,12 +68,12 @@ export function constructQueryRequestFromPixel(pixel: number[], tolerance: numbe
     coord[0] - tolerance * resolution,
     coord[1] - tolerance * resolution,
     coord[0] + tolerance * resolution,
-    coord[1] + tolerance * resolution
+    coord[1] + tolerance * resolution,
   ];
   return {
     olMap,
     geometry: fromExtent(extent),
-    geometryProjection: olMap.getView().getProjection()
+    geometryProjection: olMap.getView().getProjection(),
   };
 }
 

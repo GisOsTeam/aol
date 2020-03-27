@@ -47,9 +47,9 @@ export class TileArcGISRest extends OlTileArcGISRest implements IExtended {
         {
           type: null,
           features: [],
-          source: this
-        }
-      ]
+          source: this,
+        },
+      ],
     });
   }
 }

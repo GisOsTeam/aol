@@ -53,7 +53,7 @@ export function agsQueryOne(
     return Promise.resolve({
       type,
       features,
-      source
+      source,
     });
   });
 }

@@ -12,7 +12,7 @@ export function getProjectionInfo(code: string): ProjectionInfo {
 
 export function getProjectionInfos(): ProjectionInfo[] {
   const projectionInfos: ProjectionInfo[] = [];
-  projMap.forEach(projectionInfo => {
+  projMap.forEach((projectionInfo) => {
     projectionInfos.push(projectionInfo);
   });
   return projectionInfos;

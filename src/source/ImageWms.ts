@@ -5,7 +5,7 @@ import {
   IQueryResponse,
   IExtendedOptions,
   IFeatureType,
-  IExtended
+  IExtended,
 } from './IExtended';
 import { getWmsLayersFromTypes } from '../utils';
 import { wmsQueryOne } from './query/wmsQuery';
@@ -64,7 +64,7 @@ export class ImageWms extends OlImageWMS implements IExtended {
     return Promise.all(promises).then((featureTypeResponses: IQueryFeatureTypeResponse[]) => {
       return {
         request,
-        featureTypeResponses
+        featureTypeResponses,
       };
     });
   }

@@ -26,5 +26,5 @@ export enum SourceTypeEnum {
   VectorTile = 'VectorTile',
   Wfs = 'Wfs',
   Wmts = 'Wmts',
-  Xyz = 'Xyz'
+  Xyz = 'Xyz',
 }

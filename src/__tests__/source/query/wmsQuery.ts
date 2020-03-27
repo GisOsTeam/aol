@@ -13,10 +13,10 @@ test('query wms', () => {
         [-11580733.168194728, 4964673.98309528],
         [-11496586.151532097, 4964673.983095286],
         [-11496586.151532097, 4880526.966432655],
-        [-11580733.168194728, 4880526.966432655]
-      ]
+        [-11580733.168194728, 4880526.966432655],
+      ],
     ]),
-    geometryProjection: getProjection('EPSG:3857')
+    geometryProjection: getProjection('EPSG:3857'),
   };
   return wmsQueryOne(null, 'https://ahocevar.com/geoserver/wms', { id: 'topp:states' }, request).then(
     (response: IQueryFeatureTypeResponse) => {

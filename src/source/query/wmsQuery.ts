@@ -83,7 +83,7 @@ export function wmsQueryOne(
     return Promise.resolve({
       type,
       features,
-      source
+      source,
     });
   });
 }
