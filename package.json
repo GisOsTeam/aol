@@ -1,6 +1,6 @@
 {
   "name": "@gisosteam/aol",
-  "version": "0.0.19",
+  "version": "0.0.20",
   "description": "OpenLayers sources extentions",
   "scripts": {
     "build": "rimraf lib && npm run lint && tsc -p tsconfig.json && cp ./package.json lib",
@@ -28,33 +28,33 @@
   "license": "MIT",
   "devDependencies": {
     "@babel/core": "^7.9.0",
-    "@babel/preset-env": "^7.9.0",
-    "@types/jest": "^25.1.4",
+    "@babel/preset-env": "^7.9.5",
+    "@types/jest": "^25.2.1",
     "@types/jszip": "^3.1.7",
-    "@types/ol": "^6.2.0",
-    "babel-jest": "^25.2.3",
-    "husky": "^4.2.3",
-    "jest": "^25.2.3",
+    "@types/ol": "^6.3.1",
+    "babel-jest": "^25.3.0",
+    "husky": "^4.2.5",
+    "jest": "^25.3.0",
     "jest-canvas-mock": "^2.2.0",
-    "ol": "6.2.1",
-    "prettier": "^2.0.2",
-    "proj4": "2.6.0",
+    "ol": "6.3.1",
+    "prettier": "^2.0.4",
+    "proj4": "2.6.1",
     "rimraf": "^3.0.2",
-    "ts-jest": "^25.2.1",
-    "tslint": "^6.1.0",
+    "ts-jest": "^25.4.0",
+    "tslint": "^6.1.1",
     "tslint-config-prettier": "^1.18.0",
     "typescript": "3.8.3"
   },
   "dependencies": {
     "@turf/turf": "^5.1.6",
     "bhreq": "0.0.12",
-    "jszip": "^3.2.2",
+    "jszip": "^3.3.0",
     "ol-mapbox-style": "^6.1.1",
     "shapefile2geojson": "^1.0.7"
   },
   "peerDependencies": {
-    "ol": "6.2.1",
-    "proj4": "2.6.0"
+    "ol": "6.3.1",
+    "proj4": "2.6.1"
   },
   "engines": {
     "node": ">= 10.10.0",
