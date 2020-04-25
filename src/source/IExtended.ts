@@ -26,6 +26,7 @@ export interface IQueryRequest {
   olMap: OlMap;
   geometry: Geometry;
   geometryProjection: Projection;
+  queryType: 'query' | 'identify';
   filters?: IFilter[];
   limit?: number;
 }
@@ -61,7 +62,11 @@ export interface IFeatureType<IDT extends number | string> {
   attributes?: IAttribute[];
 }
 
-export function constructQueryRequestFromPixel(pixel: number[], tolerance: number, olMap: OlMap): IQueryRequest {
+export function constructIdentifyQueryRequestFromPixel(
+  pixel: number[],
+  tolerance: number,
+  olMap: OlMap
+): IQueryRequest {
   const coord = olMap.getCoordinateFromPixel(pixel);
   const resolution = olMap.getView().getResolution();
   const extent: [number, number, number, number] = [
@@ -74,6 +79,7 @@ export function constructQueryRequestFromPixel(pixel: number[], tolerance: numbe
     olMap,
     geometry: fromExtent(extent),
     geometryProjection: olMap.getView().getProjection(),
+    queryType: 'identify',
   };
 }
 

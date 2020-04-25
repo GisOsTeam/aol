@@ -59,7 +59,7 @@ export class TileWms extends OlTileWMS implements IExtended {
   public query(request: IQueryRequest): Promise<IQueryResponse> {
     const promises: Promise<IQueryFeatureTypeResponse>[] = [];
     for (const type of this.options.types) {
-      promises.push(wmsQueryOne(this, this.getUrls()[0], type, request));
+      promises.push(wmsQueryOne(this, type, request));
     }
     return Promise.all(promises).then((featureTypeResponses: IQueryFeatureTypeResponse[]) => {
       return {
