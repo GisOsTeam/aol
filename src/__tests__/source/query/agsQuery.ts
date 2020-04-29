@@ -32,7 +32,8 @@ test('query ags', () => {
     queryType: 'query',
   };
   return agsQueryOne(states, { id: 2 }, request).then((response: IQueryFeatureTypeResponse) => {
-    return expect<number>(response.features.length).toEqual(1);
+    expect<number>(response.features.length).toEqual(1);
+    expect<string>(response.features[0].getProperties().state_name).toEqual('Colorado');
   });
 });
 
@@ -57,6 +58,7 @@ test('identify ags', () => {
     queryType: 'identify',
   };
   return agsQueryOne(states, { id: 2 }, request).then((response: IQueryFeatureTypeResponse) => {
-    return expect<number>(response.features.length).toEqual(1);
+    expect<number>(response.features.length).toEqual(1);
+    expect<string>(response.features[0].getProperties().STATE_NAME).toEqual('Colorado');
   });
 });

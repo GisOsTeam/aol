@@ -32,7 +32,8 @@ test('query wms', () => {
     queryType: 'query',
   };
   return wmsQueryOne(states, { id: 'topp:states' }, request).then((response: IQueryFeatureTypeResponse) => {
-    return expect<number>(response.features.length).toEqual(1);
+    expect<number>(response.features.length).toEqual(1);
+    expect<string>(response.features[0].getProperties().STATE_NAME).toEqual('Colorado');
   });
 });
 
@@ -57,6 +58,7 @@ test('identify wms', () => {
     queryType: 'identify',
   };
   return wmsQueryOne(states, { id: 'topp:states' }, request).then((response: IQueryFeatureTypeResponse) => {
-    return expect<number>(response.features.length).toEqual(1);
+    expect<number>(response.features.length).toEqual(1);
+    expect<string>(response.features[0].getProperties().STATE_NAME).toEqual('Colorado');
   });
 });

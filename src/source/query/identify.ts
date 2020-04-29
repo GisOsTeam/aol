@@ -14,7 +14,7 @@ export function identify(
 ): Promise<IQueryResponse[]> {
   if (map && pixel) {
     const promises: Promise<IQueryResponse>[] = [];
-    const queryRequest = constructIdentifyQueryRequestFromPixel(pixel, 2, map);
+    const queryRequest = constructIdentifyQueryRequestFromPixel(pixel, map);
     queryRequest.limit = limit;
 
     walk(map, (layer: OlBaseLayer) => {

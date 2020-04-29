@@ -62,18 +62,14 @@ export interface IFeatureType<IDT extends number | string> {
   attributes?: IAttribute[];
 }
 
-export function constructIdentifyQueryRequestFromPixel(
-  pixel: number[],
-  tolerance: number,
-  olMap: OlMap
-): IQueryRequest {
+export function constructIdentifyQueryRequestFromPixel(pixel: number[], olMap: OlMap): IQueryRequest {
   const coord = olMap.getCoordinateFromPixel(pixel);
   const resolution = olMap.getView().getResolution();
   const extent: [number, number, number, number] = [
-    coord[0] - tolerance * resolution,
-    coord[1] - tolerance * resolution,
-    coord[0] + tolerance * resolution,
-    coord[1] + tolerance * resolution,
+    coord[0] - 0.5 * resolution,
+    coord[1] - 0.5 * resolution,
+    coord[0] + 0.5 * resolution,
+    coord[1] + 0.5 * resolution,
   ];
   return {
     olMap,
