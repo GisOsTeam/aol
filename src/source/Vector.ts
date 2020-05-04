@@ -26,6 +26,10 @@ export abstract class Vector extends OlVector implements IExtended {
     this.options = { ...options };
   }
 
+  public init(): Promise<void> {
+    return Promise.resolve();
+  }
+
   public getSourceType(): SourceType {
     return SourceTypeEnum.Vector;
   }
@@ -99,5 +103,9 @@ export abstract class Vector extends OlVector implements IExtended {
         },
       ],
     });
+  }
+
+  public retrieveFeature(id: number | string, projection: Projection): Promise<Feature> {
+    return Promise.resolve(this.getFeatureById(id));
   }
 }

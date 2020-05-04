@@ -5,9 +5,6 @@
   ],
   "rules": {
     "arrow-parens": false,
-    "jsx-no-bind": false,
-    "jsx-no-lambda": false,
-    "jsx-no-multiline-js": false,
     "max-classes-per-file": false,
     "max-line-length": [
       false
@@ -27,7 +24,6 @@
     "quotemark": [
       true,
       "single",
-      "jsx-double",
       "avoid-escape"
     ],
     "trailing-comma": [

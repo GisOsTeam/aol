@@ -1,17 +1,24 @@
-import { agsQueryOne } from '../../../source/query/agsQuery';
+import { executeWmsQuery, loadWmsFeatureDescription } from '../../../source/query/wms';
 import OlMap from 'ol/Map';
 import OlView from 'ol/View';
 import { get as getProjection } from 'ol/proj';
 import Polygon from 'ol/geom/Polygon';
-import { IQueryFeatureTypeResponse, IQueryRequest } from '../../../source/IExtended';
-import { ImageArcGISRest } from '../../../source/ImageArcGISRest';
+import { IQueryFeatureTypeResponse, IQueryRequest, IFeatureType } from '../../../source/IExtended';
+import { ImageWms } from '../../../source/ImageWms';
 
-const states = new ImageArcGISRest({
-  url: 'https://sampleserver6.arcgisonline.com/arcgis/rest/services/USA/MapServer',
-  types: [{ id: 2 }],
+const states = new ImageWms({
+  url: 'https://ahocevar.com/geoserver/wms',
+  types: [{ id: 'topp:states' }],
 } as any);
 
-test('query ags', () => {
+test('describe wms', () => {
+  const type: IFeatureType<string> = states.get('types')[0];
+  return loadWmsFeatureDescription(states, type).then(() => {
+    expect<number>(type.attributes.length).toEqual(23);
+  });
+});
+
+test('query wms', () => {
   const request: IQueryRequest = {
     olMap: new OlMap({
       view: new OlView({
@@ -31,13 +38,14 @@ test('query ags', () => {
     geometryProjection: getProjection('EPSG:3857'),
     queryType: 'query',
   };
-  return agsQueryOne(states, { id: 2 }, request).then((response: IQueryFeatureTypeResponse) => {
+  const type: IFeatureType<string> = states.get('types')[0];
+  return executeWmsQuery(states, type, request).then((response: IQueryFeatureTypeResponse) => {
     expect<number>(response.features.length).toEqual(1);
-    expect<string>(response.features[0].getProperties().state_name).toEqual('Colorado');
+    expect<string>(response.features[0].getProperties().STATE_NAME).toEqual('Colorado');
   });
 });
 
-test('identify ags', () => {
+test('identify wms', () => {
   const request: IQueryRequest = {
     olMap: new OlMap({
       view: new OlView({
@@ -57,7 +65,8 @@ test('identify ags', () => {
     geometryProjection: getProjection('EPSG:3857'),
     queryType: 'identify',
   };
-  return agsQueryOne(states, { id: 2 }, request).then((response: IQueryFeatureTypeResponse) => {
+  const type: IFeatureType<string> = states.get('types')[0];
+  return executeWmsQuery(states, type, request).then((response: IQueryFeatureTypeResponse) => {
     expect<number>(response.features.length).toEqual(1);
     expect<string>(response.features[0].getProperties().STATE_NAME).toEqual('Colorado');
   });

@@ -3,6 +3,8 @@ import { IExtended, IQueryRequest, IQueryResponse, IExtendedOptions } from './IE
 import { SourceType, SourceTypeEnum } from './types/sourceType';
 import { LayerType, LayerTypeEnum } from './types/layerType';
 import { Options } from 'ol/source/Vector';
+import Feature from 'ol/Feature';
+import Projection from 'ol/proj/Projection';
 
 export interface IVectorTileOptions extends IExtendedOptions, Options {}
 
@@ -12,6 +14,10 @@ export abstract class VectorTile extends OlVectorTile implements IExtended {
   constructor(options: IVectorTileOptions) {
     super({ ...options } as any);
     this.options = { ...options };
+  }
+
+  public init(): Promise<void> {
+    return Promise.resolve();
   }
 
   public getSourceType(): SourceType {
@@ -49,5 +55,9 @@ export abstract class VectorTile extends OlVectorTile implements IExtended {
         },
       ],
     });
+  }
+
+  public retrieveFeature(id: number | string, projection: Projection): Promise<Feature> {
+    return Promise.resolve(null);
   }
 }

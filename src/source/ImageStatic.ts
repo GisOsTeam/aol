@@ -4,6 +4,8 @@ import { IQueryRequest, IQueryResponse, IExtendedOptions, IExtended } from './IE
 import { SourceType, SourceTypeEnum } from './types/sourceType';
 import { LayerType, LayerTypeEnum } from './types/layerType';
 import { Options } from 'ol/source/ImageStatic';
+import Feature from 'ol/Feature';
+import Projection from 'ol/proj/Projection';
 
 export interface IImageStaticOptions extends IExtendedOptions, Options {}
 
@@ -18,6 +20,10 @@ export class ImageStatic extends OlImageStatic implements IExtended {
     if (typeof options.projection === 'string') {
       this.projectionCode = options.projection;
     }
+  }
+
+  public init(): Promise<void> {
+    return Promise.resolve();
   }
 
   public getSourceType(): SourceType {
@@ -66,5 +72,9 @@ export class ImageStatic extends OlImageStatic implements IExtended {
         },
       ],
     });
+  }
+
+  public retrieveFeature(id: number | string, projection: Projection): Promise<Feature> {
+    return null;
   }
 }

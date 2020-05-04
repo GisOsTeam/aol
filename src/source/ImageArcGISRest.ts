@@ -10,8 +10,10 @@ import {
 import { getAgsLayersFromTypes } from '../utils';
 import { SourceType, SourceTypeEnum } from './types/sourceType';
 import { LayerType, LayerTypeEnum } from './types/layerType';
-import { agsQueryOne } from './query/agsQuery';
+import { executeAgsQuery, retrieveAgsFeature, loadAgsFeatureDescription } from './query/ags';
 import { Options } from 'ol/source/ImageArcGISRest';
+import Feature from 'ol/Feature';
+import Projection from 'ol/proj/Projection';
 
 export interface IImageArcGISRestOptions extends IExtendedOptions, Options {
   types: IFeatureType<number>[];
@@ -23,9 +25,20 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
   constructor(options: IImageArcGISRestOptions) {
     super({ ...options } as any);
     this.options = options;
-    this.set('types', options.types);
-    this.updateParams({ ...this.getParams(), LAYERS: getAgsLayersFromTypes(options.types) });
-    this.on('propertychange', this.handlePropertychange);
+    this.set('types', this.options.types);
+  }
+
+  public init(): Promise<void> {
+    const promises: Promise<void>[] = [];
+    for (const type of this.options.types) {
+      promises.push(loadAgsFeatureDescription(this, type));
+    }
+    return Promise.all(promises).then(() => {
+      this.set('types', this.options.types);
+      this.updateParams({ ...this.getParams(), LAYERS: getAgsLayersFromTypes(this.options.types) });
+      this.on('propertychange', this.handlePropertychange);
+      return;
+    });
   }
 
   public getSourceType(): SourceType {
@@ -55,7 +68,7 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
   public query(request: IQueryRequest): Promise<IQueryResponse> {
     const promises: Promise<IQueryFeatureTypeResponse>[] = [];
     for (const type of this.options.types) {
-      promises.push(agsQueryOne(this, type, request));
+      promises.push(executeAgsQuery(this, type, request));
     }
     return Promise.all(promises).then((featureTypeResponses: IQueryFeatureTypeResponse[]) => {
       return {
@@ -63,6 +76,22 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
         featureTypeResponses,
       };
     });
+  }
+
+  public retrieveFeature(id: number | string, projection: Projection): Promise<Feature> {
+    const promises: Promise<Feature>[] = [];
+    for (const type of this.options.types) {
+      promises.push(retrieveAgsFeature(this, type, id, projection));
+    }
+    let feature: Feature = null;
+    Promise.all(promises).then((features: Feature[]) => {
+      features.forEach((currentFeature) => {
+        if (currentFeature) {
+          feature = currentFeature;
+        }
+      });
+    });
+    return Promise.resolve(feature);
   }
 
   private handlePropertychange = (event: any) => {

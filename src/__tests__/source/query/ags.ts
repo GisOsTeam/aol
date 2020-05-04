@@ -1,17 +1,24 @@
-import { wmsQueryOne } from '../../../source/query/wmsQuery';
+import { executeAgsQuery, loadAgsFeatureDescription } from '../../../source/query/ags';
 import OlMap from 'ol/Map';
 import OlView from 'ol/View';
 import { get as getProjection } from 'ol/proj';
 import Polygon from 'ol/geom/Polygon';
-import { IQueryFeatureTypeResponse, IQueryRequest } from '../../../source/IExtended';
-import { ImageWms } from '../../../source/ImageWms';
+import { IQueryFeatureTypeResponse, IQueryRequest, IFeatureType } from '../../../source/IExtended';
+import { ImageArcGISRest } from '../../../source/ImageArcGISRest';
 
-const states = new ImageWms({
-  url: 'https://ahocevar.com/geoserver/wms',
-  types: [{ id: 'topp:states' }],
+const states = new ImageArcGISRest({
+  url: 'https://sampleserver6.arcgisonline.com/arcgis/rest/services/USA/MapServer',
+  types: [{ id: 2, identifierAttribute: { key: 'objectid' } }],
 } as any);
 
-test('query wms', () => {
+test('describe ags', () => {
+  const type: IFeatureType<number> = states.get('types')[0];
+  return loadAgsFeatureDescription(states, type).then(() => {
+    expect<string>(type.identifierAttribute.key).toEqual('objectid');
+  });
+});
+
+test('query ags', () => {
   const request: IQueryRequest = {
     olMap: new OlMap({
       view: new OlView({
@@ -31,13 +38,14 @@ test('query wms', () => {
     geometryProjection: getProjection('EPSG:3857'),
     queryType: 'query',
   };
-  return wmsQueryOne(states, { id: 'topp:states' }, request).then((response: IQueryFeatureTypeResponse) => {
+  const type: IFeatureType<number> = states.get('types')[0];
+  return executeAgsQuery(states, type, request).then((response: IQueryFeatureTypeResponse) => {
     expect<number>(response.features.length).toEqual(1);
-    expect<string>(response.features[0].getProperties().STATE_NAME).toEqual('Colorado');
+    expect<string>(response.features[0].getProperties().state_name).toEqual('Colorado');
   });
 });
 
-test('identify wms', () => {
+test('identify ags', () => {
   const request: IQueryRequest = {
     olMap: new OlMap({
       view: new OlView({
@@ -57,8 +65,9 @@ test('identify wms', () => {
     geometryProjection: getProjection('EPSG:3857'),
     queryType: 'identify',
   };
-  return wmsQueryOne(states, { id: 'topp:states' }, request).then((response: IQueryFeatureTypeResponse) => {
+  const type: IFeatureType<number> = states.get('types')[0];
+  return executeAgsQuery(states, type, request).then((response: IQueryFeatureTypeResponse) => {
     expect<number>(response.features.length).toEqual(1);
-    expect<string>(response.features[0].getProperties().STATE_NAME).toEqual('Colorado');
+    expect<string>(response.features[0].getProperties().state_name).toEqual('Colorado');
   });
 });

@@ -1,14 +1,15 @@
 import Feature from 'ol/Feature';
 import { transformExtent } from 'ol/proj';
 import EsriJSON from 'ol/format/EsriJSON';
-import { IQueryRequest, IFeatureType, IQueryFeatureTypeResponse, IExtended } from '../IExtended';
+import { IQueryRequest, IFeatureType, IQueryFeatureTypeResponse, IExtended, IAttribute } from '../IExtended';
 import { send, IResponse } from 'bhreq';
 import { fromCircle } from 'ol/geom/Polygon';
 import Circle from 'ol/geom/Circle';
+import Projection from 'ol/proj/Projection';
 
 const format = new EsriJSON();
 
-export function agsQueryOne(
+export function executeAgsQuery(
   source: IExtended,
   type: IFeatureType<number>,
   request: IQueryRequest
@@ -67,20 +68,21 @@ export function agsQueryOne(
     url = (source as any).getUrls()[0];
   }
   const body: { [id: string]: string } = {};
+  body.geometry = geometryStr;
+  body.geometryType = geometryType;
+  body.outFields = '*';
+  body.returnFieldName = 'true';
+  body.returnGeometry = 'false';
   if (queryType === 'identify') {
     url += '/identify';
     body.mapExtent = extent.join(',');
     body.imageDisplay = '101,101';
     body.layers = `all:${type.id}`;
-    body.geometry = geometryStr;
-    body.geometryType = geometryType;
     body.sr = srId;
-    body.tolerance = '2';
+    body.tolerance = '4';
     body.f = 'json';
   } else {
     url += `/${type.id}/query`;
-    body.geometry = geometryStr;
-    body.geometryType = geometryType;
     body.inSR = srId;
     body.outSR = srId;
     body.where = ''; // TODO
@@ -105,15 +107,101 @@ export function agsQueryOne(
               dataProjection: 'EPSG:' + srId,
               featureProjection: mapProjection,
             }) as Feature;
+            if (feature.getId() == null && type.identifierAttribute != null) {
+              // Search id
+              const properties = feature.getProperties();
+              feature.setId(properties[type.identifierAttribute.key]);
+            }
             features.push(feature);
           }
         });
       }
     }
-    return Promise.resolve({
+    return {
       type,
       features,
       source,
-    });
+    };
+  });
+}
+
+export function retrieveAgsFeature(
+  source: IExtended,
+  type: IFeatureType<number>,
+  id: number | string,
+  featureProjection: Projection
+): Promise<Feature> {
+  const srId = '3857';
+  let url = '';
+  if ('getUrl' in source) {
+    url = (source as any).getUrl();
+  } else if ('getUrls' in source) {
+    url = (source as any).getUrls()[0];
+  }
+  const body: { [id: string]: string } = {};
+  url += `/${type.id}/query`;
+  body.inSR = srId;
+  body.outSR = srId;
+  body.objectIds = `${id}`;
+  body.outFields = '*';
+  body.returnFieldName = 'true';
+  body.returnGeometry = 'true';
+  body.f = 'json';
+  return send({
+    url,
+    body,
+    method: 'POST',
+    contentType: 'application/x-www-form-urlencoded',
+    responseType: 'application/json',
+  }).then((res: IResponse) => {
+    // Read features
+    let feature = null;
+    const jsonQueryRes = res.body;
+    if (jsonQueryRes != null) {
+      const jsonFeatures = jsonQueryRes.features || jsonQueryRes.results;
+      if (jsonFeatures != null && jsonFeatures.length > 0) {
+        jsonFeatures.forEach((jsonFeature: any) => {
+          feature = format.readFeature(jsonFeature, {
+            dataProjection: 'EPSG:' + srId,
+            featureProjection,
+          }) as Feature;
+          if (feature.getId() == null && type.identifierAttribute != null) {
+            // Search id
+            const properties = feature.getProperties();
+            feature.setId(properties[type.identifierAttribute.key]);
+          }
+        });
+      }
+    }
+    return feature;
+  });
+}
+
+export function loadAgsFeatureDescription(source: IExtended, type: IFeatureType<number>): Promise<void> {
+  let url = '';
+  if ('getUrl' in source) {
+    url = (source as any).getUrl();
+  } else if ('getUrls' in source) {
+    url = (source as any).getUrls()[0];
+  }
+  url += `/${type.id}?f=json`;
+  return send({
+    url,
+    responseType: 'application/json',
+  }).then((res: IResponse) => {
+    if (res.body.fields != null && res.body.fields.length > 0) {
+      type.attributes = [];
+      res.body.fields.forEach((field: any) => {
+        const attribute: IAttribute = {
+          key: field.name,
+          name: field.alias,
+          type: 'Oid',
+        };
+        if (field.type === 'esriFieldTypeOID') {
+          type.identifierAttribute = attribute;
+        }
+        type.attributes.push(attribute);
+      });
+    }
   });
 }

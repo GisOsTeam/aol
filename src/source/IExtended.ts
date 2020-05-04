@@ -13,6 +13,7 @@ export interface IExtendedOptions {
 }
 
 export interface IExtended extends Source {
+  init(): Promise<void>;
   getSourceType(): SourceType;
   getSourceOptions(): IExtendedOptions;
   setSourceOptions(options: IExtendedOptions): void;
@@ -20,6 +21,7 @@ export interface IExtended extends Source {
   isSnapshotable(): boolean;
   isListable(): boolean;
   query(identifyRequest: IQueryRequest): Promise<IQueryResponse>;
+  retrieveFeature(id: number | string, featureProjection: Projection): Promise<Feature>;
 }
 
 export interface IQueryRequest {
@@ -57,6 +59,7 @@ export interface IAttribute {
 
 export interface IFeatureType<IDT extends number | string> {
   id: IDT;
+  hide?: boolean;
   name?: string;
   identifierAttribute?: IAttribute;
   attributes?: IAttribute[];
