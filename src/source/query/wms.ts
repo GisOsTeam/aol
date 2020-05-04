@@ -181,53 +181,59 @@ function getFeatureInfoOnBBOX(
     method: 'POST',
     contentType: 'application/x-www-form-urlencoded',
     responseType: 'text/plain',
-  }).then((res: IResponse) => {
-    // Read features
-    const features = [] as Feature[];
-    // Search projection on results
-    let dataProjection = getProjection(requestProjectionCode);
-    let dataProjectionCode = requestProjectionCode;
-    const res1 = res.body.match(/\ssrsName=\"([^\"]+)\"/i);
-    if (res1 && res1.length >= 2) {
-      const res2 = res1[1].match(/(\d+)(?!.*\d)/g);
-      if (res2 && res2.length > 0) {
-        dataProjectionCode = 'EPSG:' + res2[res2.length - 1];
-      }
-    }
-    try {
-      dataProjection = getProjection(dataProjectionCode);
-    } catch (err) {
-      console.error(err);
-    }
-    // Read features
-    const allFeatures = format.readFeatures(res.body);
-    if (allFeatures != null && allFeatures.length > 0) {
-      allFeatures.forEach((feature: Feature) => {
-        if (limit == null || features.length < limit) {
-          if (dataProjection.getUnits() === 'degrees') {
-            if (feature.getGeometry()) {
-              // In degree: This formats the geographic coordinates in longitude/latitude (x/y) order.
-              // Reverse coordinates !
-              (feature.getGeometry() as SimpleGeometry).applyTransform(
-                (input: number[], ouput: number[], dimension: number) => {
-                  for (let i = 0; i < input.length; i += dimension) {
-                    const y = input[i];
-                    const x = input[i + 1];
-                    ouput[i] = x;
-                    ouput[i + 1] = y;
-                  }
-                  return ouput;
-                }
-              );
-            }
-          }
-          if (feature.getGeometry()) {
-            feature.getGeometry().transform(dataProjection, featureProjectionCode);
-          }
-          features.push(feature);
+  }).then(
+    (res: IResponse) => {
+      // Read features
+      const features = [] as Feature[];
+      // Search projection on results
+      let dataProjection = getProjection(requestProjectionCode);
+      let dataProjectionCode = requestProjectionCode;
+      const res1 = res.body.match(/\ssrsName=\"([^\"]+)\"/i);
+      if (res1 && res1.length >= 2) {
+        const res2 = res1[1].match(/(\d+)(?!.*\d)/g);
+        if (res2 && res2.length > 0) {
+          dataProjectionCode = 'EPSG:' + res2[res2.length - 1];
         }
-      });
+      }
+      try {
+        dataProjection = getProjection(dataProjectionCode);
+      } catch (err) {
+        console.error(err);
+      }
+      // Read features
+      const allFeatures = format.readFeatures(res.body);
+      if (allFeatures != null && allFeatures.length > 0) {
+        allFeatures.forEach((feature: Feature) => {
+          if (limit == null || features.length < limit) {
+            if (dataProjection.getUnits() === 'degrees') {
+              if (feature.getGeometry()) {
+                // In degree: This formats the geographic coordinates in longitude/latitude (x/y) order.
+                // Reverse coordinates !
+                (feature.getGeometry() as SimpleGeometry).applyTransform(
+                  (input: number[], ouput: number[], dimension: number) => {
+                    for (let i = 0; i < input.length; i += dimension) {
+                      const y = input[i];
+                      const x = input[i + 1];
+                      ouput[i] = x;
+                      ouput[i + 1] = y;
+                    }
+                    return ouput;
+                  }
+                );
+              }
+            }
+            if (feature.getGeometry()) {
+              feature.getGeometry().transform(dataProjection, featureProjectionCode);
+            }
+            features.push(feature);
+          }
+        });
+      }
+      return features;
+    },
+    (err) => {
+      console.error('Get WMS feature info in error');
+      return err;
     }
-    return features;
-  });
+  );
 }

@@ -24,8 +24,8 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
 
   constructor(options: IImageArcGISRestOptions) {
     super({ ...options } as any);
-    this.options = options;
-    this.set('types', this.options.types);
+    this.options = { ...options };
+    this.setSourceOptions(this.options);
   }
 
   public init(): Promise<void> {
@@ -34,9 +34,7 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
       promises.push(loadAgsFeatureDescription(this, type));
     }
     return Promise.all(promises).then(() => {
-      this.set('types', this.options.types);
-      this.updateParams({ ...this.getParams(), LAYERS: getAgsLayersFromTypes(this.options.types) });
-      this.on('propertychange', this.handlePropertychange);
+      this.setSourceOptions(this.options);
       return;
     });
   }
@@ -51,6 +49,10 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
 
   public setSourceOptions(options: IImageArcGISRestOptions): void {
     this.options = { ...options };
+    this.un('propertychange', this.handlePropertychange);
+    this.set('types', options.types);
+    this.updateParams({ ...this.getParams(), LAYERS: getAgsLayersFromTypes(options.types) });
+    this.on('propertychange', this.handlePropertychange);
   }
 
   public getLayerType(): LayerType {
