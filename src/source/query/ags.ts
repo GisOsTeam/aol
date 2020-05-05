@@ -208,10 +208,28 @@ export function loadAgsFeatureDescription(source: IExtended, type: IFeatureType<
           const attribute: IAttribute = {
             key: field.name,
             name: field.alias,
-            type: 'Oid',
+            type: 'Unknown',
           };
-          if (field.type === 'esriFieldTypeOID') {
-            type.identifierAttribute = attribute;
+          switch (field.type) {
+            case 'esriFieldTypeOID':
+              attribute.type = 'Oid';
+              type.identifierAttribute = attribute;
+              break;
+            case 'esriFieldTypeInteger':
+            case 'esriFieldTypeSmallInteger':
+            case 'esriFieldTypeDouble':
+            case 'esriFieldTypeSingle':
+              attribute.type = 'Number';
+              break;
+            case 'esriFieldTypeString':
+              attribute.type = 'String';
+              break;
+            case 'esriFieldTypeDate':
+              attribute.type = 'Date';
+              break;
+            case 'esriFieldTypeGeometry':
+              attribute.type = 'Geometry';
+              break;
           }
           type.attributes.push(attribute);
         });

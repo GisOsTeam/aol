@@ -7,6 +7,7 @@ import { toGeoJSONGeometry, disjoint } from '../../utils';
 import { getForViewAndSize } from 'ol/extent';
 import SimpleGeometry from 'ol/geom/SimpleGeometry';
 import Projection from 'ol/proj/Projection';
+import Geometry from 'ol/geom/Geometry';
 
 const format = new WMSGetFeatureInfo();
 
@@ -116,6 +117,14 @@ export function loadWmsFeatureDescription(source: IExtended, type: IFeatureType<
           key,
           type: 'Unknown',
         };
+        const value = properties[key];
+        if (value != null) {
+          if (typeof value === 'string') {
+            attribute.type = 'String';
+          } else if (typeof value === 'object' && value instanceof Geometry) {
+            attribute.type = 'Geometry';
+          }
+        }
         type.attributes.push(attribute);
       });
       return;

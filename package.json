@@ -1,6 +1,6 @@
 {
   "name": "@gisosteam/aol",
-  "version": "0.0.24",
+  "version": "0.0.25",
   "description": "OpenLayers sources extentions",
   "scripts": {
     "test": "jest",
@@ -47,7 +47,7 @@
   },
   "dependencies": {
     "@turf/turf": "^5.1.6",
-    "bhreq": "0.0.12",
+    "bhreq": "0.0.13",
     "jszip": "^3.4.0",
     "ol-mapbox-style": "^6.1.1",
     "shapefile2geojson": "^1.0.7"
