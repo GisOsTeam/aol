@@ -6,6 +6,7 @@
     "build": "rimraf lib && npm run lint && tsc -p tsconfig.json && cp ./package.json lib",
     "jest": "jest",
     "lint": "npm run prettier && tslint -c tslint.json -p tsconfig.json -s '{src, test}/**/*.{ts}'",
+    "genindex": "barrelsby -d ./src -l all -q -e sample -e .d.ts",
     "prepublishOnly": "[[ \"$PWD\" =~ /lib ]]",
     "prettier": "prettier --single-quote --print-width 120 --write --parser typescript '{src, test}/**/*.ts'",
     "pub": "pushd ./ && npm run build && cd lib && npm publish && popd",
