@@ -11,6 +11,121 @@ import Geometry from 'ol/geom/Geometry';
 
 const format = new WMSGetFeatureInfo();
 
+function getFeatureInfoOnBBOX(
+  source: IExtended,
+  type: IFeatureType<string>,
+  queryType: 'query' | 'identify',
+  requestProjectionCode: string,
+  featureProjectionCode: string,
+  bbox: number[],
+  renderSize: number,
+  tolerance: number,
+  limit: number,
+  id?: number | string,
+  cql?: string
+): Promise<Feature[]> {
+  let url = '';
+  if ('getUrl' in source) {
+    url = (source as any).getUrl();
+  } else if ('getUrls' in source) {
+    url = (source as any).getUrls()[0];
+  }
+  const body: { [id: string]: string } = {};
+  body.SERVICE = 'WMS';
+  body.VERSION = '1.1.0';
+  body.REQUEST = 'GetFeatureInfo';
+  body.QUERY_LAYERS = type.id;
+  body.LAYERS = type.id;
+  body.INFO_FORMAT = 'application/vnd.ogc.gml';
+  body.SRS = requestProjectionCode;
+  body.X = `${Math.round(renderSize / 2)}`;
+  body.Y = `${Math.round(renderSize / 2)}`;
+  body.WIDTH = `${renderSize}`;
+  body.HEIGHT = `${renderSize}`;
+  body.BBOX = bbox.join(',');
+  body.FEATURE_COUNT = `${limit}`;
+  if (id != null) {
+    body.FEATUREID = `${id}`; // GeoServer
+    // ?? // QGis Server
+    // ?? // MapServer
+    // ?? // ArcGIS WMS
+  }
+  const toleranceStr = `${tolerance}`;
+  body.BUFFER = toleranceStr; // GeoServer
+  body.RADIUS = toleranceStr; // MapServer
+  body.FI_POINT_TOLERANCE = toleranceStr; // QGis Server
+  body.FI_LINE_TOLERANCE = toleranceStr; // QGis Server
+  body.FI_POLYGON_TOLERANCE = toleranceStr; // QGis Server
+  body.WITH_GEOMETRY = 'true'; // QGis Server
+  if (cql != null && cql !== '') {
+    body.CQL_FILTER = cql;
+  }
+  if (queryType === 'query') {
+    body.SLD_BODY = `<StyledLayerDescriptor version="1.0.0"><UserLayer><Name>${type.id}</Name><UserStyle><FeatureTypeStyle><Rule><PointSymbolizer><Graphic><Mark><WellKnownName>square</WellKnownName><Fill><CssParameter name="fill">#FFFFFF</CssParameter></Fill></Mark><Size>1</Size></Graphic></PointSymbolizer><LineSymbolizer><Stroke><CssParameter name="stroke">#000000</CssParameter><CssParameter name="stroke-width">1</CssParameter></Stroke></LineSymbolizer><PolygonSymbolizer><Stroke><CssParameter name="stroke">#000000</CssParameter><CssParameter name="stroke-width">1</CssParameter></Stroke></PolygonSymbolizer></Rule></FeatureTypeStyle></UserStyle></UserLayer></StyledLayerDescriptor>`;
+  }
+  return send({
+    url,
+    body,
+    method: 'POST',
+    contentType: 'application/x-www-form-urlencoded',
+    responseType: 'text/plain',
+  }).then(
+    (res: IResponse) => {
+      // Read features
+      const features = [] as Feature[];
+      // Search projection on results
+      let dataProjection = getProjection(requestProjectionCode);
+      let dataProjectionCode = requestProjectionCode;
+      const res1 = res.body.match(/\ssrsName=\"([^\"]+)\"/i);
+      if (res1 && res1.length >= 2) {
+        const res2 = res1[1].match(/(\d+)(?!.*\d)/g);
+        if (res2 && res2.length > 0) {
+          dataProjectionCode = 'EPSG:' + res2[res2.length - 1];
+        }
+      }
+      try {
+        dataProjection = getProjection(dataProjectionCode);
+      } catch (err) {
+        console.error(err);
+      }
+      // Read features
+      const allFeatures = format.readFeatures(res.body);
+      if (allFeatures != null && allFeatures.length > 0) {
+        allFeatures.forEach((feature: Feature) => {
+          if (limit == null || features.length < limit) {
+            if (dataProjection.getUnits() === 'degrees') {
+              if (feature.getGeometry()) {
+                // In degree: This formats the geographic coordinates in longitude/latitude (x/y) order.
+                // Reverse coordinates !
+                (feature.getGeometry() as SimpleGeometry).applyTransform(
+                  (input: number[], ouput: number[], dimension: number) => {
+                    for (let i = 0; i < input.length; i += dimension) {
+                      const y = input[i];
+                      const x = input[i + 1];
+                      ouput[i] = x;
+                      ouput[i + 1] = y;
+                    }
+                    return ouput;
+                  }
+                );
+              }
+            }
+            if (feature.getGeometry()) {
+              feature.getGeometry().transform(dataProjection, featureProjectionCode);
+            }
+            features.push(feature);
+          }
+        });
+      }
+      return features;
+    },
+    (err) => {
+      console.error('Get WMS feature info in error');
+      return err;
+    }
+  );
+}
+
 export function executeWmsQuery(
   source: IExtended,
   type: IFeatureType<string>,
@@ -130,119 +245,4 @@ export function loadWmsFeatureDescription(source: IExtended, type: IFeatureType<
       return;
     }
   });
-}
-
-function getFeatureInfoOnBBOX(
-  source: IExtended,
-  type: IFeatureType<string>,
-  queryType: 'query' | 'identify',
-  requestProjectionCode: string,
-  featureProjectionCode: string,
-  bbox: number[],
-  renderSize: number,
-  tolerance: number,
-  limit: number,
-  id?: number | string,
-  cql?: string
-): Promise<Feature[]> {
-  let url = '';
-  if ('getUrl' in source) {
-    url = (source as any).getUrl();
-  } else if ('getUrls' in source) {
-    url = (source as any).getUrls()[0];
-  }
-  const body: { [id: string]: string } = {};
-  body.SERVICE = 'WMS';
-  body.VERSION = '1.1.0';
-  body.REQUEST = 'GetFeatureInfo';
-  body.QUERY_LAYERS = type.id;
-  body.LAYERS = type.id;
-  body.INFO_FORMAT = 'application/vnd.ogc.gml';
-  body.SRS = requestProjectionCode;
-  body.X = `${Math.round(renderSize / 2)}`;
-  body.Y = `${Math.round(renderSize / 2)}`;
-  body.WIDTH = `${renderSize}`;
-  body.HEIGHT = `${renderSize}`;
-  body.BBOX = bbox.join(',');
-  body.FEATURE_COUNT = `${limit}`;
-  if (id != null) {
-    body.FEATUREID = `${id}`; // GeoServer
-    // ?? // QGis Server
-    // ?? // MapServer
-    // ?? // ArcGIS WMS
-  }
-  const toleranceStr = `${tolerance}`;
-  body.BUFFER = toleranceStr; // GeoServer
-  body.RADIUS = toleranceStr; // MapServer
-  body.FI_POINT_TOLERANCE = toleranceStr; // QGis Server
-  body.FI_LINE_TOLERANCE = toleranceStr; // QGis Server
-  body.FI_POLYGON_TOLERANCE = toleranceStr; // QGis Server
-  body.WITH_GEOMETRY = 'true'; // QGis Server
-  if (cql != null && cql !== '') {
-    body.CQL_FILTER = cql;
-  }
-  if (queryType === 'query') {
-    body.SLD_BODY = `<StyledLayerDescriptor version="1.0.0"><UserLayer><Name>${type.id}</Name><UserStyle><FeatureTypeStyle><Rule><PointSymbolizer><Graphic><Mark><WellKnownName>square</WellKnownName><Fill><CssParameter name="fill">#FFFFFF</CssParameter></Fill></Mark><Size>1</Size></Graphic></PointSymbolizer><LineSymbolizer><Stroke><CssParameter name="stroke">#000000</CssParameter><CssParameter name="stroke-width">1</CssParameter></Stroke></LineSymbolizer><PolygonSymbolizer><Stroke><CssParameter name="stroke">#000000</CssParameter><CssParameter name="stroke-width">1</CssParameter></Stroke></PolygonSymbolizer></Rule></FeatureTypeStyle></UserStyle></UserLayer></StyledLayerDescriptor>`;
-  }
-  return send({
-    url,
-    body,
-    method: 'POST',
-    contentType: 'application/x-www-form-urlencoded',
-    responseType: 'text/plain',
-  }).then(
-    (res: IResponse) => {
-      // Read features
-      const features = [] as Feature[];
-      // Search projection on results
-      let dataProjection = getProjection(requestProjectionCode);
-      let dataProjectionCode = requestProjectionCode;
-      const res1 = res.body.match(/\ssrsName=\"([^\"]+)\"/i);
-      if (res1 && res1.length >= 2) {
-        const res2 = res1[1].match(/(\d+)(?!.*\d)/g);
-        if (res2 && res2.length > 0) {
-          dataProjectionCode = 'EPSG:' + res2[res2.length - 1];
-        }
-      }
-      try {
-        dataProjection = getProjection(dataProjectionCode);
-      } catch (err) {
-        console.error(err);
-      }
-      // Read features
-      const allFeatures = format.readFeatures(res.body);
-      if (allFeatures != null && allFeatures.length > 0) {
-        allFeatures.forEach((feature: Feature) => {
-          if (limit == null || features.length < limit) {
-            if (dataProjection.getUnits() === 'degrees') {
-              if (feature.getGeometry()) {
-                // In degree: This formats the geographic coordinates in longitude/latitude (x/y) order.
-                // Reverse coordinates !
-                (feature.getGeometry() as SimpleGeometry).applyTransform(
-                  (input: number[], ouput: number[], dimension: number) => {
-                    for (let i = 0; i < input.length; i += dimension) {
-                      const y = input[i];
-                      const x = input[i + 1];
-                      ouput[i] = x;
-                      ouput[i + 1] = y;
-                    }
-                    return ouput;
-                  }
-                );
-              }
-            }
-            if (feature.getGeometry()) {
-              feature.getGeometry().transform(dataProjection, featureProjectionCode);
-            }
-            features.push(feature);
-          }
-        });
-      }
-      return features;
-    },
-    (err) => {
-      console.error('Get WMS feature info in error');
-      return err;
-    }
-  );
 }

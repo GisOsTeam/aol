@@ -159,6 +159,8 @@ export function jsonEqual(obj1: any, obj2: any, ignore?: string[]): boolean {
   return str1 === str2;
 }
 
+let globalKey = 0;
+
 /**
  * Generate unique id.
  */
@@ -178,8 +180,6 @@ export function uid(): string {
     }) + globalKey.toString(16)
   );
 }
-
-let globalKey = 0;
 
 /**
  * Generate LAYERS param from IFeatureType array.
