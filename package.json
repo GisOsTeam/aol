@@ -6,8 +6,8 @@
     "test": "jest",
     "jest": "jest",
     "prettier": "prettier --single-quote --print-width 120 --write --parser typescript '{src, test}/**/*.ts'",
-    "lint": "npm run prettier && tslint -c tslint.json -p tsconfig.json -s '{src, test}/**/*.{ts}'",
-    "genindex": "barrelsby -d ./src -l all -q -e sample -e .d.ts",
+    "lint": "npm run prettier && eslint . --ext .ts,.tsx",
+    "genindex": "barrelsby -d ./src -l all -q -e sample -e __tests__ -e .d.ts",
     "build": "rimraf lib && npm run genindex && npm run lint && tsc -p tsconfig.json && cp ./package.json lib",
     "prepublishOnly": "[[ \"$PWD\" =~ /lib ]]",
     "pub": "pushd ./ && npm run build && cd lib && npm publish --access public && popd"
@@ -33,7 +33,11 @@
     "@types/jest": "^25.2.1",
     "@types/jszip": "^3.1.7",
     "@types/ol": "^6.3.1",
+    "@typescript-eslint/eslint-plugin": "^2.31.0",
+    "@typescript-eslint/parser": "^2.31.0",
     "babel-jest": "^25.5.1",
+    "barrelsby": "^2.2.0",
+    "eslint": "^6.8.0",
     "husky": "^4.2.5",
     "jest": "^25.5.4",
     "jest-canvas-mock": "^2.2.0",
@@ -42,8 +46,6 @@
     "proj4": "2.6.1",
     "rimraf": "^3.0.2",
     "ts-jest": "^25.4.0",
-    "tslint": "^6.1.2",
-    "tslint-config-prettier": "^1.18.0",
     "typescript": "3.8.3"
   },
   "dependencies": {

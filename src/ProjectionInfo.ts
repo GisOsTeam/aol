@@ -4,6 +4,15 @@ import proj4 from 'proj4';
 import { transformExtent, get as getProjection } from 'ol/proj';
 import { Extent } from 'ol/extent';
 
+export class ProjectionInfo {
+  public code: string;
+  public wkt: string;
+  public lonLatValidity: Extent;
+  public name: string;
+  public remarks: string;
+  public projection: Projection;
+}
+
 const projMap = new Map<string, ProjectionInfo>();
 
 export function getProjectionInfo(code: string): ProjectionInfo {
@@ -43,15 +52,6 @@ export function addProjection(
   }
   projMap.set(projectionInfo.code, projectionInfo);
   return projectionInfo;
-}
-
-export class ProjectionInfo {
-  public code: string;
-  public wkt: string;
-  public lonLatValidity: Extent;
-  public name: string;
-  public remarks: string;
-  public projection: Projection;
 }
 
 // Add defaults projections
