@@ -6,6 +6,5 @@ export * from './ISnapshot';
 export * from './LayerStyles';
 export * from './ProjectionInfo';
 export * from './utils';
-export * from './__tests__/index';
 export * from './load/index';
 export * from './source/index';
