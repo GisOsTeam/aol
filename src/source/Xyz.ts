@@ -3,6 +3,8 @@ import { IQueryRequest, IQueryResponse, IExtendedOptions, IExtended } from './IE
 import { SourceType, SourceTypeEnum } from './types/sourceType';
 import { LayerType, LayerTypeEnum } from './types/layerType';
 import { Options } from 'ol/source/XYZ';
+import Feature from 'ol/Feature';
+import Projection from 'ol/proj/Projection';
 
 export interface IXyzOptions extends IExtendedOptions, Options {}
 
@@ -12,6 +14,10 @@ export class Xyz extends OlXyz implements IExtended {
   constructor(options: IXyzOptions) {
     super({ ...options } as any);
     this.options = { ...options };
+  }
+
+  public init(): Promise<void> {
+    return Promise.resolve();
   }
 
   public query(request: IQueryRequest): Promise<IQueryResponse> {
@@ -25,6 +31,10 @@ export class Xyz extends OlXyz implements IExtended {
         },
       ],
     });
+  }
+
+  public retrieveFeature(id: number | string, projection: Projection): Promise<Feature> {
+    return Promise.resolve(null);
   }
 
   public getSourceType(): SourceType {

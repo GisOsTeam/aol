@@ -13,6 +13,7 @@ export interface IExtendedOptions {
 }
 
 export interface IExtended extends Source {
+  init(): Promise<void>;
   getSourceType(): SourceType;
   getSourceOptions(): IExtendedOptions;
   setSourceOptions(options: IExtendedOptions): void;
@@ -20,12 +21,14 @@ export interface IExtended extends Source {
   isSnapshotable(): boolean;
   isListable(): boolean;
   query(identifyRequest: IQueryRequest): Promise<IQueryResponse>;
+  retrieveFeature(id: number | string, featureProjection: Projection): Promise<Feature>;
 }
 
 export interface IQueryRequest {
   olMap: OlMap;
   geometry: Geometry;
   geometryProjection: Projection;
+  queryType: 'query' | 'identify';
   filters?: IFilter[];
   limit?: number;
 }
@@ -56,24 +59,26 @@ export interface IAttribute {
 
 export interface IFeatureType<IDT extends number | string> {
   id: IDT;
+  hide?: boolean;
   name?: string;
   identifierAttribute?: IAttribute;
   attributes?: IAttribute[];
 }
 
-export function constructQueryRequestFromPixel(pixel: number[], tolerance: number, olMap: OlMap): IQueryRequest {
+export function constructIdentifyQueryRequestFromPixel(pixel: number[], olMap: OlMap): IQueryRequest {
   const coord = olMap.getCoordinateFromPixel(pixel);
   const resolution = olMap.getView().getResolution();
   const extent: [number, number, number, number] = [
-    coord[0] - tolerance * resolution,
-    coord[1] - tolerance * resolution,
-    coord[0] + tolerance * resolution,
-    coord[1] + tolerance * resolution,
+    coord[0] - 0.5 * resolution,
+    coord[1] - 0.5 * resolution,
+    coord[0] + 0.5 * resolution,
+    coord[1] + 0.5 * resolution,
   ];
   return {
     olMap,
     geometry: fromExtent(extent),
     geometryProjection: olMap.getView().getProjection(),
+    queryType: 'identify',
   };
 }
 

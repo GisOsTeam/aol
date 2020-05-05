@@ -2,7 +2,7 @@ import { Pixel } from 'ol/pixel';
 import { Map } from 'ol';
 import OlBaseLayer from 'ol/layer/Base';
 import Layer from 'ol/layer/Layer';
-import { IQueryResponse, constructQueryRequestFromPixel, IExtended } from '../IExtended';
+import { IQueryResponse, constructIdentifyQueryRequestFromPixel, IExtended } from '../IExtended';
 import { walk } from '../../utils';
 
 export type IdentifyFilterType = (extended: IExtended) => boolean;
@@ -14,7 +14,7 @@ export function identify(
 ): Promise<IQueryResponse[]> {
   if (map && pixel) {
     const promises: Promise<IQueryResponse>[] = [];
-    const queryRequest = constructQueryRequestFromPixel(pixel, 2, map);
+    const queryRequest = constructIdentifyQueryRequestFromPixel(pixel, map);
     queryRequest.limit = limit;
 
     walk(map, (layer: OlBaseLayer) => {

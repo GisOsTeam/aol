@@ -4,6 +4,7 @@ import { IQueryRequest, IQueryResponse, IFeatureType, IExtendedOptions, IExtende
 import { SourceType, SourceTypeEnum } from './types/sourceType';
 import { LayerType, LayerTypeEnum } from './types/layerType';
 import { Options } from 'ol/source/TileArcGISRest';
+import Projection from 'ol/proj/Projection';
 
 export interface ITileArcGISRestOptions extends IExtendedOptions, Options {}
 
@@ -13,6 +14,10 @@ export class TileArcGISRest extends OlTileArcGISRest implements IExtended {
   constructor(options: ITileArcGISRestOptions) {
     super({ ...options } as any);
     this.options = { ...options };
+  }
+
+  public init(): Promise<void> {
+    return Promise.resolve();
   }
 
   public getSourceType(): SourceType {
@@ -51,5 +56,9 @@ export class TileArcGISRest extends OlTileArcGISRest implements IExtended {
         },
       ],
     });
+  }
+
+  public retrieveFeature(id: number | string, projection: Projection): Promise<Feature> {
+    return null;
   }
 }

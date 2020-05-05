@@ -8,10 +8,12 @@ import {
   IExtended,
 } from './IExtended';
 import { getWmsLayersFromTypes } from '../utils';
-import { wmsQueryOne } from './query/wmsQuery';
+import { executeWmsQuery, retrieveWmsFeature, loadWmsFeatureDescription } from './query/wms';
 import { SourceType, SourceTypeEnum } from './types/sourceType';
 import { LayerType, LayerTypeEnum } from './types/layerType';
 import { Options } from 'ol/source/TileWMS';
+import Feature from 'ol/Feature';
+import Projection from 'ol/proj/Projection';
 
 export interface ITileWmsOptions extends IExtendedOptions, Options {
   types: IFeatureType<string>[];
@@ -21,11 +23,20 @@ export class TileWms extends OlTileWMS implements IExtended {
   protected options: ITileWmsOptions;
 
   constructor(options: ITileWmsOptions) {
-    super({ ...options });
+    super({ ...options } as any);
     this.options = { ...options };
-    this.set('types', options.types);
-    this.updateParams({ ...this.getParams(), LAYERS: getWmsLayersFromTypes(options.types) });
-    this.on('propertychange', this.handlePropertychange);
+    this.setSourceOptions(this.options);
+  }
+
+  public init(): Promise<void> {
+    const promises: Promise<void>[] = [];
+    for (const type of this.options.types) {
+      promises.push(loadWmsFeatureDescription(this, type));
+    }
+    return Promise.all(promises).then(() => {
+      this.setSourceOptions(this.options);
+      return;
+    });
   }
 
   public getSourceType(): SourceType {
@@ -59,7 +70,7 @@ export class TileWms extends OlTileWMS implements IExtended {
   public query(request: IQueryRequest): Promise<IQueryResponse> {
     const promises: Promise<IQueryFeatureTypeResponse>[] = [];
     for (const type of this.options.types) {
-      promises.push(wmsQueryOne(this, this.getUrls()[0], type, request));
+      promises.push(executeWmsQuery(this, type, request));
     }
     return Promise.all(promises).then((featureTypeResponses: IQueryFeatureTypeResponse[]) => {
       return {
@@ -67,6 +78,22 @@ export class TileWms extends OlTileWMS implements IExtended {
         featureTypeResponses,
       };
     });
+  }
+
+  public retrieveFeature(id: number | string, projection: Projection): Promise<Feature> {
+    const promises: Promise<Feature>[] = [];
+    for (const type of this.options.types) {
+      promises.push(retrieveWmsFeature(this, type, id, projection));
+    }
+    let feature: Feature = null;
+    Promise.all(promises).then((features: Feature[]) => {
+      features.forEach((currentFeature) => {
+        if (currentFeature) {
+          feature = currentFeature;
+        }
+      });
+    });
+    return Promise.resolve(feature);
   }
 
   private handlePropertychange = (event: any) => {

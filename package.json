@@ -1,16 +1,16 @@
 {
   "name": "@gisosteam/aol",
-  "version": "0.0.20",
+  "version": "0.0.25",
   "description": "OpenLayers sources extentions",
   "scripts": {
-    "build": "rimraf lib && npm run genindex && npm run lint && tsc -p tsconfig.json && cp ./package.json lib",
+    "test": "jest",
     "jest": "jest",
+    "prettier": "prettier --single-quote --print-width 120 --write --parser typescript '{src, test}/**/*.ts'",
     "lint": "npm run prettier && tslint -c tslint.json -p tsconfig.json -s '{src, test}/**/*.{ts}'",
     "genindex": "barrelsby -d ./src -l all -q -e sample -e .d.ts",
+    "build": "rimraf lib && npm run genindex && npm run lint && tsc -p tsconfig.json && cp ./package.json lib",
     "prepublishOnly": "[[ \"$PWD\" =~ /lib ]]",
-    "prettier": "prettier --single-quote --print-width 120 --write --parser typescript '{src, test}/**/*.ts'",
-    "pub": "pushd ./ && npm run build && cd lib && npm publish && popd",
-    "test": "jest"
+    "pub": "pushd ./ && npm run build && cd lib && npm publish --access public && popd"
   },
   "husky": {
     "hooks": {
@@ -28,28 +28,28 @@
   "author": "Mathieu MAST",
   "license": "MIT",
   "devDependencies": {
-    "@babel/core": "^7.9.0",
-    "@babel/preset-env": "^7.9.5",
+    "@babel/core": "^7.9.6",
+    "@babel/preset-env": "^7.9.6",
     "@types/jest": "^25.2.1",
     "@types/jszip": "^3.1.7",
     "@types/ol": "^6.3.1",
-    "babel-jest": "^25.3.0",
+    "babel-jest": "^25.5.1",
     "husky": "^4.2.5",
-    "jest": "^25.3.0",
+    "jest": "^25.5.4",
     "jest-canvas-mock": "^2.2.0",
     "ol": "6.3.1",
-    "prettier": "^2.0.4",
+    "prettier": "^2.0.5",
     "proj4": "2.6.1",
     "rimraf": "^3.0.2",
     "ts-jest": "^25.4.0",
-    "tslint": "^6.1.1",
+    "tslint": "^6.1.2",
     "tslint-config-prettier": "^1.18.0",
     "typescript": "3.8.3"
   },
   "dependencies": {
     "@turf/turf": "^5.1.6",
-    "bhreq": "0.0.12",
-    "jszip": "^3.3.0",
+    "bhreq": "0.0.13",
+    "jszip": "^3.4.0",
     "ol-mapbox-style": "^6.1.1",
     "shapefile2geojson": "^1.0.7"
   },
