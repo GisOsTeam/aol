@@ -74,12 +74,6 @@ export class ViewManager {
       }
       this.currentExtent = frameState.extent;
       this.futureExtends = [];
-
-      console.log('New Extent', {
-        pastExtends: this.pastExtends,
-        currentExtent: this.currentExtent,
-        futureExtends: this.futureExtends,
-      });
     }
     this.shouldUpdate = true;
   }
