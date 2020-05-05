@@ -3,7 +3,7 @@
   "version": "0.0.20",
   "description": "OpenLayers sources extentions",
   "scripts": {
-    "build": "rimraf lib && npm run lint && tsc -p tsconfig.json && cp ./package.json lib",
+    "build": "rimraf lib && npm run genindex && npm run lint && tsc -p tsconfig.json && cp ./package.json lib",
     "jest": "jest",
     "lint": "npm run prettier && tslint -c tslint.json -p tsconfig.json -s '{src, test}/**/*.{ts}'",
     "genindex": "barrelsby -d ./src -l all -q -e sample -e .d.ts",
