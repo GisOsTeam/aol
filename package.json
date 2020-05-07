@@ -7,7 +7,7 @@
     "jest": "jest",
     "prettier": "prettier --single-quote --print-width 120 --write --parser typescript '{src, test}/**/*.ts'",
     "lint": "npm run prettier && eslint . --ext .ts,.tsx",
-    "genindex": "barrelsby -d ./src -D -l all -q -e sample -e __tests__ -e .d.ts",
+    "genindex": "barrelsby -d ./src -D -L -l all -q -e sample -e __tests__ -e .d.ts",
     "build": "rimraf lib && npm run genindex && npm run lint && tsc -p tsconfig.json && cp ./package.json lib",
     "prepublishOnly": "[[ \"$PWD\" =~ /lib ]]",
     "pub": "pushd ./ && npm run build && cd lib && npm publish --access public && popd"

@@ -16,5 +16,3 @@ export * from './Vector';
 export * from './VectorTile';
 export * from './Wfs';
 export * from './Xyz';
-export * from './query/index';
-export * from './types/index';
