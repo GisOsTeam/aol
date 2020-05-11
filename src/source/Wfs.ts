@@ -9,7 +9,7 @@ import { Options } from 'ol/source/Vector';
 export interface IWfsOptions extends IExtendedOptions, Options {
   type: IFeatureType<string>;
   outputFormat?: string;
-  version?: string
+  version?: string;
 }
 
 export class Wfs extends ExternalVector {
@@ -17,7 +17,7 @@ export class Wfs extends ExternalVector {
   private readonly defaultOptions: Pick<IWfsOptions, 'outputFormat' | 'version'> = {
     outputFormat: 'application/json',
     version: '1.1.0',
-  }
+  };
 
   constructor(options: IWfsOptions) {
     super({
