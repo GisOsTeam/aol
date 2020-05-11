@@ -8,24 +8,30 @@ import { Options } from 'ol/source/Vector';
 
 export interface IWfsOptions extends IExtendedOptions, Options {
   type: IFeatureType<string>;
+  outputFormat?: string;
+  version?: string
 }
 
 export class Wfs extends ExternalVector {
   protected options: IWfsOptions;
+  private readonly defaultOptions: Pick<IWfsOptions, 'outputFormat' | 'version'> = {
+    outputFormat: 'application/json',
+    version: '1.1.0',
+  }
 
   constructor(options: IWfsOptions) {
     super({
       ...options,
       format: new OlGeoJSON(),
       url: (extent: [number, number, number, number], resolution: number, projection: Projection) => {
-        return `${this.getUrl()}?service=WFS&version=1.1.0&request=GetFeature&Type=${
+        return `${this.options.url}?service=WFS&version=${this.options.version}&request=GetFeature&Type=${
           this.options.type.id
-        }&outputFormat=application/json&srsname=${projection.getCode()}&bbox=${extent.join(
+        }&outputFormat=${this.options.outputFormat}&srsname=${projection.getCode()}&bbox=${extent.join(
           ','
         )},${projection.getCode()}`;
       },
     });
-    this.options = { ...options };
+    this.options = { ...this.defaultOptions, ...options };
   }
 
   public getSourceType(): SourceType {
