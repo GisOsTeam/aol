@@ -150,7 +150,9 @@ export function executeWmsQuery(
       tolerance = 4;
     }
   } else {
-    const mapH = Math.sqrt((mapExtent[2] - mapExtent[0]) * (mapExtent[2] - mapExtent[0]) + (mapExtent[3] - mapExtent[1]));
+    const mapH = Math.sqrt(
+      (mapExtent[2] - mapExtent[0]) * (mapExtent[2] - mapExtent[0]) + (mapExtent[3] - mapExtent[1])
+    );
     const geomH = Math.sqrt(
       (extent[2] - extent[0]) * (extent[2] - extent[0]) + (extent[3] - extent[1]) * (extent[3] - extent[1])
     );

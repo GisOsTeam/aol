@@ -6,7 +6,13 @@ import { IQueryResponse, constructIdentifyQueryRequestFromPixel, IExtended } fro
 import { walk } from '../../utils';
 
 export type IdentifyFilterType = (extended: IExtended) => boolean;
-export function identify(pixel: Pixel, map: Map, limit = 10, tolerance = 4, filter?: IdentifyFilterType): Promise<IQueryResponse[]> {
+export function identify(
+  pixel: Pixel,
+  map: Map,
+  limit = 10,
+  tolerance = 4,
+  filter?: IdentifyFilterType
+): Promise<IQueryResponse[]> {
   if (map && pixel) {
     const promises: Promise<IQueryResponse>[] = [];
     const queryRequest = constructIdentifyQueryRequestFromPixel(pixel, map);
