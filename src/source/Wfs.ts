@@ -24,7 +24,7 @@ export class Wfs extends ExternalVector {
       ...options,
       format: new OlGeoJSON(),
       url: (extent: [number, number, number, number], resolution: number, projection: Projection) => {
-        return `${this.options.url}?service=WFS&version=${this.options.version}&request=GetFeature&Type=${
+        return `${this.options.url}?service=WFS&version=${this.options.version}&request=GetFeature&TypeName=${
           this.options.type.id
         }&outputFormat=${this.options.outputFormat}&srsname=${projection.getCode()}&bbox=${extent.join(
           ','
