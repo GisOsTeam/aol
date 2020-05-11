@@ -13,8 +13,7 @@ export interface WmtsSnapshotOptions extends Pick<Options, 'layer' | 'matrixSet'
 export interface WmtsOptions
   extends Omit<Options, 'layer' | 'matrixSet' | 'url'>,
     WmtsSnapshotOptions,
-    IExtendedOptions {
-}
+    IExtendedOptions {}
 
 export class Wmts extends OlWmts implements Omit<IExtended, 'init' | 'query' | 'retrieveFeature'> {
   protected options: WmtsOptions;
