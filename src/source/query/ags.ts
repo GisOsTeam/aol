@@ -14,7 +14,7 @@ export function executeAgsQuery(
   type: IFeatureType<number>,
   request: IQueryRequest
 ): Promise<IQueryFeatureTypeResponse> {
-  const { olMap, geometryProjection, queryType, limit } = request;
+  const { olMap, geometryProjection, queryType, limit, identifyTolerance } = request;
   const srId = '3857';
   let geometry = request.geometry;
   if (geometry.getType() === 'Circle') {
@@ -72,14 +72,18 @@ export function executeAgsQuery(
   body.geometryType = geometryType;
   body.outFields = '*';
   body.returnFieldName = 'true';
-  body.returnGeometry = 'false';
+  body.returnGeometry = 'true';
   if (queryType === 'identify') {
     url += '/identify';
     body.mapExtent = extent.join(',');
     body.imageDisplay = '101,101';
     body.layers = `all:${type.id}`;
     body.sr = srId;
-    body.tolerance = '4';
+    if (Math.round(identifyTolerance) > 0) {
+      body.tolerance = `${Math.round(identifyTolerance)}`;
+    } else {
+      body.tolerance = '4';
+    }
     body.f = 'json';
   } else {
     url += `/${type.id}/query`;

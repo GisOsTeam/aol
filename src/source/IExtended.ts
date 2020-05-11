@@ -1,9 +1,9 @@
 import OlMap from 'ol/Map';
 import Source from 'ol/source/Source';
 import Feature from 'ol/Feature';
+import Point from 'ol/geom/Point';
 import Geometry from 'ol/geom/Geometry';
 import Projection from 'ol/proj/Projection';
-import { fromExtent } from 'ol/geom/Polygon';
 import { SourceType } from './types/sourceType';
 import { LayerType } from './types/layerType';
 
@@ -31,6 +31,7 @@ export interface IQueryRequest {
   queryType: 'query' | 'identify';
   filters?: IFilter[];
   limit?: number;
+  identifyTolerance?: number;
 }
 
 export interface IQueryResponse {
@@ -67,16 +68,9 @@ export interface IFeatureType<IDT extends number | string> {
 
 export function constructIdentifyQueryRequestFromPixel(pixel: number[], olMap: OlMap): IQueryRequest {
   const coord = olMap.getCoordinateFromPixel(pixel);
-  const resolution = olMap.getView().getResolution();
-  const extent: [number, number, number, number] = [
-    coord[0] - 0.5 * resolution,
-    coord[1] - 0.5 * resolution,
-    coord[0] + 0.5 * resolution,
-    coord[1] + 0.5 * resolution,
-  ];
   return {
     olMap,
-    geometry: fromExtent(extent),
+    geometry: new Point(coord),
     geometryProjection: olMap.getView().getProjection(),
     queryType: 'identify',
   };
