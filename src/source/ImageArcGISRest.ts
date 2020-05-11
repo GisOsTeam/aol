@@ -2,7 +2,7 @@ import OlImageArcGISRest from 'ol/source/ImageArcGISRest';
 import {
   IQueryRequest,
   IQueryResponse,
-  IExtendedOptions,
+  ISnapshotOptions,
   IQueryFeatureTypeResponse,
   IFeatureType,
   IExtended,
@@ -15,7 +15,7 @@ import { Options } from 'ol/source/ImageArcGISRest';
 import Feature from 'ol/Feature';
 import Projection from 'ol/proj/Projection';
 
-export interface IImageArcGISRestOptions extends IExtendedOptions, Options {
+export interface IImageArcGISRestOptions extends ISnapshotOptions, Options {
   types: IFeatureType<number>[];
 }
 
@@ -25,6 +25,12 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
   constructor(options: IImageArcGISRestOptions) {
     super({ ...options } as any);
     this.options = { ...options };
+    if (this.options.snapshotable != false) {
+      this.options.snapshotable = true;
+    }
+    if (this.options.listable != false) {
+      this.options.listable = true;
+    }
     this.setSourceOptions(this.options);
   }
 
@@ -60,11 +66,11 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
   }
 
   public isSnapshotable(): boolean {
-    return this.options.snapshotable == null ? true : this.options.snapshotable; // true by default
+    return this.options.snapshotable;
   }
 
   public isListable(): boolean {
-    return this.options.listable == null ? true : this.options.listable; // true by default
+    return this.options.listable;
   }
 
   public query(request: IQueryRequest): Promise<IQueryResponse> {

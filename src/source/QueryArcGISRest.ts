@@ -3,10 +3,10 @@ import { send, IResponse } from 'bhreq';
 import { ExternalVector } from './ExternalVector';
 import { SourceType, SourceTypeEnum } from './types/sourceType';
 import { LayerType, LayerTypeEnum } from './types/layerType';
-import { IExtendedOptions } from './IExtended';
+import { ISnapshotOptions } from './IExtended';
 import { Options } from 'ol/source/Vector';
 
-export interface IQueryArcGISRestOptions extends IExtendedOptions, Options {}
+export interface IQueryArcGISRestOptions extends ISnapshotOptions, Options {}
 
 export class QueryArcGISRest extends ExternalVector {
   protected options: any;
@@ -16,6 +16,12 @@ export class QueryArcGISRest extends ExternalVector {
   constructor(options: IQueryArcGISRestOptions) {
     super({ ...options });
     this.options = { ...options };
+    if (this.options.snapshotable != false) {
+      this.options.snapshotable = true;
+    }
+    if (this.options.listable != false) {
+      this.options.listable = true;
+    }
   }
 
   public getSourceType(): SourceType {
@@ -35,11 +41,11 @@ export class QueryArcGISRest extends ExternalVector {
   }
 
   public isSnapshotable(): boolean {
-    return this.options.snapshotable == null ? true : this.options.snapshotable; // true by default
+    return this.options.snapshotable;
   }
 
   public isListable(): boolean {
-    return this.options.listable == null ? true : this.options.listable; // true by default
+    return this.options.listable;
   }
 
   public load(extent: [number, number, number, number], projectionCode: string) {

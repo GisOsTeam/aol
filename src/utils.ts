@@ -11,7 +11,7 @@ import Circle from 'ol/geom/Circle';
 import booleanDisjoint from '@turf/boolean-disjoint';
 import { applyStyle } from 'ol-mapbox-style';
 import { SourceType, SourceTypeEnum } from './source/types/sourceType';
-import { IFeatureType, IExtended } from './source/IExtended';
+import { IFeatureType, ISnapshotSource } from './source/IExtended';
 import { ExternalVector } from './source/ExternalVector';
 import { ImageArcGISRest } from './source/ImageArcGISRest';
 import { ImageStatic } from './source/ImageStatic';
@@ -248,8 +248,8 @@ export function createLayerStyles(
 /**
  * Create source from options.
  */
-export function createSource(sourceTypeName: SourceType, sourceOptions: any): IExtended {
-  let source: IExtended;
+export function createSource(sourceTypeName: SourceType, sourceOptions: any): ISnapshotSource {
+  let source: ISnapshotSource;
   switch (sourceTypeName) {
     case SourceTypeEnum.ExternalVector:
       source = new ExternalVector(sourceOptions);

@@ -1,29 +1,23 @@
 import OlImageStatic from 'ol/source/ImageStatic';
-import { get as getProjection } from 'ol/proj';
-import { IQueryRequest, IQueryResponse, IExtendedOptions, IExtended } from './IExtended';
+import { ISnapshotOptions, ISnapshotSource } from './IExtended';
 import { SourceType, SourceTypeEnum } from './types/sourceType';
 import { LayerType, LayerTypeEnum } from './types/layerType';
 import { Options } from 'ol/source/ImageStatic';
-import Feature from 'ol/Feature';
-import Projection from 'ol/proj/Projection';
 
-export interface IImageStaticOptions extends IExtendedOptions, Options {}
+export interface IImageStaticOptions extends ISnapshotOptions, Options {}
 
-export class ImageStatic extends OlImageStatic implements IExtended {
+export class ImageStatic extends OlImageStatic implements ISnapshotSource {
   protected options: IImageStaticOptions;
-
-  private projectionCode: string;
 
   constructor(options: IImageStaticOptions) {
     super({ ...options } as any);
     this.options = options;
-    if (typeof options.projection === 'string') {
-      this.projectionCode = options.projection;
+    if (this.options.snapshotable != false) {
+      this.options.snapshotable = true;
     }
-  }
-
-  public init(): Promise<void> {
-    return Promise.resolve();
+    if (this.options.listable != false) {
+      this.options.listable = true;
+    }
   }
 
   public getSourceType(): SourceType {
@@ -36,9 +30,6 @@ export class ImageStatic extends OlImageStatic implements IExtended {
 
   public setSourceOptions(options: IImageStaticOptions): void {
     this.options = { ...options };
-    if (typeof options.projection === 'string') {
-      this.projectionCode = options.projection;
-    }
   }
 
   public getLayerType(): LayerType {
@@ -46,35 +37,10 @@ export class ImageStatic extends OlImageStatic implements IExtended {
   }
 
   public isSnapshotable(): boolean {
-    return this.options.snapshotable == null ? true : this.options.snapshotable; // true by default
+    return this.options.snapshotable;
   }
 
   public isListable(): boolean {
-    return this.options.listable == null ? true : this.options.listable; // true by default
-  }
-
-  public getProjection() {
-    if (this.projectionCode != null) {
-      return getProjection(this.projectionCode);
-    } else {
-      super.getProjection();
-    }
-  }
-
-  public query(request: IQueryRequest): Promise<IQueryResponse> {
-    return Promise.resolve({
-      request,
-      featureTypeResponses: [
-        {
-          type: null,
-          features: [],
-          source: this,
-        },
-      ],
-    });
-  }
-
-  public retrieveFeature(id: number | string, projection: Projection): Promise<Feature> {
-    return null;
+    return this.options.listable;
   }
 }

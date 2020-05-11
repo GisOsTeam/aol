@@ -1,23 +1,23 @@
 import OlVectorTile from 'ol/source/VectorTile';
-import { IExtended, IQueryRequest, IQueryResponse, IExtendedOptions } from './IExtended';
+import { ISnapshotOptions, ISnapshotSource } from './IExtended';
 import { SourceType, SourceTypeEnum } from './types/sourceType';
 import { LayerType, LayerTypeEnum } from './types/layerType';
 import { Options } from 'ol/source/Vector';
-import Feature from 'ol/Feature';
-import Projection from 'ol/proj/Projection';
 
-export interface IVectorTileOptions extends IExtendedOptions, Options {}
+export interface IVectorTileOptions extends ISnapshotOptions, Options {}
 
-export abstract class VectorTile extends OlVectorTile implements IExtended {
+export abstract class VectorTile extends OlVectorTile implements ISnapshotSource {
   protected options: IVectorTileOptions;
 
   constructor(options: IVectorTileOptions) {
     super({ ...options } as any);
     this.options = { ...options };
-  }
-
-  public init(): Promise<void> {
-    return Promise.resolve();
+    if (this.options.snapshotable != false) {
+      this.options.snapshotable = true;
+    }
+    if (this.options.listable != false) {
+      this.options.listable = true;
+    }
   }
 
   public getSourceType(): SourceType {
@@ -37,27 +37,10 @@ export abstract class VectorTile extends OlVectorTile implements IExtended {
   }
 
   public isSnapshotable(): boolean {
-    return this.options.snapshotable == null ? true : this.options.snapshotable; // true by default
+    return this.options.snapshotable;
   }
 
   public isListable(): boolean {
-    return this.options.listable == null ? true : this.options.listable; // true by default
-  }
-
-  public query(request: IQueryRequest): Promise<IQueryResponse> {
-    return Promise.resolve({
-      request,
-      featureTypeResponses: [
-        {
-          type: null,
-          features: [],
-          source: this,
-        },
-      ],
-    });
-  }
-
-  public retrieveFeature(id: number | string, projection: Projection): Promise<Feature> {
-    return Promise.resolve(null);
+    return this.options.listable;
   }
 }

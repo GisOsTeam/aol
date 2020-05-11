@@ -1,23 +1,23 @@
 import OlTileArcGISRest from 'ol/source/TileArcGISRest';
-import Feature from 'ol/Feature';
-import { IQueryRequest, IQueryResponse, IFeatureType, IExtendedOptions, IExtended } from './IExtended';
+import { ISnapshotOptions, ISnapshotSource } from './IExtended';
 import { SourceType, SourceTypeEnum } from './types/sourceType';
 import { LayerType, LayerTypeEnum } from './types/layerType';
 import { Options } from 'ol/source/TileArcGISRest';
-import Projection from 'ol/proj/Projection';
 
-export interface ITileArcGISRestOptions extends IExtendedOptions, Options {}
+export interface ITileArcGISRestOptions extends ISnapshotOptions, Options {}
 
-export class TileArcGISRest extends OlTileArcGISRest implements IExtended {
+export class TileArcGISRest extends OlTileArcGISRest implements ISnapshotSource {
   protected options: any;
 
   constructor(options: ITileArcGISRestOptions) {
     super({ ...options } as any);
     this.options = { ...options };
-  }
-
-  public init(): Promise<void> {
-    return Promise.resolve();
+    if (this.options.snapshotable != false) {
+      this.options.snapshotable = true;
+    }
+    if (this.options.listable != false) {
+      this.options.listable = true;
+    }
   }
 
   public getSourceType(): SourceType {
@@ -37,28 +37,10 @@ export class TileArcGISRest extends OlTileArcGISRest implements IExtended {
   }
 
   public isSnapshotable(): boolean {
-    return this.options.snapshotable == null ? true : this.options.snapshotable; // true by default
+    return this.options.snapshotable;
   }
 
   public isListable(): boolean {
-    return this.options.listable == null ? true : this.options.listable; // true by default
-  }
-
-  public query(request: IQueryRequest): Promise<IQueryResponse> {
-    const features = [] as Feature[];
-    return Promise.resolve({
-      request,
-      featureTypeResponses: [
-        {
-          type: null,
-          features: [],
-          source: this,
-        },
-      ],
-    });
-  }
-
-  public retrieveFeature(id: number | string, projection: Projection): Promise<Feature> {
-    return null;
+    return this.options.listable;
   }
 }

@@ -7,22 +7,30 @@ import Projection from 'ol/proj/Projection';
 import { SourceType } from './types/sourceType';
 import { LayerType } from './types/layerType';
 
-export interface IExtendedOptions {
+export interface ISnapshotOptions {
   snapshotable?: boolean;
   listable?: boolean;
 }
 
-export interface IExtended extends Source {
-  init(): Promise<void>;
+export interface ISnapshotSource extends Source {
   getSourceType(): SourceType;
-  getSourceOptions(): IExtendedOptions;
-  setSourceOptions(options: IExtendedOptions): void;
+  getSourceOptions(): ISnapshotOptions;
+  setSourceOptions(options: ISnapshotOptions): void;
   getLayerType(): LayerType;
-  isSnapshotable(): boolean;
-  isListable(): boolean;
+  isSnapshotable(): boolean; // Can save snapshot
+  isListable(): boolean; // Visible by others tools
+}
+
+export interface IInitSource extends ISnapshotSource {
+  init(): Promise<void>;
+}
+
+export interface IQuerySource extends ISnapshotSource {
   query(identifyRequest: IQueryRequest): Promise<IQueryResponse>;
   retrieveFeature(id: number | string, featureProjection: Projection): Promise<Feature>;
 }
+
+export interface IExtended extends IInitSource, IQuerySource {}
 
 export interface IQueryRequest {
   olMap: OlMap;

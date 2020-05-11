@@ -3,7 +3,7 @@ import {
   IQueryRequest,
   IQueryResponse,
   IQueryFeatureTypeResponse,
-  IExtendedOptions,
+  ISnapshotOptions,
   IFeatureType,
   IExtended,
 } from './IExtended';
@@ -15,7 +15,7 @@ import { Options } from 'ol/source/TileWMS';
 import Feature from 'ol/Feature';
 import Projection from 'ol/proj/Projection';
 
-export interface ITileWmsOptions extends IExtendedOptions, Options {
+export interface ITileWmsOptions extends ISnapshotOptions, Options {
   types: IFeatureType<string>[];
 }
 
@@ -25,6 +25,12 @@ export class TileWms extends OlTileWMS implements IExtended {
   constructor(options: ITileWmsOptions) {
     super({ ...options } as any);
     this.options = { ...options };
+    if (this.options.snapshotable != false) {
+      this.options.snapshotable = true;
+    }
+    if (this.options.listable != false) {
+      this.options.listable = true;
+    }
     this.setSourceOptions(this.options);
   }
 
@@ -60,11 +66,11 @@ export class TileWms extends OlTileWMS implements IExtended {
   }
 
   public isSnapshotable(): boolean {
-    return this.options.snapshotable == null ? true : this.options.snapshotable; // true by default
+    return this.options.snapshotable;
   }
 
   public isListable(): boolean {
-    return this.options.listable == null ? true : this.options.listable; // true by default
+    return this.options.listable;
   }
 
   public query(request: IQueryRequest): Promise<IQueryResponse> {

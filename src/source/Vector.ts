@@ -5,12 +5,12 @@ import { fromCircle } from 'ol/geom/Polygon';
 import Circle from 'ol/geom/Circle';
 import OlGeoJSON from 'ol/format/GeoJSON';
 import booleanDisjoint from '@turf/boolean-disjoint';
-import { IQueryRequest, IQueryResponse, IExtendedOptions, IExtended } from './IExtended';
+import { IQueryRequest, IQueryResponse, ISnapshotOptions, IExtended } from './IExtended';
 import { LayerType, LayerTypeEnum } from './types/layerType';
 import { SourceType, SourceTypeEnum } from './types/sourceType';
 import { Options } from 'ol/source/Vector';
 
-export interface IVectorOptions extends IExtendedOptions, Options {}
+export interface IVectorOptions extends ISnapshotOptions, Options {}
 
 export abstract class Vector extends OlVector implements IExtended {
   protected options: IVectorOptions;
@@ -24,6 +24,12 @@ export abstract class Vector extends OlVector implements IExtended {
   constructor(options: IVectorOptions) {
     super({ ...options } as any);
     this.options = { ...options };
+    if (this.options.snapshotable != false) {
+      this.options.snapshotable = true;
+    }
+    if (this.options.listable != false) {
+      this.options.listable = true;
+    }
   }
 
   public init(): Promise<void> {
@@ -47,11 +53,11 @@ export abstract class Vector extends OlVector implements IExtended {
   }
 
   public isSnapshotable(): boolean {
-    return this.options.snapshotable == null ? true : this.options.snapshotable; // true by default
+    return this.options.snapshotable;
   }
 
   public isListable(): boolean {
-    return this.options.listable == null ? true : this.options.listable; // true by default
+    return this.options.listable;
   }
 
   public loadFeatures(extent: [number, number, number, number], resolution: number, projection: Projection) {

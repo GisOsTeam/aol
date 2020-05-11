@@ -1,40 +1,23 @@
 import OlXyz from 'ol/source/XYZ';
-import { IQueryRequest, IQueryResponse, IExtendedOptions, IExtended } from './IExtended';
+import { ISnapshotOptions, ISnapshotSource } from './IExtended';
 import { SourceType, SourceTypeEnum } from './types/sourceType';
 import { LayerType, LayerTypeEnum } from './types/layerType';
 import { Options } from 'ol/source/XYZ';
-import Feature from 'ol/Feature';
-import Projection from 'ol/proj/Projection';
 
-export interface IXyzOptions extends IExtendedOptions, Options {}
+export interface IXyzOptions extends ISnapshotOptions, Options {}
 
-export class Xyz extends OlXyz implements IExtended {
+export class Xyz extends OlXyz implements ISnapshotSource {
   protected options: IXyzOptions;
 
   constructor(options: IXyzOptions) {
     super({ ...options } as any);
     this.options = { ...options };
-  }
-
-  public init(): Promise<void> {
-    return Promise.resolve();
-  }
-
-  public query(request: IQueryRequest): Promise<IQueryResponse> {
-    return Promise.resolve({
-      request,
-      featureTypeResponses: [
-        {
-          type: null,
-          features: [],
-          source: this,
-        },
-      ],
-    });
-  }
-
-  public retrieveFeature(id: number | string, projection: Projection): Promise<Feature> {
-    return Promise.resolve(null);
+    if (this.options.snapshotable != false) {
+      this.options.snapshotable = true;
+    }
+    if (this.options.listable != false) {
+      this.options.listable = true;
+    }
   }
 
   public getSourceType(): SourceType {
@@ -54,10 +37,10 @@ export class Xyz extends OlXyz implements IExtended {
   }
 
   public isSnapshotable(): boolean {
-    return this.options.snapshotable == null ? true : this.options.snapshotable; // true by default
+    return this.options.snapshotable;
   }
 
   public isListable(): boolean {
-    return this.options.listable == null ? true : this.options.listable; // true by default
+    return this.options.listable;
   }
 }

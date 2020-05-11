@@ -20,6 +20,12 @@ export class LocalVector extends Vector {
     const initialFeatures = options.initialFeatures;
     options.initialFeatures = undefined;
     this.options = { ...options };
+    if (this.options.snapshotable != false) {
+      this.options.snapshotable = true;
+    }
+    if (this.options.listable != false) {
+      this.options.listable = true;
+    }
     this.origstrategy_ = this.strategy_;
     this.strategy_ = (extent: [number, number, number, number], resolution: number) => {
       if (this.oldProjectionCode !== this.actualProjectionCode) {

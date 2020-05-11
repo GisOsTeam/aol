@@ -1,5 +1,5 @@
 import OlWmts, { Options } from 'ol/source/WMTS';
-import { IExtended, IExtendedOptions } from './IExtended';
+import { ISnapshotOptions, ISnapshotSource } from './IExtended';
 import { LayerTypeEnum, SourceTypeEnum } from './types';
 
 export interface WmtsSnapshotOptions extends Pick<Options, 'layer' | 'matrixSet' | 'url'> {
@@ -13,19 +13,19 @@ export interface WmtsSnapshotOptions extends Pick<Options, 'layer' | 'matrixSet'
 export interface WmtsOptions
   extends Omit<Options, 'layer' | 'matrixSet' | 'url'>,
     WmtsSnapshotOptions,
-    IExtendedOptions {}
+    ISnapshotOptions {}
 
-export class Wmts extends OlWmts implements Omit<IExtended, 'init' | 'query' | 'retrieveFeature'> {
+export class Wmts extends OlWmts implements ISnapshotSource {
   protected options: WmtsOptions;
 
   constructor(options: WmtsOptions) {
     options.urls = [options.url + '?'];
     super({ ...options });
     this.options = { ...options };
-    if (!('snapshotable' in this.options)) {
+    if (this.options.snapshotable != false) {
       this.options.snapshotable = true;
     }
-    if (!('listable' in this.options)) {
+    if (this.options.listable != false) {
       this.options.listable = true;
     }
   }
@@ -34,7 +34,7 @@ export class Wmts extends OlWmts implements Omit<IExtended, 'init' | 'query' | '
     return LayerTypeEnum.Tile;
   }
 
-  getSourceOptions(): IExtendedOptions {
+  getSourceOptions(): ISnapshotOptions {
     return this.options;
   }
 
@@ -42,12 +42,12 @@ export class Wmts extends OlWmts implements Omit<IExtended, 'init' | 'query' | '
     return SourceTypeEnum.Wmts;
   }
 
-  isListable(): boolean {
-    return this.options.listable;
+  public isSnapshotable(): boolean {
+    return this.options.snapshotable;
   }
 
-  isSnapshotable(): boolean {
-    return this.options.snapshotable;
+  public isListable(): boolean {
+    return this.options.listable;
   }
 
   setSourceOptions(options: WmtsOptions): void {

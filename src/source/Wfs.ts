@@ -3,10 +3,10 @@ import Projection from 'ol/proj/Projection';
 import { ExternalVector } from './ExternalVector';
 import { SourceType, SourceTypeEnum } from './types/sourceType';
 import { LayerType, LayerTypeEnum } from './types/layerType';
-import { IExtendedOptions, IFeatureType } from './IExtended';
+import { ISnapshotOptions, IFeatureType } from './IExtended';
 import { Options } from 'ol/source/Vector';
 
-export interface IWfsOptions extends IExtendedOptions, Options {
+export interface IWfsOptions extends ISnapshotOptions, Options {
   type: IFeatureType<string>;
   outputFormat?: string;
   version?: string;
@@ -32,6 +32,12 @@ export class Wfs extends ExternalVector {
       },
     });
     this.options = { ...this.defaultOptions, ...options };
+    if (this.options.snapshotable != false) {
+      this.options.snapshotable = true;
+    }
+    if (this.options.listable != false) {
+      this.options.listable = true;
+    }
   }
 
   public getSourceType(): SourceType {
@@ -51,10 +57,10 @@ export class Wfs extends ExternalVector {
   }
 
   public isSnapshotable(): boolean {
-    return this.options.snapshotable == null ? true : this.options.snapshotable; // true by default
+    return this.options.snapshotable;
   }
 
   public isListable(): boolean {
-    return this.options.listable == null ? true : this.options.listable; // true by default
+    return this.options.listable;
   }
 }

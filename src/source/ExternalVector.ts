@@ -8,6 +8,12 @@ export class ExternalVector extends Vector {
   constructor(options: IExternalVectorOptions) {
     super({ ...options, useSpatialIndex: false });
     this.options = options;
+    if (this.options.snapshotable != false) {
+      this.options.snapshotable = true;
+    }
+    if (this.options.listable != false) {
+      this.options.listable = true;
+    }
   }
 
   public getSourceType(): SourceType {
@@ -27,10 +33,10 @@ export class ExternalVector extends Vector {
   }
 
   public isSnapshotable(): boolean {
-    return this.options.snapshotable == null ? true : this.options.snapshotable; // true by default
+    return this.options.snapshotable;
   }
 
   public isListable(): boolean {
-    return this.options.listable == null ? true : this.options.listable; // true by default
+    return this.options.listable;
   }
 }
