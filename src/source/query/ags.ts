@@ -3,6 +3,7 @@ import { transformExtent } from 'ol/proj';
 import EsriJSON from 'ol/format/EsriJSON';
 import { IQueryRequest, IFeatureType, IQueryFeatureTypeResponse, IExtended, IAttribute } from '../IExtended';
 import { send, IResponse } from 'bhreq';
+import { getForViewAndSize } from 'ol/extent';
 import { fromCircle } from 'ol/geom/Polygon';
 import Circle from 'ol/geom/Circle';
 import Projection from 'ol/proj/Projection';
@@ -50,17 +51,6 @@ export function executeAgsQuery(
   }
   const olView = olMap.getView();
   const mapProjection = olView.getProjection();
-  const extent = transformExtent(geometry.getExtent(), geometryProjection, 'EPSG:' + srId);
-  if (extent[0] > extent[2]) {
-    const val = extent[0];
-    extent[0] = extent[2];
-    extent[2] = val;
-  }
-  if (extent[1] > extent[3]) {
-    const val = extent[1];
-    extent[1] = extent[3];
-    extent[3] = val;
-  }
   let url = '';
   if ('getUrl' in source) {
     url = (source as any).getUrl();
@@ -75,8 +65,15 @@ export function executeAgsQuery(
   body.returnGeometry = 'true';
   if (queryType === 'identify') {
     url += '/identify';
-    body.mapExtent = extent.join(',');
-    body.imageDisplay = '101,101';
+    const extent = transformExtent(geometry.getExtent(), geometryProjection, 'EPSG:' + srId);
+    const mapExtent = getForViewAndSize(
+      [0.5 * extent[0] + 0.5 * extent[2], 0.5 * extent[1] + 0.5 * extent[3]],
+      olView.getResolution(),
+      0,
+      [1001, 1001]
+    );
+    body.mapExtent = mapExtent.join(',');
+    body.imageDisplay = '1001,1001';
     body.layers = `all:${type.id}`;
     body.sr = srId;
     if (Math.round(identifyTolerance) > 0) {
