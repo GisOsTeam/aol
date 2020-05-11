@@ -214,7 +214,9 @@ export function getAgsLayersFromTypes(types: IFeatureType<number>[]): string {
 /**
  * Create MB layer styles
  */
-export function createLayerStyles(props= {strokeColor: 'rgba(0, 0, 255, 0.9)', fillColor: 'rgba(127, 127, 127, 0.2)', width: 3, radius: 3}): LayerStyles {
+export function createLayerStyles(
+  props = { strokeColor: 'rgba(0, 0, 255, 0.9)', fillColor: 'rgba(127, 127, 127, 0.2)', width: 3, radius: 3 }
+): LayerStyles {
   return [
     {
       type: 'circle',
