@@ -1,5 +1,5 @@
 import { Wmts, WmtsSnapshotOptions } from '../Wmts';
-import { WmtsFactory } from '../factory/wmts-factory';
+import { WmtsFactory } from '../factory/WmtsFactory';
 import { IResponse, send } from 'bhreq';
 
 export class WmtsProvider {
