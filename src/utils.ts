@@ -212,32 +212,32 @@ export function getAgsLayersFromTypes(types: IFeatureType<number>[]): string {
 }
 
 /**
- * Get default MB layer style
+ * Create MB layer styles
  */
-export function getDefaultLayerStyles(): LayerStyles {
+export function createLayerStyles(props= {strokeColor: 'rgba(0, 0, 255, 0.9)', fillColor: 'rgba(127, 127, 127, 0.2)', width: 3, radius: 3}): LayerStyles {
   return [
     {
       type: 'circle',
       paint: {
-        'circle-color': 'rgba(127, 127, 127, 0.2)',
-        'circle-stroke-color': 'rgba(0, 0, 0, 0.9)',
-        'circle-radius': 3,
-        'circle-stroke-width': 2,
+        'circle-color': `${props.fillColor}`,
+        'circle-stroke-color': `${props.strokeColor}`,
+        'circle-radius': props.radius,
+        'circle-stroke-width': props.width,
       },
     },
     {
       type: 'line',
       paint: {
-        'line-color': 'rgba(0, 0, 255, 0.9)',
+        'line-color': `${props.strokeColor}`,
         'line-cap': 'butt',
         'line-join': 'miter',
-        'line-width': 2,
+        'line-width': props.width,
       },
     },
     {
       type: 'fill',
       paint: {
-        'fill-color': 'rgba(127, 127, 127, 0.2)',
+        'fill-color': `${props.fillColor}`,
       },
     },
   ];
