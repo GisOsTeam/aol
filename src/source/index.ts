@@ -15,4 +15,5 @@ export * from './TileWms';
 export * from './Vector';
 export * from './VectorTile';
 export * from './Wfs';
+export * from './Wmts';
 export * from './Xyz';
