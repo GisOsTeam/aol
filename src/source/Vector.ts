@@ -22,7 +22,7 @@ export abstract class Vector extends OlVector implements IQuerySource {
   private queryGeoJSONFormat = new OlGeoJSON();
 
   constructor(options: IVectorOptions) {
-    super({ ...options } as any);
+    super({ ...options });
     this.options = { ...options };
     if (this.options.snapshotable != false) {
       this.options.snapshotable = true;

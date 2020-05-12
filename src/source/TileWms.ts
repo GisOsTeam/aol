@@ -23,7 +23,7 @@ export class TileWms extends OlTileWMS implements IExtended {
   protected options: ITileWmsOptions;
 
   constructor(options: ITileWmsOptions) {
-    super({ ...options } as any);
+    super({ ...options });
     this.options = { ...options };
     if (this.options.snapshotable != false) {
       this.options.snapshotable = true;

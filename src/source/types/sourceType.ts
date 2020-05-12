@@ -11,6 +11,7 @@ export type SourceType =
   | SourceTypeEnum.VectorTile
   | SourceTypeEnum.Wfs
   | SourceTypeEnum.Wmts
+  | SourceTypeEnum.WmtsCapabilities
   | SourceTypeEnum.Xyz;
 
 export enum SourceTypeEnum {
@@ -26,5 +27,6 @@ export enum SourceTypeEnum {
   VectorTile = 'VectorTile',
   Wfs = 'Wfs',
   Wmts = 'Wmts',
+  WmtsCapabilities = 'WmtsCapabilities',
   Xyz = 'Xyz',
 }

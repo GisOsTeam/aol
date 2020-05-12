@@ -31,12 +31,6 @@ export class WmtsProvider {
   }
 
   private static isWmtsSnapshotOptionsValid(wmtsCapabilitiesOptions: IWmtsCapabilitiesOptions): boolean {
-    if (!wmtsCapabilitiesOptions.matrixSet) {
-      throw new Error(`WmtsSnapshotOptions.matrixSet is mandatory to provide wmts.`);
-    }
-    if (!wmtsCapabilitiesOptions.url) {
-      throw new Error(`WmtsSnapshotOptions.url is mandatory to provide wmts.`);
-    }
     if (!wmtsCapabilitiesOptions.layer) {
       throw new Error(`WmtsSnapshotOptions.layer is mandatory to provide wmts.`);
     }

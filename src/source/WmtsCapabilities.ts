@@ -1,8 +1,6 @@
-import TileImage from 'ol/source/TileImage';
-import { Options } from 'ol/source/WMTS';
+import WMTS, { Options } from 'ol/source/WMTS';
 import { ISnapshotOptions, IInitSource } from './IExtended';
 import { LayerTypeEnum, SourceTypeEnum } from './types';
-import { Wmts } from './Wmts';
 import { WmtsProvider } from './provider';
 
 export interface IWmtsCapabilitiesOptions
@@ -15,20 +13,25 @@ export interface IWmtsCapabilitiesOptions
   capabilitiesUrl?: string;
 }
 
-export class WmtsCapabilities extends TileImage implements IInitSource {
+export class WmtsCapabilities extends WMTS implements IInitSource {
   protected options: IWmtsCapabilitiesOptions;
 
-  protected internalWmtsSource: Wmts;
-
   constructor(options: IWmtsCapabilitiesOptions) {
-    super(options);
+    super({ ...options } as any);
     this.options = { ...options };
+    if (this.options.snapshotable != false) {
+      this.options.snapshotable = true;
+    }
+    if (this.options.listable != false) {
+      this.options.listable = true;
+    }
   }
 
   public init(): Promise<void> {
     return WmtsProvider.provideAsync(this.options).then((wmtsSource) => {
-      this.internalWmtsSource = wmtsSource;
-      this.setTileUrlFunction(this.internalWmtsSource.getTileUrlFunction());
+      for (const propertyName in wmtsSource) {
+        (this as any)[propertyName] = (wmtsSource as any)[propertyName];
+      }
     });
   }
 

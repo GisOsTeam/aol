@@ -8,7 +8,6 @@ export class Wmts extends OlWmts implements ISnapshotSource {
   protected options: IWmtsOptions;
 
   constructor(options: IWmtsOptions) {
-    options.urls = [options.url + '?'];
     super({ ...options });
     this.options = { ...options };
     if (this.options.snapshotable != false) {

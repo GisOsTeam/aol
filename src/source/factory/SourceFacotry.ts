@@ -11,6 +11,7 @@ import { TileWms } from '../TileWms';
 import { Wfs } from '../Wfs';
 import { Wmts } from '../Wmts';
 import { Xyz } from '../Xyz';
+import { WmtsCapabilities } from '../WmtsCapabilities';
 
 export class SourceFactory {
   public static create(sourceTypeName: SourceType, sourceOptions: any): ISnapshotSource {
@@ -45,6 +46,9 @@ export class SourceFactory {
         break;
       case SourceTypeEnum.Wmts:
         source = new Wmts(sourceOptions);
+        break;
+      case SourceTypeEnum.WmtsCapabilities:
+        source = new WmtsCapabilities(sourceOptions);
         break;
       case SourceTypeEnum.Xyz:
         source = new Xyz(sourceOptions);

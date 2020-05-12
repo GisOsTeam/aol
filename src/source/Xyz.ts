@@ -10,7 +10,7 @@ export class Xyz extends OlXyz implements ISnapshotSource {
   protected options: IXyzOptions;
 
   constructor(options: IXyzOptions) {
-    super({ ...options } as any);
+    super({ ...options });
     this.options = { ...options };
     if (this.options.snapshotable != false) {
       this.options.snapshotable = true;
