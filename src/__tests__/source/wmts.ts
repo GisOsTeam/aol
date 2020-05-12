@@ -38,8 +38,7 @@ describe('aol.wmts', () => {
   });
   test('provide ogc async with capabilitiesUrl', async () => {
     const sourceWmts = await WmtsProvider.provideAsync({
-      capabilitiesUrl:
-        'https://wxs.ign.fr/beta/geoportail/wmts?SERVICE=WMTS&REQUEST=GetCapabilities&VERSION=1.0.0',
+      capabilitiesUrl: 'https://wxs.ign.fr/beta/geoportail/wmts?SERVICE=WMTS&REQUEST=GetCapabilities&VERSION=1.0.0',
       layer: 'CADASTRALPARCELS.PARCELLAIRE_EXPRESS',
       matrixSet: 'PM',
       url: 'https://wxs.ign.fr/beta/geoportail/wmts',
