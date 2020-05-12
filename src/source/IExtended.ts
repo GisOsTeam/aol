@@ -50,7 +50,7 @@ export interface IQueryResponse {
 export interface IQueryFeatureTypeResponse {
   type: IFeatureType<any>;
   features: Feature[];
-  source: IExtended;
+  source: IQuerySource;
 }
 
 export interface IFilter {

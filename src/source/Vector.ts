@@ -5,14 +5,14 @@ import { fromCircle } from 'ol/geom/Polygon';
 import Circle from 'ol/geom/Circle';
 import OlGeoJSON from 'ol/format/GeoJSON';
 import booleanDisjoint from '@turf/boolean-disjoint';
-import { IQueryRequest, IQueryResponse, ISnapshotOptions, IExtended } from './IExtended';
+import { IQueryRequest, IQueryResponse, ISnapshotOptions, IQuerySource } from './IExtended';
 import { LayerType, LayerTypeEnum } from './types/layerType';
 import { SourceType, SourceTypeEnum } from './types/sourceType';
 import { Options } from 'ol/source/Vector';
 
 export interface IVectorOptions extends ISnapshotOptions, Options {}
 
-export abstract class Vector extends OlVector implements IExtended {
+export abstract class Vector extends OlVector implements IQuerySource {
   protected options: IVectorOptions;
 
   protected oldProjectionCode: string;
@@ -30,10 +30,6 @@ export abstract class Vector extends OlVector implements IExtended {
     if (this.options.listable != false) {
       this.options.listable = true;
     }
-  }
-
-  public init(): Promise<void> {
-    return Promise.resolve();
   }
 
   public getSourceType(): SourceType {

@@ -2,23 +2,12 @@ import OlWmts, { Options } from 'ol/source/WMTS';
 import { ISnapshotOptions, ISnapshotSource } from './IExtended';
 import { LayerTypeEnum, SourceTypeEnum } from './types';
 
-export interface WmtsSnapshotOptions extends Pick<Options, 'layer' | 'matrixSet' | 'url'> {
-  /**
-   * Url utilisée pour :
-   *  * récupérer les capabilities de la source
-   */
-  capabilitiesUrl?: string;
-}
-
-export interface WmtsOptions
-  extends Omit<Options, 'layer' | 'matrixSet' | 'url'>,
-    WmtsSnapshotOptions,
-    ISnapshotOptions {}
+export interface IWmtsOptions extends ISnapshotOptions, Options {}
 
 export class Wmts extends OlWmts implements ISnapshotSource {
-  protected options: WmtsOptions;
+  protected options: IWmtsOptions;
 
-  constructor(options: WmtsOptions) {
+  constructor(options: IWmtsOptions) {
     options.urls = [options.url + '?'];
     super({ ...options });
     this.options = { ...options };
@@ -30,15 +19,15 @@ export class Wmts extends OlWmts implements ISnapshotSource {
     }
   }
 
-  getLayerType(): LayerTypeEnum {
+  public getLayerType(): LayerTypeEnum {
     return LayerTypeEnum.Tile;
   }
 
-  getSourceOptions(): ISnapshotOptions {
+  public getSourceOptions(): ISnapshotOptions {
     return this.options;
   }
 
-  getSourceType(): SourceTypeEnum {
+  public getSourceType(): SourceTypeEnum {
     return SourceTypeEnum.Wmts;
   }
 
@@ -50,8 +39,7 @@ export class Wmts extends OlWmts implements ISnapshotSource {
     return this.options.listable;
   }
 
-  setSourceOptions(options: WmtsOptions): void {
+  public setSourceOptions(options: IWmtsOptions): void {
     this.options = { ...options };
-    this.setProperties(this.options);
   }
 }

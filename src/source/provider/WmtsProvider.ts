@@ -1,44 +1,43 @@
-import { Wmts, WmtsSnapshotOptions } from '../Wmts';
+import { Wmts } from '../Wmts';
 import { WmtsFactory } from '../factory/WmtsFactory';
 import { IResponse, send } from 'bhreq';
+import { IWmtsCapabilitiesOptions } from '../WmtsCapabilities';
 
 export class WmtsProvider {
-  public static provideSync(source: Document | Element | string, wmtsSnapshotOptions: WmtsSnapshotOptions): Wmts {
-    this.isWmtsSnapshotOptionsValid(wmtsSnapshotOptions);
-    return WmtsFactory.create(source, wmtsSnapshotOptions);
+  public static provideSync(
+    source: Document | Element | string,
+    wmtsCapabilitiesOptions: IWmtsCapabilitiesOptions
+  ): Wmts {
+    this.isWmtsSnapshotOptionsValid(wmtsCapabilitiesOptions);
+    return WmtsFactory.create(source, wmtsCapabilitiesOptions);
   }
 
-  public static async provideAsync(wmtsSnapshotOptions: WmtsSnapshotOptions): Promise<Wmts> {
-    this.isWmtsSnapshotOptionsValid(wmtsSnapshotOptions);
-    if (!wmtsSnapshotOptions.capabilitiesUrl) {
-      throw new Error(`WmtsSnapshotOptions.capabilitiesUrl is mandatory to provide wmts async.`);
+  public static async provideAsync(wmtsCapabilitiesOptions: IWmtsCapabilitiesOptions): Promise<Wmts> {
+    this.isWmtsSnapshotOptionsValid(wmtsCapabilitiesOptions);
+    if (!wmtsCapabilitiesOptions.capabilitiesUrl) {
+      wmtsCapabilitiesOptions.capabilitiesUrl = `${wmtsCapabilitiesOptions.url}?SERVICE=WMTS&REQUEST=GetCapabilities&VERSION=1.0.0`;
     }
     const request = {
-      url: wmtsSnapshotOptions.capabilitiesUrl,
+      url: wmtsCapabilitiesOptions.capabilitiesUrl,
       method: 'GET',
     };
     const response: IResponse = await send(request);
-    return WmtsFactory.create(response.text, wmtsSnapshotOptions);
+    let capabilitiesTxt = response.text;
+    // HACK
+    capabilitiesTxt = capabilitiesTxt.replace(/urn:ogc:def:crs:EPSG:[0-9.]*:([0-9]+)/gi, 'EPSG:$1');
+    capabilitiesTxt = capabilitiesTxt.replace(/urn:ogc:def:crs:OGC:[0-9.]*:(CRS)?([0-9]+)/gi, 'CRS:$2');
+    // FIN HACK
+    return WmtsFactory.create(capabilitiesTxt, wmtsCapabilitiesOptions);
   }
 
-  public static async provideOGCAsync(wmtsSnapshotOptions: WmtsSnapshotOptions): Promise<Wmts> {
-    this.isWmtsSnapshotOptionsValid(wmtsSnapshotOptions);
-    const request = {
-      url: `${wmtsSnapshotOptions.url}?SERVICE=WMTS&REQUEST=GetCapabilities&VERSION=1.0.0`,
-      method: 'GET',
-    };
-    const response: IResponse = await send(request);
-    return WmtsFactory.create(response.text, wmtsSnapshotOptions);
-  }
-
-  private static isWmtsSnapshotOptionsValid(wmtsSnapshotOptions: WmtsSnapshotOptions): boolean {
-    if (!wmtsSnapshotOptions.matrixSet) {
+  private static isWmtsSnapshotOptionsValid(wmtsCapabilitiesOptions: IWmtsCapabilitiesOptions): boolean {
+    if (!wmtsCapabilitiesOptions.matrixSet) {
       throw new Error(`WmtsSnapshotOptions.matrixSet is mandatory to provide wmts.`);
     }
-    if (!wmtsSnapshotOptions.url) {
+    if (!wmtsCapabilitiesOptions.url) {
       throw new Error(`WmtsSnapshotOptions.url is mandatory to provide wmts.`);
     }
-    if (!wmtsSnapshotOptions.layer) {
+    if (!wmtsCapabilitiesOptions.layer) {
       throw new Error(`WmtsSnapshotOptions.layer is mandatory to provide wmts.`);
     }
     return true;

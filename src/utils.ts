@@ -22,6 +22,7 @@ import { TileArcGISRest } from './source/TileArcGISRest';
 import { TileWms } from './source/TileWms';
 import { Wfs } from './source/Wfs';
 import { Xyz } from './source/Xyz';
+import { SourceFactory } from './source/factory/SourceFacotry';
 
 const geoJSONFormat = new GeoJSON();
 
@@ -249,40 +250,7 @@ export function createLayerStyles(
  * Create source from options.
  */
 export function createSource(sourceTypeName: SourceType, sourceOptions: any): ISnapshotSource {
-  let source: ISnapshotSource;
-  switch (sourceTypeName) {
-    case SourceTypeEnum.ExternalVector:
-      source = new ExternalVector(sourceOptions);
-      break;
-    case SourceTypeEnum.ImageArcGISRest:
-      source = new ImageArcGISRest(sourceOptions);
-      break;
-    case SourceTypeEnum.ImageStatic:
-      source = new ImageStatic(sourceOptions);
-      break;
-    case SourceTypeEnum.ImageWms:
-      source = new ImageWms(sourceOptions);
-      break;
-    case SourceTypeEnum.LocalVector:
-      source = new LocalVector(sourceOptions);
-      break;
-    case SourceTypeEnum.QueryArcGISRest:
-      source = new QueryArcGISRest(sourceOptions);
-      break;
-    case SourceTypeEnum.TileArcGISRest:
-      source = new TileArcGISRest(sourceOptions);
-      break;
-    case SourceTypeEnum.TileWms:
-      source = new TileWms(sourceOptions);
-      break;
-    case SourceTypeEnum.Wfs:
-      source = new Wfs(sourceOptions);
-      break;
-    case SourceTypeEnum.Xyz:
-      source = new Xyz(sourceOptions);
-      break;
-  }
-  return source;
+  return SourceFactory.create(sourceTypeName, sourceOptions);
 }
 
 /**

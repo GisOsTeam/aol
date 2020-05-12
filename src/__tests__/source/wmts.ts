@@ -28,7 +28,7 @@ describe('aol.wmts', () => {
     expect(sourceWmts.getMatrixSet()).toEqual('GoogleMapsCompatible');
   });
   test('provide ogc async', async () => {
-    const sourceWmts = await WmtsProvider.provideOGCAsync({
+    const sourceWmts = await WmtsProvider.provideAsync({
       layer: 'CADASTRALPARCELS.PARCELLAIRE_EXPRESS',
       matrixSet: 'PM',
       url: 'https://wxs.ign.fr/beta/geoportail/wmts',
