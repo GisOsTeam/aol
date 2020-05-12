@@ -10,7 +10,7 @@ export interface IWmtsCapabilitiesOptions
     Pick<Options, 'layer'>,
     Partial<Omit<Options, 'layer'>> {
   /**
-   * Url utilisée pour récupérer les capabilities de la source
+   * Url complete utilisée pour récupérer les capabilities de la source (doit contenir la query, exemple SERVICE=WMTS&REQUEST=GetCapabilities&VERSION=1.0.0)
    */
   capabilitiesUrl?: string;
 }

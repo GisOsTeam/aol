@@ -16,7 +16,7 @@ describe('aol.wmts', () => {
     expect(sourceWmts.getLayer()).toEqual('WorldTimeZones');
     expect(sourceWmts.getMatrixSet()).toEqual('GoogleMapsCompatible');
   });
-  test('provide async', async () => {
+  test('provide async with capabilitiesUrl', async () => {
     const sourceWmts = await WmtsProvider.provideAsync({
       capabilitiesUrl:
         'https://sampleserver6.arcgisonline.com/arcgis/rest/services/WorldTimeZones/MapServer/WMTS/1.0.0/WMTSCapabilities.xml',
@@ -29,6 +29,17 @@ describe('aol.wmts', () => {
   });
   test('provide ogc async', async () => {
     const sourceWmts = await WmtsProvider.provideAsync({
+      layer: 'CADASTRALPARCELS.PARCELLAIRE_EXPRESS',
+      matrixSet: 'PM',
+      url: 'https://wxs.ign.fr/beta/geoportail/wmts',
+    });
+    expect(sourceWmts.getLayer()).toEqual('CADASTRALPARCELS.PARCELLAIRE_EXPRESS');
+    expect(sourceWmts.getMatrixSet()).toEqual('PM');
+  });
+  test('provide ogc async with capabilitiesUrl', async () => {
+    const sourceWmts = await WmtsProvider.provideAsync({
+      capabilitiesUrl:
+        'https://wxs.ign.fr/beta/geoportail/wmts?SERVICE=WMTS&REQUEST=GetCapabilities&VERSION=1.0.0',
       layer: 'CADASTRALPARCELS.PARCELLAIRE_EXPRESS',
       matrixSet: 'PM',
       url: 'https://wxs.ign.fr/beta/geoportail/wmts',
