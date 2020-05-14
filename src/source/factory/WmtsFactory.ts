@@ -1,30 +1,15 @@
-import { Wmts } from '../Wmts';
-import { optionsFromCapabilities } from 'ol/source/WMTS';
+import { Wmts, IWmtsOptions } from '../Wmts';
+import { optionsFromCapabilities, Options } from 'ol/source/WMTS';
 import WMTSCapabilities from 'ol/format/WMTSCapabilities';
-import { IWmtsCapabilitiesOptions } from '../WmtsCapabilities';
 
 const parser = new WMTSCapabilities();
 
 export class WmtsFactory {
-  public static create(source: Document | Element | string, wmtsCapabilitiesOptions: IWmtsCapabilitiesOptions): Wmts {
-    const config: any = {};
-    if (wmtsCapabilitiesOptions.layer) {
-      config.layer = wmtsCapabilitiesOptions.layer;
-    }
-    if (wmtsCapabilitiesOptions.matrixSet) {
-      config.matrixSet = wmtsCapabilitiesOptions.matrixSet;
-    }
-    if (wmtsCapabilitiesOptions.crossOrigin) {
-      config.crossOrigin = wmtsCapabilitiesOptions.crossOrigin;
-    }
-    if (wmtsCapabilitiesOptions.projection) {
-      config.projection = wmtsCapabilitiesOptions.projection;
-    }
+  public static create(source: Document | Element | string, wmtsOptions: Partial<IWmtsOptions>): Wmts {
+    const config: Partial<Options> = { ...wmtsOptions, url: undefined }; // On enlène l'url car elle provient de la source
     const options = optionsFromCapabilities(parser.read(source), config);
-
-    if (wmtsCapabilitiesOptions.url) {
-      options.urls = [`${wmtsCapabilitiesOptions.url}?`];
-      options.url = wmtsCapabilitiesOptions.url;
+    if (wmtsOptions.url) {
+      options.urls = [`${wmtsOptions.url}?`];
     }
     return new Wmts(options);
   }
