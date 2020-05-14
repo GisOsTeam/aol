@@ -21,6 +21,11 @@ export class WmtsFactory {
       config.projection = wmtsCapabilitiesOptions.projection;
     }
     const options = optionsFromCapabilities(parser.read(source), config);
+
+    if (wmtsCapabilitiesOptions.url) {
+      options.urls = [`${wmtsCapabilitiesOptions.url}?`];
+      options.url = wmtsCapabilitiesOptions.url;
+    }
     return new Wmts(options);
   }
 }

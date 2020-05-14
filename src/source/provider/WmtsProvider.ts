@@ -8,12 +8,12 @@ export class WmtsProvider {
     source: Document | Element | string,
     wmtsCapabilitiesOptions: IWmtsCapabilitiesOptions
   ): Wmts {
-    this.isWmtsSnapshotOptionsValid(wmtsCapabilitiesOptions);
+    this.isWmtsCapabilitiesOptionsValid(wmtsCapabilitiesOptions);
     return WmtsFactory.create(source, wmtsCapabilitiesOptions);
   }
 
   public static async provideAsync(wmtsCapabilitiesOptions: IWmtsCapabilitiesOptions): Promise<Wmts> {
-    this.isWmtsSnapshotOptionsValid(wmtsCapabilitiesOptions);
+    this.isWmtsCapabilitiesOptionsValid(wmtsCapabilitiesOptions);
     if (!wmtsCapabilitiesOptions.capabilitiesUrl) {
       wmtsCapabilitiesOptions.capabilitiesUrl = `${wmtsCapabilitiesOptions.url}?SERVICE=WMTS&REQUEST=GetCapabilities&VERSION=1.0.0`;
     }
@@ -30,9 +30,9 @@ export class WmtsProvider {
     return WmtsFactory.create(capabilitiesTxt, wmtsCapabilitiesOptions);
   }
 
-  private static isWmtsSnapshotOptionsValid(wmtsCapabilitiesOptions: IWmtsCapabilitiesOptions): boolean {
+  private static isWmtsCapabilitiesOptionsValid(wmtsCapabilitiesOptions: IWmtsCapabilitiesOptions): boolean {
     if (!wmtsCapabilitiesOptions.layer) {
-      throw new Error(`WmtsSnapshotOptions.layer is mandatory to provide wmts.`);
+      throw new Error(`WmtsCapabilitiesOptions.layer is mandatory to provide wmts.`);
     }
     return true;
   }
