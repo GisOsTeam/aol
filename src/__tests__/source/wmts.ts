@@ -62,9 +62,24 @@ describe('aol.wmts', () => {
       layer: 'CADASTRALPARCELS.PARCELLAIRE_EXPRESS',
       matrixSet: 'PM',
       url: 'https://my-serveur/my-proxy',
+      requestEncoding: 'KVP',
     });
     expect(sourceWmts.getLayer()).toEqual('CADASTRALPARCELS.PARCELLAIRE_EXPRESS');
     expect(sourceWmts.getMatrixSet()).toEqual('PM');
+    expect(sourceWmts.getUrls()).toEqual(['https://my-serveur/my-proxy?']);
+  });
+
+  test('provide async with proxyfied url', async () => {
+    const sourceWmts = await WmtsProvider.provideAsync({
+      capabilitiesUrl:
+        'https://sampleserver6.arcgisonline.com/arcgis/rest/services/WorldTimeZones/MapServer/WMTS/1.0.0/WMTSCapabilities.xml',
+      layer: 'WorldTimeZones',
+      matrixSet: 'GoogleMapsCompatible',
+      url: 'https://my-serveur/my-proxy',
+      requestEncoding: 'KVP',
+    });
+    expect(sourceWmts.getLayer()).toEqual('WorldTimeZones');
+    expect(sourceWmts.getMatrixSet()).toEqual('GoogleMapsCompatible');
     expect(sourceWmts.getUrls()).toEqual(['https://my-serveur/my-proxy?']);
   });
 });
