@@ -1,5 +1,5 @@
 import OlMap from 'ol/Map';
-import Source from 'ol/source/Source';
+import Source, { Options } from 'ol/source/Source';
 import Feature from 'ol/Feature';
 import Point from 'ol/geom/Point';
 import Geometry from 'ol/geom/Geometry';
@@ -7,7 +7,7 @@ import Projection from 'ol/proj/Projection';
 import { SourceType } from './types/sourceType';
 import { LayerType } from './types/layerType';
 
-export interface ISnapshotOptions {
+export interface ISnapshotOptions extends Options {
   snapshotable?: boolean;
   listable?: boolean;
 }

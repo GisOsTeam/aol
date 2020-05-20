@@ -30,7 +30,17 @@ export class WmtsCapabilities extends WMTS implements IInitSource {
   public init(): Promise<void> {
     return WmtsProvider.provideAsync(this.options).then((wmtsSource) => {
       for (const propertyName in wmtsSource) {
-        (this as any)[propertyName] = (wmtsSource as any)[propertyName];
+        if (
+          propertyName !== 'options' &&
+          propertyName !== 'getLayerType' &&
+          propertyName !== 'getSourceOptions' &&
+          propertyName !== 'getSourceType' &&
+          propertyName !== 'isSnapshotable' &&
+          propertyName !== 'isListable' &&
+          propertyName !== 'setSourceOptions'
+        ) {
+          (this as any)[propertyName] = (wmtsSource as any)[propertyName];
+        }
       }
     });
   }
