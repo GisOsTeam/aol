@@ -22,6 +22,8 @@ export interface ITileWmsOptions extends ISnapshotOptions, Options {
 export class TileWms extends OlTileWMS implements IExtended {
   protected options: ITileWmsOptions;
 
+  protected legendByLayer: string[];
+
   constructor(options: ITileWmsOptions) {
     super({ ...options });
     this.options = { ...options };
@@ -39,6 +41,8 @@ export class TileWms extends OlTileWMS implements IExtended {
     for (const type of this.options.types) {
       promises.push(loadWmsFeatureDescription(this, type));
     }
+
+    this.legendByLayer = [`${this.getLegendUrl()}&SLD_VERSION=1.1.0`];
     return Promise.all(promises).then(() => {
       this.setSourceOptions(this.options);
       return;
@@ -51,6 +55,10 @@ export class TileWms extends OlTileWMS implements IExtended {
 
   public getSourceOptions(): ITileWmsOptions {
     return this.options;
+  }
+
+  public async getLegend(): Promise<string[]> {
+    return this.legendByLayer;
   }
 
   public setSourceOptions(options: ITileWmsOptions): void {

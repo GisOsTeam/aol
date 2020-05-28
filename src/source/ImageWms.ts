@@ -22,6 +22,8 @@ export interface IImageWMSOptions extends ISnapshotOptions, Options {
 export class ImageWms extends OlImageWMS implements IExtended {
   protected options: IImageWMSOptions;
 
+  protected legendByLayer: string[];
+
   constructor(options: IImageWMSOptions) {
     super({ ...options } as any);
     this.options = { ...options };
@@ -39,6 +41,8 @@ export class ImageWms extends OlImageWMS implements IExtended {
     for (const type of this.options.types) {
       promises.push(loadWmsFeatureDescription(this, type));
     }
+
+    this.legendByLayer = [`${this.getLegendUrl()}&SLD_VERSION=1.1.0`];
     return Promise.all(promises).then(() => {
       this.setSourceOptions(this.options);
       return;
@@ -51,6 +55,10 @@ export class ImageWms extends OlImageWMS implements IExtended {
 
   public getSourceOptions(): IImageWMSOptions {
     return this.options;
+  }
+
+  public async getLegend(): Promise<string[]> {
+    return this.legendByLayer;
   }
 
   public setSourceOptions(options: IImageWMSOptions): void {

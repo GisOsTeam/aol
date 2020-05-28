@@ -21,6 +21,7 @@ export interface IImageArcGISRestOptions extends ISnapshotOptions, Options {
 
 export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
   protected options: IImageArcGISRestOptions;
+  protected legendByLayer: Record<string, string[]>;
 
   constructor(options: IImageArcGISRestOptions) {
     super({ ...options } as any);
@@ -34,12 +35,13 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
     this.setSourceOptions(this.options);
   }
 
-  public init(): Promise<void> {
+  public async init(): Promise<void> {
     const promises: Promise<void>[] = [];
     for (const type of this.options.types) {
       promises.push(loadAgsFeatureDescription(this, type));
     }
-    return Promise.all(promises).then(() => {
+
+    return Promise.all([promises, this.fetchLegend()]).then(() => {
       this.setSourceOptions(this.options);
       return;
     });
@@ -63,6 +65,10 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
 
   public getLayerType(): LayerType {
     return LayerTypeEnum.Image;
+  }
+
+  public async getLegend() {
+    return await this.legendByLayer;
   }
 
   public isSnapshotable(): boolean {
@@ -110,4 +116,14 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
       this.options.types = value;
     }
   };
+
+  protected async fetchLegend() {
+    const legendResp = await fetch(`${this.getSourceOptions().url}/legend?f=json`).then((resp) => resp.json());
+    const displayedLayers = this.getSourceOptions().types.map((type) => type.id);
+    legendResp.layers.forEach((layer: any) => {
+      if (displayedLayers.indexOf(layer.layerId) >= 0) {
+        this.legendByLayer[layer.layerId] = layer.legend.map((legend: any) => `data:image/png;base64, ${legend.imageData}`);
+      }
+    });
+  }
 }
