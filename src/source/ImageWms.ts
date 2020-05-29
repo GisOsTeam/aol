@@ -14,15 +14,17 @@ import { SourceType, SourceTypeEnum } from './types/sourceType';
 import { Options } from 'ol/source/ImageWMS';
 import Feature from 'ol/Feature';
 import Projection from 'ol/proj/Projection';
+import { IHasLegend } from './IHasLegend';
+import { ILayerLegend } from './ILayerLegend';
 
 export interface IImageWMSOptions extends ISnapshotOptions, Options {
   types: IFeatureType<string>[];
 }
 
-export class ImageWms extends OlImageWMS implements IExtended {
+export class ImageWms extends OlImageWMS implements IExtended, IHasLegend {
   protected options: IImageWMSOptions;
 
-  protected legendByLayer: string[];
+  legendByLayer: Record<string, ILayerLegend[]>;
 
   constructor(options: IImageWMSOptions) {
     super({ ...options } as any);
@@ -35,6 +37,9 @@ export class ImageWms extends OlImageWMS implements IExtended {
     }
     this.setSourceOptions(this.options);
   }
+  async fetchLegend(): Promise<Record<string, ILayerLegend[]>> {
+    return this.legendByLayer;
+  }
 
   public init(): Promise<void> {
     const promises: Promise<void>[] = [];
@@ -42,7 +47,8 @@ export class ImageWms extends OlImageWMS implements IExtended {
       promises.push(loadWmsFeatureDescription(this, type));
     }
 
-    this.legendByLayer = [`${this.getLegendUrl()}&SLD_VERSION=1.1.0`];
+    this.legendByLayer = {0: [{ srcImage: this.getLegendUrl(undefined, {"TRANSPARENT":true, "SLD_VERSION": "1.1.0"}) }]};
+
     return Promise.all(promises).then(() => {
       this.setSourceOptions(this.options);
       return;
@@ -55,10 +61,6 @@ export class ImageWms extends OlImageWMS implements IExtended {
 
   public getSourceOptions(): IImageWMSOptions {
     return this.options;
-  }
-
-  public async getLegend(): Promise<string[]> {
-    return this.legendByLayer;
   }
 
   public setSourceOptions(options: IImageWMSOptions): void {

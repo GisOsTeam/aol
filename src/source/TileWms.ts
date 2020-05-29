@@ -14,15 +14,17 @@ import { LayerType, LayerTypeEnum } from './types/layerType';
 import { Options } from 'ol/source/TileWMS';
 import Feature from 'ol/Feature';
 import Projection from 'ol/proj/Projection';
+import { IHasLegend } from './IHasLegend';
+import { ILayerLegend } from './ILayerLegend';
 
 export interface ITileWmsOptions extends ISnapshotOptions, Options {
   types: IFeatureType<string>[];
 }
 
-export class TileWms extends OlTileWMS implements IExtended {
+export class TileWms extends OlTileWMS implements IExtended, IHasLegend {
   protected options: ITileWmsOptions;
 
-  protected legendByLayer: string[];
+  legendByLayer: Record<string, ILayerLegend[]>;
 
   constructor(options: ITileWmsOptions) {
     super({ ...options });
@@ -35,6 +37,9 @@ export class TileWms extends OlTileWMS implements IExtended {
     }
     this.setSourceOptions(this.options);
   }
+  async fetchLegend(): Promise<Record<string, ILayerLegend[]>> {
+    return this.legendByLayer;
+  }
 
   public init(): Promise<void> {
     const promises: Promise<void>[] = [];
@@ -42,7 +47,7 @@ export class TileWms extends OlTileWMS implements IExtended {
       promises.push(loadWmsFeatureDescription(this, type));
     }
 
-    this.legendByLayer = [`${this.getLegendUrl()}&SLD_VERSION=1.1.0`];
+    this.legendByLayer = {0: [{ srcImage: this.getLegendUrl(undefined, {"TRANSPARENT":true, "SLD_VERSION": "1.1.0"}) }]};
     return Promise.all(promises).then(() => {
       this.setSourceOptions(this.options);
       return;
@@ -55,10 +60,6 @@ export class TileWms extends OlTileWMS implements IExtended {
 
   public getSourceOptions(): ITileWmsOptions {
     return this.options;
-  }
-
-  public async getLegend(): Promise<string[]> {
-    return this.legendByLayer;
   }
 
   public setSourceOptions(options: ITileWmsOptions): void {
