@@ -47,7 +47,9 @@ export class ImageWms extends OlImageWMS implements IExtended, IHasLegend {
       promises.push(loadWmsFeatureDescription(this, type));
     }
 
-    this.legendByLayer = {0: [{ srcImage: this.getLegendUrl(undefined, {"TRANSPARENT":true, "SLD_VERSION": "1.1.0"}) }]};
+    this.legendByLayer = {
+      0: [{ srcImage: this.getLegendUrl(undefined, { TRANSPARENT: true, SLD_VERSION: '1.1.0' }) }],
+    };
 
     return Promise.all(promises).then(() => {
       this.setSourceOptions(this.options);

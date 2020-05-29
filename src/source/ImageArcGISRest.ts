@@ -131,10 +131,12 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IExtended, IHa
     const displayedLayers = this.options.types.map((type) => type.id);
     legendResp.layers.forEach((layer: any) => {
       if (displayedLayers.indexOf(layer.layerId) >= 0) {
-        this.legendByLayer[layer.layerId] = layer.legend.map((legend: any): ILayerLegend => ({
-          srcImage: `data:image/png;base64, ${legend.imageData}`,
-          label: legend.label || layer.layerName
-        }));
+        this.legendByLayer[layer.layerId] = layer.legend.map(
+          (legend: any): ILayerLegend => ({
+            srcImage: `data:image/png;base64, ${legend.imageData}`,
+            label: legend.label || layer.layerName,
+          })
+        );
       }
     });
 
