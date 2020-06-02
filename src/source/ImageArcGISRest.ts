@@ -6,6 +6,7 @@ import {
   IQueryFeatureTypeResponse,
   IFeatureType,
   IExtended,
+  ILayerLegend,
 } from './IExtended';
 import { getAgsLayersFromTypes } from '../utils';
 import { SourceType, SourceTypeEnum } from './types/sourceType';
@@ -21,6 +22,7 @@ export interface IImageArcGISRestOptions extends ISnapshotOptions, Options {
 
 export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
   protected options: IImageArcGISRestOptions;
+  protected legendByLayer: Record<string, ILayerLegend[]>;
 
   constructor(options: IImageArcGISRestOptions) {
     super({ ...options } as any);
@@ -34,12 +36,13 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
     this.setSourceOptions(this.options);
   }
 
-  public init(): Promise<void> {
+  public async init(): Promise<void> {
     const promises: Promise<void>[] = [];
     for (const type of this.options.types) {
       promises.push(loadAgsFeatureDescription(this, type));
     }
-    return Promise.all(promises).then(() => {
+
+    return Promise.all([promises, this.fetchLegend()]).then(() => {
       this.setSourceOptions(this.options);
       return;
     });
@@ -63,6 +66,10 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
 
   public getLayerType(): LayerType {
     return LayerTypeEnum.Image;
+  }
+
+  public async getLegend() {
+    return await this.legendByLayer;
   }
 
   public isSnapshotable(): boolean {
@@ -110,4 +117,28 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
       this.options.types = value;
     }
   };
+
+  async fetchLegend() {
+    if (this.legendByLayer) {
+      return this.legendByLayer;
+    }
+
+    const resp = await fetch(`${this.options.url}/legend?f=json`);
+    const legendResp = await resp.json();
+
+    this.legendByLayer = {};
+    const displayedLayers = this.options.types.map((type) => type.id);
+    legendResp.layers.forEach((layer: any) => {
+      if (displayedLayers.indexOf(layer.layerId) >= 0) {
+        this.legendByLayer[layer.layerId] = layer.legend.map(
+          (legend: any): ILayerLegend => ({
+            srcImage: `data:image/png;base64, ${legend.imageData}`,
+            label: legend.label || layer.layerName,
+          })
+        );
+      }
+    });
+
+    return this.legendByLayer;
+  }
 }

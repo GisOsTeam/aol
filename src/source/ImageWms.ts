@@ -6,6 +6,7 @@ import {
   ISnapshotOptions,
   IFeatureType,
   IExtended,
+  ILayerLegend,
 } from './IExtended';
 import { getWmsLayersFromTypes } from '../utils';
 import { executeWmsQuery, retrieveWmsFeature, loadWmsFeatureDescription } from './query/wms';
@@ -21,6 +22,7 @@ export interface IImageWMSOptions extends ISnapshotOptions, Options {
 
 export class ImageWms extends OlImageWMS implements IExtended {
   protected options: IImageWMSOptions;
+  protected legendByLayer: Record<string, ILayerLegend[]>;
 
   constructor(options: IImageWMSOptions) {
     super({ ...options } as any);
@@ -39,6 +41,11 @@ export class ImageWms extends OlImageWMS implements IExtended {
     for (const type of this.options.types) {
       promises.push(loadWmsFeatureDescription(this, type));
     }
+
+    this.legendByLayer = {
+      0: [{ srcImage: this.getLegendUrl(undefined, { TRANSPARENT: true, SLD_VERSION: '1.1.0' }) }],
+    };
+
     return Promise.all(promises).then(() => {
       this.setSourceOptions(this.options);
       return;
@@ -110,4 +117,8 @@ export class ImageWms extends OlImageWMS implements IExtended {
       this.options.types = value;
     }
   };
+
+  async fetchLegend(): Promise<Record<string, ILayerLegend[]>> {
+    return this.legendByLayer;
+  }
 }
