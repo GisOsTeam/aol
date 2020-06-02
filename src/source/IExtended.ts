@@ -30,7 +30,21 @@ export interface IQuerySource extends ISnapshotSource {
   retrieveFeature(id: number | string, featureProjection: Projection): Promise<Feature>;
 }
 
-export interface IExtended extends IInitSource, IQuerySource {}
+export interface ILayerLegend {
+  label?: string;
+  /**
+   * Either a base64 or an URL
+   */
+  srcImage: string;
+  height?: number;
+  width?: number;
+}
+
+export interface ILegendSource {
+  fetchLegend(): Promise<Record<string, ILayerLegend[]>>;
+}
+
+export interface IExtended extends IInitSource, IQuerySource, IInitSource {}
 
 export interface IQueryRequest {
   olMap: OlMap;

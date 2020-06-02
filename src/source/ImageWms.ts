@@ -6,6 +6,7 @@ import {
   ISnapshotOptions,
   IFeatureType,
   IExtended,
+  ILayerLegend,
 } from './IExtended';
 import { getWmsLayersFromTypes } from '../utils';
 import { executeWmsQuery, retrieveWmsFeature, loadWmsFeatureDescription } from './query/wms';
@@ -14,17 +15,14 @@ import { SourceType, SourceTypeEnum } from './types/sourceType';
 import { Options } from 'ol/source/ImageWMS';
 import Feature from 'ol/Feature';
 import Projection from 'ol/proj/Projection';
-import { IHasLegend } from './IHasLegend';
-import { ILayerLegend } from './ILayerLegend';
 
 export interface IImageWMSOptions extends ISnapshotOptions, Options {
   types: IFeatureType<string>[];
 }
 
-export class ImageWms extends OlImageWMS implements IExtended, IHasLegend {
+export class ImageWms extends OlImageWMS implements IExtended {
   protected options: IImageWMSOptions;
-
-  legendByLayer: Record<string, ILayerLegend[]>;
+  protected legendByLayer: Record<string, ILayerLegend[]>;
 
   constructor(options: IImageWMSOptions) {
     super({ ...options } as any);
@@ -36,9 +34,6 @@ export class ImageWms extends OlImageWMS implements IExtended, IHasLegend {
       this.options.listable = true;
     }
     this.setSourceOptions(this.options);
-  }
-  async fetchLegend(): Promise<Record<string, ILayerLegend[]>> {
-    return this.legendByLayer;
   }
 
   public init(): Promise<void> {
@@ -122,4 +117,8 @@ export class ImageWms extends OlImageWMS implements IExtended, IHasLegend {
       this.options.types = value;
     }
   };
+
+  async fetchLegend(): Promise<Record<string, ILayerLegend[]>> {
+    return this.legendByLayer;
+  }
 }

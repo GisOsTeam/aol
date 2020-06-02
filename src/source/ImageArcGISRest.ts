@@ -6,6 +6,7 @@ import {
   IQueryFeatureTypeResponse,
   IFeatureType,
   IExtended,
+  ILayerLegend,
 } from './IExtended';
 import { getAgsLayersFromTypes } from '../utils';
 import { SourceType, SourceTypeEnum } from './types/sourceType';
@@ -14,16 +15,14 @@ import { executeAgsQuery, retrieveAgsFeature, loadAgsFeatureDescription } from '
 import { Options } from 'ol/source/ImageArcGISRest';
 import Feature from 'ol/Feature';
 import Projection from 'ol/proj/Projection';
-import { ILayerLegend } from './ILayerLegend';
-import { IHasLegend } from './IHasLegend';
 
 export interface IImageArcGISRestOptions extends ISnapshotOptions, Options {
   types: IFeatureType<number>[];
 }
 
-export class ImageArcGISRest extends OlImageArcGISRest implements IExtended, IHasLegend {
+export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
   protected options: IImageArcGISRestOptions;
-  public legendByLayer: Record<string, ILayerLegend[]>;
+  protected legendByLayer: Record<string, ILayerLegend[]>;
 
   constructor(options: IImageArcGISRestOptions) {
     super({ ...options } as any);
