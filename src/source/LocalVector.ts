@@ -90,6 +90,12 @@ export class LocalVector extends Vector {
     const extents: [number, number, number, number][] = [];
     this.forEachFeature((feature: OlFeature) => {
       if (feature.getGeometry() != null) {
+        if ((feature as any).originalProjectionCode == null) {
+          (feature as any).originalProjectionCode = this.actualProjectionCode;
+        }
+        if ((feature as any).originalGeometry == null) {
+          (feature as any).originalGeometry = feature.getGeometry();
+        }
         const originalProjectionCode = (feature as any).originalProjectionCode;
         const originalGeometry = (feature as any).originalGeometry;
         if (originalProjectionCode != null && originalGeometry != null) {
