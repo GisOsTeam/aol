@@ -99,7 +99,15 @@ export function executeAgsQuery(
     (res: IResponse) => {
       const features = [] as Feature[];
       // Read features
-      const jsonQueryRes = res.body;
+      let jsonQueryRes = res.body;
+      if (typeof jsonQueryRes === 'string') {
+        try {
+          jsonQueryRes = JSON.parse(jsonQueryRes);
+        } catch (e) {
+          console.error(`Error occurred during reading identify response body `);
+          return e;
+        }
+      }
       if (jsonQueryRes != null) {
         const jsonFeatures = jsonQueryRes.features || jsonQueryRes.results;
         if (jsonFeatures != null && jsonFeatures.length > 0) {
