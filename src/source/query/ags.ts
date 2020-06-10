@@ -94,7 +94,7 @@ export function executeAgsQuery(
     body,
     method: 'POST',
     contentType: 'application/x-www-form-urlencoded',
-    responseType: 'application/json',
+    responseType: 'json',
   }).then(
     (res: IResponse) => {
       const features = [] as Feature[];
