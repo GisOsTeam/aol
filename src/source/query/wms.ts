@@ -68,7 +68,7 @@ function getFeatureInfoOnBBOX(
     body,
     method: 'POST',
     contentType: 'application/x-www-form-urlencoded',
-    responseType: 'text/plain',
+    responseType: 'text',
   }).then(
     (res: IResponse) => {
       // Read features

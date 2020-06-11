@@ -30,7 +30,7 @@
   "devDependencies": {
     "@babel/core": "^7.10.2",
     "@babel/preset-env": "^7.10.2",
-    "@types/jest": "^25.2.3",
+    "@types/jest": "^26.0.0",
     "@types/jszip": "^3.4.1",
     "@types/ol": "^6.3.1",
     "@typescript-eslint/eslint-plugin": "^3.2.0",
@@ -50,7 +50,7 @@
   },
   "dependencies": {
     "@turf/turf": "^5.1.6",
-    "bhreq": "0.0.14",
+    "bhreq": "0.1.0",
     "jszip": "^3.4.0",
     "ol-mapbox-style": "^6.1.2",
     "shapefile2geojson": "^1.0.7"

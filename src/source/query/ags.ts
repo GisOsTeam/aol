@@ -167,7 +167,7 @@ export function retrieveAgsFeature(
     body,
     method: 'POST',
     contentType: 'application/x-www-form-urlencoded',
-    responseType: 'application/json',
+    responseType: 'json',
   }).then(
     (res: IResponse) => {
       // Read features
@@ -208,7 +208,7 @@ export function loadAgsFeatureDescription(source: IExtended, type: IFeatureType<
   url += `/${type.id}?f=json`;
   return send({
     url,
-    responseType: 'application/json',
+    responseType: 'json',
   }).then(
     (res: IResponse) => {
       if (res.body.fields != null && res.body.fields.length > 0) {
