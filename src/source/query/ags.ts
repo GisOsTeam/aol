@@ -89,9 +89,12 @@ export function executeAgsQuery(
     body.where = ''; // TODO
     body.f = 'json';
   }
+  const jsession = document.cookie.split(';').find((cook) => cook.match('JSESSIONID=')) || null;
+  const headers = jsession ? {'Cookie': jsession} : null;
   return send({
     url,
     body,
+    headers,
     method: 'POST',
     contentType: 'application/x-www-form-urlencoded',
     responseType: 'json',
