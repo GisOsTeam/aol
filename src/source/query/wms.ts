@@ -64,7 +64,7 @@ function getFeatureInfoOnBBOX(
     body.SLD_BODY = `<StyledLayerDescriptor version="1.0.0"><UserLayer><Name>${type.id}</Name><UserStyle><FeatureTypeStyle><Rule><PointSymbolizer><Graphic><Mark><WellKnownName>square</WellKnownName><Fill><CssParameter name="fill">#FFFFFF</CssParameter></Fill></Mark><Size>1</Size></Graphic></PointSymbolizer><LineSymbolizer><Stroke><CssParameter name="stroke">#000000</CssParameter><CssParameter name="stroke-width">1</CssParameter></Stroke></LineSymbolizer><PolygonSymbolizer><Stroke><CssParameter name="stroke">#000000</CssParameter><CssParameter name="stroke-width">1</CssParameter></Stroke></PolygonSymbolizer></Rule></FeatureTypeStyle></UserStyle></UserLayer></StyledLayerDescriptor>`;
   }
   const jsession = document.cookie.split(';').find((cook) => cook.match('JSESSIONID=')) || null;
-  const headers = jsession ? {'Cookie': jsession} : null;
+  const headers = jsession ? { Cookie: jsession } : null;
   return send({
     url,
     body,

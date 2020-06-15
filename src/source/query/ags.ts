@@ -90,7 +90,7 @@ export function executeAgsQuery(
     body.f = 'json';
   }
   const jsession = document.cookie.split(';').find((cook) => cook.match('JSESSIONID=')) || null;
-  const headers = jsession ? {'Cookie': jsession} : null;
+  const headers = jsession ? { Cookie: jsession } : null;
   return send({
     url,
     body,
