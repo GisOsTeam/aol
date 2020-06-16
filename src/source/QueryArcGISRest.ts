@@ -58,11 +58,13 @@ export class QueryArcGISRest extends ExternalVector {
     if (this.options.where) {
       url += `&where=${this.options.where}`;
     }
-    return HttpEngine.getInstance().send({ url, contentType: 'application/json' }).then(
-      (response: IResponse) => this.esriJSONFormat.readFeatures(response.body),
-      () => {
-        console.error(`Request error ${url}`);
-      }
-    );
+    return HttpEngine.getInstance()
+      .send({ url, contentType: 'application/json' })
+      .then(
+        (response: IResponse) => this.esriJSONFormat.readFeatures(response.body),
+        () => {
+          console.error(`Request error ${url}`);
+        }
+      );
   }
 }
