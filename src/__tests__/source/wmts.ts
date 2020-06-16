@@ -1,5 +1,6 @@
-import { IResponse, send } from 'bhreq';
+import { IResponse } from 'bhreq';
 import { WmtsProvider } from '../../source/provider';
+import { HttpEngine } from '../../HttpInterceptor';
 
 describe('aol.wmts', () => {
   test('provide sync', async () => {
@@ -7,7 +8,7 @@ describe('aol.wmts', () => {
       url: `https://sampleserver6.arcgisonline.com/arcgis/rest/services/WorldTimeZones/MapServer/WMTS/1.0.0/WMTSCapabilities.xml`,
       method: 'GET',
     };
-    const response: IResponse = await send(request);
+    const response: IResponse = await HttpEngine.getInstance().send(request);
     const sourceWmts = WmtsProvider.provideSync(response.text, {
       layer: 'WorldTimeZones',
       matrixSet: 'GoogleMapsCompatible',

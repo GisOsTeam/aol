@@ -2,7 +2,7 @@ import Feature from 'ol/Feature';
 import { transformExtent } from 'ol/proj';
 import EsriJSON from 'ol/format/EsriJSON';
 import { IQueryRequest, IFeatureType, IQueryFeatureTypeResponse, IExtended, IAttribute } from '../IExtended';
-import { send, IResponse } from 'bhreq';
+import { IResponse } from 'bhreq';
 import { getForViewAndSize } from 'ol/extent';
 import { fromCircle } from 'ol/geom/Polygon';
 import Circle from 'ol/geom/Circle';
@@ -166,7 +166,7 @@ export function retrieveAgsFeature(
   body.returnFieldName = 'true';
   body.returnGeometry = 'true';
   body.f = 'json';
-  return send({
+  return HttpEngine.getInstance().send({
     url,
     body,
     method: 'POST',
@@ -210,7 +210,7 @@ export function loadAgsFeatureDescription(source: IExtended, type: IFeatureType<
     url = (source as any).getUrls()[0];
   }
   url += `/${type.id}?f=json`;
-  return send({
+  return HttpEngine.getInstance().send({
     url,
     responseType: 'json',
   }).then(
