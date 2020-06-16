@@ -7,6 +7,7 @@ import { getForViewAndSize } from 'ol/extent';
 import { fromCircle } from 'ol/geom/Polygon';
 import Circle from 'ol/geom/Circle';
 import Projection from 'ol/proj/Projection';
+import { HttpEngine } from '../../HttpInterceptor';
 
 const format = new EsriJSON();
 
@@ -89,55 +90,58 @@ export function executeAgsQuery(
     body.where = ''; // TODO
     body.f = 'json';
   }
-  return send({
-    url,
-    body,
-    method: 'POST',
-    contentType: 'application/x-www-form-urlencoded',
-    responseType: 'json',
-  }).then(
-    (res: IResponse) => {
-      const features = [] as Feature[];
-      // Read features
-      let jsonQueryRes = res.body;
-      if (typeof jsonQueryRes === 'string') {
-        try {
-          jsonQueryRes = JSON.parse(jsonQueryRes);
-        } catch (e) {
-          console.error(`Error occurred during reading identify response body `);
-          return e;
+  const httpEngine = HttpEngine.getInstance();
+  return httpEngine
+    .send({
+      url,
+      body,
+      method: 'POST',
+      contentType: 'application/x-www-form-urlencoded',
+      responseType: 'json',
+    })
+    .then(
+      (res: IResponse) => {
+        const features = [] as Feature[];
+        // Read features
+        let jsonQueryRes = res.body;
+        if (typeof jsonQueryRes === 'string') {
+          try {
+            jsonQueryRes = JSON.parse(jsonQueryRes);
+          } catch (e) {
+            console.error(`Error occurred during reading identify response body `);
+            return e;
+          }
         }
-      }
-      if (jsonQueryRes != null) {
-        const jsonFeatures = jsonQueryRes.features || jsonQueryRes.results;
-        if (jsonFeatures != null && jsonFeatures.length > 0) {
-          jsonFeatures.forEach((jsonFeature: any) => {
-            if (limit == null || features.length < limit) {
-              const feature = format.readFeature(jsonFeature, {
-                dataProjection: 'EPSG:' + srId,
-                featureProjection: mapProjection,
-              }) as Feature;
-              if (feature.getId() == null && type.identifierAttribute != null) {
-                // Search id
-                const properties = feature.getProperties();
-                feature.setId(properties[type.identifierAttribute.key]);
+        if (jsonQueryRes != null) {
+          const jsonFeatures = jsonQueryRes.features || jsonQueryRes.results;
+          if (jsonFeatures != null && jsonFeatures.length > 0) {
+            jsonFeatures.forEach((jsonFeature: any) => {
+              if (limit == null || features.length < limit) {
+                const feature = format.readFeature(jsonFeature, {
+                  dataProjection: 'EPSG:' + srId,
+                  featureProjection: mapProjection,
+                }) as Feature;
+                if (feature.getId() == null && type.identifierAttribute != null) {
+                  // Search id
+                  const properties = feature.getProperties();
+                  feature.setId(properties[type.identifierAttribute.key]);
+                }
+                features.push(feature);
               }
-              features.push(feature);
-            }
-          });
+            });
+          }
         }
+        return {
+          type,
+          features,
+          source,
+        };
+      },
+      (err) => {
+        console.error(`Execute AGS query/identify in error: ${err}`);
+        return err;
       }
-      return {
-        type,
-        features,
-        source,
-      };
-    },
-    (err) => {
-      console.error(`Execute AGS query/identify in error: ${err}`);
-      return err;
-    }
-  );
+    );
 }
 
 export function retrieveAgsFeature(

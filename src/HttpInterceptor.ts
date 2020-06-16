@@ -1,28 +1,28 @@
 import { IRequest, IResponse, send } from 'bhreq';
 
-export type BeforeSendFunctionType = (params: IRequest) => IRequest;
-export type AfterReceivedFunctionType = (params: IResponse) => IResponse;
+export type BeforeSendInterceptorsType = (params: IRequest) => IRequest;
+export type AfterReceivedInterceptorsType = (params: IResponse) => IResponse;
 
-export class HttpInterceptor {
-  private static instance: HttpInterceptor;
-  public beforeSend: BeforeSendFunctionType[];
-  public afterReceived: AfterReceivedFunctionType[];
+export class HttpEngine {
+  private static instance: HttpEngine;
+  public beforeSendInterceptors: BeforeSendInterceptorsType[];
+  public afterReceived: AfterReceivedInterceptorsType[];
 
   private constructor() {
-    this.beforeSend = [];
+    this.beforeSendInterceptors = [];
     this.afterReceived = [];
   }
 
   static getInstance() {
     if (!this.instance) {
-      this.instance = new HttpInterceptor();
+      this.instance = new HttpEngine();
     }
     return this.instance;
   }
 
   public send(rawRequest: IRequest): Promise<IResponse> {
     let request: IRequest = rawRequest;
-    this.beforeSend.forEach((interceptor) => {
+    this.beforeSendInterceptors.forEach((interceptor) => {
       request = interceptor(request);
     });
     return send(request).then(this.treatResponse);
