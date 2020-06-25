@@ -2,11 +2,12 @@ import Feature from 'ol/Feature';
 import { transformExtent } from 'ol/proj';
 import EsriJSON from 'ol/format/EsriJSON';
 import { IQueryRequest, IFeatureType, IQueryFeatureTypeResponse, IExtended, IAttribute } from '../IExtended';
-import { send, IResponse } from 'bhreq';
+import { IResponse } from 'bhreq';
 import { getForViewAndSize } from 'ol/extent';
 import { fromCircle } from 'ol/geom/Polygon';
 import Circle from 'ol/geom/Circle';
 import Projection from 'ol/proj/Projection';
+import { HttpEngine } from '../../HttpInterceptor';
 
 const format = new EsriJSON();
 
@@ -89,55 +90,58 @@ export function executeAgsQuery(
     body.where = ''; // TODO
     body.f = 'json';
   }
-  return send({
-    url,
-    body,
-    method: 'POST',
-    contentType: 'application/x-www-form-urlencoded',
-    responseType: 'json',
-  }).then(
-    (res: IResponse) => {
-      const features = [] as Feature[];
-      // Read features
-      let jsonQueryRes = res.body;
-      if (typeof jsonQueryRes === 'string') {
-        try {
-          jsonQueryRes = JSON.parse(jsonQueryRes);
-        } catch (e) {
-          console.error(`Error occurred during reading identify response body `);
-          return e;
+  const httpEngine = HttpEngine.getInstance();
+  return httpEngine
+    .send({
+      url,
+      body,
+      method: 'POST',
+      contentType: 'application/x-www-form-urlencoded',
+      responseType: 'json',
+    })
+    .then(
+      (res: IResponse) => {
+        const features = [] as Feature[];
+        // Read features
+        let jsonQueryRes = res.body;
+        if (typeof jsonQueryRes === 'string') {
+          try {
+            jsonQueryRes = JSON.parse(jsonQueryRes);
+          } catch (e) {
+            console.error(`Error occurred during reading identify response body `);
+            return e;
+          }
         }
-      }
-      if (jsonQueryRes != null) {
-        const jsonFeatures = jsonQueryRes.features || jsonQueryRes.results;
-        if (jsonFeatures != null && jsonFeatures.length > 0) {
-          jsonFeatures.forEach((jsonFeature: any) => {
-            if (limit == null || features.length < limit) {
-              const feature = format.readFeature(jsonFeature, {
-                dataProjection: 'EPSG:' + srId,
-                featureProjection: mapProjection,
-              }) as Feature;
-              if (feature.getId() == null && type.identifierAttribute != null) {
-                // Search id
-                const properties = feature.getProperties();
-                feature.setId(properties[type.identifierAttribute.key]);
+        if (jsonQueryRes != null) {
+          const jsonFeatures = jsonQueryRes.features || jsonQueryRes.results;
+          if (jsonFeatures != null && jsonFeatures.length > 0) {
+            jsonFeatures.forEach((jsonFeature: any) => {
+              if (limit == null || features.length < limit) {
+                const feature = format.readFeature(jsonFeature, {
+                  dataProjection: 'EPSG:' + srId,
+                  featureProjection: mapProjection,
+                }) as Feature;
+                if (feature.getId() == null && type.identifierAttribute != null) {
+                  // Search id
+                  const properties = feature.getProperties();
+                  feature.setId(properties[type.identifierAttribute.key]);
+                }
+                features.push(feature);
               }
-              features.push(feature);
-            }
-          });
+            });
+          }
         }
+        return {
+          type,
+          features,
+          source,
+        };
+      },
+      (err) => {
+        console.error(`Execute AGS query/identify in error: ${err}`);
+        return err;
       }
-      return {
-        type,
-        features,
-        source,
-      };
-    },
-    (err) => {
-      console.error(`Execute AGS query/identify in error: ${err}`);
-      return err;
-    }
-  );
+    );
 }
 
 export function retrieveAgsFeature(
@@ -162,40 +166,42 @@ export function retrieveAgsFeature(
   body.returnFieldName = 'true';
   body.returnGeometry = 'true';
   body.f = 'json';
-  return send({
-    url,
-    body,
-    method: 'POST',
-    contentType: 'application/x-www-form-urlencoded',
-    responseType: 'json',
-  }).then(
-    (res: IResponse) => {
-      // Read features
-      let feature = null;
-      const jsonQueryRes = res.body;
-      if (jsonQueryRes != null) {
-        const jsonFeatures = jsonQueryRes.features || jsonQueryRes.results;
-        if (jsonFeatures != null && jsonFeatures.length > 0) {
-          jsonFeatures.forEach((jsonFeature: any) => {
-            feature = format.readFeature(jsonFeature, {
-              dataProjection: 'EPSG:' + srId,
-              featureProjection,
-            }) as Feature;
-            if (feature.getId() == null && type.identifierAttribute != null) {
-              // Search id
-              const properties = feature.getProperties();
-              feature.setId(properties[type.identifierAttribute.key]);
-            }
-          });
+  return HttpEngine.getInstance()
+    .send({
+      url,
+      body,
+      method: 'POST',
+      contentType: 'application/x-www-form-urlencoded',
+      responseType: 'json',
+    })
+    .then(
+      (res: IResponse) => {
+        // Read features
+        let feature = null;
+        const jsonQueryRes = res.body;
+        if (jsonQueryRes != null) {
+          const jsonFeatures = jsonQueryRes.features || jsonQueryRes.results;
+          if (jsonFeatures != null && jsonFeatures.length > 0) {
+            jsonFeatures.forEach((jsonFeature: any) => {
+              feature = format.readFeature(jsonFeature, {
+                dataProjection: 'EPSG:' + srId,
+                featureProjection,
+              }) as Feature;
+              if (feature.getId() == null && type.identifierAttribute != null) {
+                // Search id
+                const properties = feature.getProperties();
+                feature.setId(properties[type.identifierAttribute.key]);
+              }
+            });
+          }
         }
+        return feature;
+      },
+      (err) => {
+        console.error(`Execute AGS query in error: ${err}`);
+        return err;
       }
-      return feature;
-    },
-    (err) => {
-      console.error(`Execute AGS query in error: ${err}`);
-      return err;
-    }
-  );
+    );
 }
 
 export function loadAgsFeatureDescription(source: IExtended, type: IFeatureType<number>): Promise<void> {
@@ -206,47 +212,49 @@ export function loadAgsFeatureDescription(source: IExtended, type: IFeatureType<
     url = (source as any).getUrls()[0];
   }
   url += `/${type.id}?f=json`;
-  return send({
-    url,
-    responseType: 'json',
-  }).then(
-    (res: IResponse) => {
-      if (res.body.fields != null && res.body.fields.length > 0) {
-        type.attributes = [];
-        res.body.fields.forEach((field: any) => {
-          const attribute: IAttribute = {
-            key: field.name,
-            name: field.alias,
-            type: 'Unknown',
-          };
-          switch (field.type) {
-            case 'esriFieldTypeOID':
-              attribute.type = 'Oid';
-              type.identifierAttribute = attribute;
-              break;
-            case 'esriFieldTypeInteger':
-            case 'esriFieldTypeSmallInteger':
-            case 'esriFieldTypeDouble':
-            case 'esriFieldTypeSingle':
-              attribute.type = 'Number';
-              break;
-            case 'esriFieldTypeString':
-              attribute.type = 'String';
-              break;
-            case 'esriFieldTypeDate':
-              attribute.type = 'Date';
-              break;
-            case 'esriFieldTypeGeometry':
-              attribute.type = 'Geometry';
-              break;
-          }
-          type.attributes.push(attribute);
-        });
+  return HttpEngine.getInstance()
+    .send({
+      url,
+      responseType: 'json',
+    })
+    .then(
+      (res: IResponse) => {
+        if (res.body.fields != null && res.body.fields.length > 0) {
+          type.attributes = [];
+          res.body.fields.forEach((field: any) => {
+            const attribute: IAttribute = {
+              key: field.name,
+              name: field.alias,
+              type: 'Unknown',
+            };
+            switch (field.type) {
+              case 'esriFieldTypeOID':
+                attribute.type = 'Oid';
+                type.identifierAttribute = attribute;
+                break;
+              case 'esriFieldTypeInteger':
+              case 'esriFieldTypeSmallInteger':
+              case 'esriFieldTypeDouble':
+              case 'esriFieldTypeSingle':
+                attribute.type = 'Number';
+                break;
+              case 'esriFieldTypeString':
+                attribute.type = 'String';
+                break;
+              case 'esriFieldTypeDate':
+                attribute.type = 'Date';
+                break;
+              case 'esriFieldTypeGeometry':
+                attribute.type = 'Geometry';
+                break;
+            }
+            type.attributes.push(attribute);
+          });
+        }
+      },
+      (err) => {
+        console.error('Get AGS feature description in error');
+        return err;
       }
-    },
-    (err) => {
-      console.error('Get AGS feature description in error');
-      return err;
-    }
-  );
+    );
 }

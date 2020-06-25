@@ -2,12 +2,13 @@ import Feature from 'ol/Feature';
 import { get as getProjection, transformExtent } from 'ol/proj';
 import WMSGetFeatureInfo from 'ol/format/WMSGetFeatureInfo';
 import { IQueryRequest, IFeatureType, IQueryFeatureTypeResponse, IExtended, IAttribute } from '../IExtended';
-import { send, IResponse } from 'bhreq';
+import { IResponse } from 'bhreq';
 import { toGeoJSONGeometry, disjoint } from '../../utils';
 import { getForViewAndSize } from 'ol/extent';
 import SimpleGeometry from 'ol/geom/SimpleGeometry';
 import Projection from 'ol/proj/Projection';
 import Geometry from 'ol/geom/Geometry';
+import { HttpEngine } from '../../HttpInterceptor';
 
 const format = new WMSGetFeatureInfo();
 
@@ -63,67 +64,71 @@ function getFeatureInfoOnBBOX(
   if (queryType === 'query') {
     body.SLD_BODY = `<StyledLayerDescriptor version="1.0.0"><UserLayer><Name>${type.id}</Name><UserStyle><FeatureTypeStyle><Rule><PointSymbolizer><Graphic><Mark><WellKnownName>square</WellKnownName><Fill><CssParameter name="fill">#FFFFFF</CssParameter></Fill></Mark><Size>1</Size></Graphic></PointSymbolizer><LineSymbolizer><Stroke><CssParameter name="stroke">#000000</CssParameter><CssParameter name="stroke-width">1</CssParameter></Stroke></LineSymbolizer><PolygonSymbolizer><Stroke><CssParameter name="stroke">#000000</CssParameter><CssParameter name="stroke-width">1</CssParameter></Stroke></PolygonSymbolizer></Rule></FeatureTypeStyle></UserStyle></UserLayer></StyledLayerDescriptor>`;
   }
-  return send({
-    url,
-    body,
-    method: 'POST',
-    contentType: 'application/x-www-form-urlencoded',
-    responseType: 'text',
-  }).then(
-    (res: IResponse) => {
-      // Read features
-      const features = [] as Feature[];
-      // Search projection on results
-      let dataProjection = getProjection(requestProjectionCode);
-      let dataProjectionCode = requestProjectionCode;
-      const res1 = res.body.match(/\ssrsName=\"([^\"]+)\"/i);
-      if (res1 && res1.length >= 2) {
-        const res2 = res1[1].match(/(\d+)(?!.*\d)/g);
-        if (res2 && res2.length > 0) {
-          dataProjectionCode = 'EPSG:' + res2[res2.length - 1];
-        }
-      }
-      try {
-        dataProjection = getProjection(dataProjectionCode);
-      } catch (err) {
-        console.error(err);
-      }
-      // Read features
-      const allFeatures = format.readFeatures(res.body);
-      if (allFeatures != null && allFeatures.length > 0) {
-        allFeatures.forEach((feature: Feature) => {
-          if (limit == null || features.length < limit) {
-            if (dataProjection.getUnits() === 'degrees') {
-              if (feature.getGeometry()) {
-                // In degree: This formats the geographic coordinates in longitude/latitude (x/y) order.
-                // Reverse coordinates !
-                (feature.getGeometry() as SimpleGeometry).applyTransform(
-                  (input: number[], ouput: number[], dimension: number) => {
-                    for (let i = 0; i < input.length; i += dimension) {
-                      const y = input[i];
-                      const x = input[i + 1];
-                      ouput[i] = x;
-                      ouput[i + 1] = y;
-                    }
-                    return ouput;
-                  }
-                );
-              }
-            }
-            if (feature.getGeometry()) {
-              feature.getGeometry().transform(dataProjection, featureProjectionCode);
-            }
-            features.push(feature);
+
+  const httpEngine = HttpEngine.getInstance();
+  return httpEngine
+    .send({
+      url,
+      body,
+      method: 'POST',
+      contentType: 'application/x-www-form-urlencoded',
+      responseType: 'text',
+    })
+    .then(
+      (res: IResponse) => {
+        // Read features
+        const features = [] as Feature[];
+        // Search projection on results
+        let dataProjection = getProjection(requestProjectionCode);
+        let dataProjectionCode = requestProjectionCode;
+        const res1 = res.body.match(/\ssrsName=\"([^\"]+)\"/i);
+        if (res1 && res1.length >= 2) {
+          const res2 = res1[1].match(/(\d+)(?!.*\d)/g);
+          if (res2 && res2.length > 0) {
+            dataProjectionCode = 'EPSG:' + res2[res2.length - 1];
           }
-        });
+        }
+        try {
+          dataProjection = getProjection(dataProjectionCode);
+        } catch (err) {
+          console.error(err);
+        }
+        // Read features
+        const allFeatures = format.readFeatures(res.body);
+        if (allFeatures != null && allFeatures.length > 0) {
+          allFeatures.forEach((feature: Feature) => {
+            if (limit == null || features.length < limit) {
+              if (dataProjection.getUnits() === 'degrees') {
+                if (feature.getGeometry()) {
+                  // In degree: This formats the geographic coordinates in longitude/latitude (x/y) order.
+                  // Reverse coordinates !
+                  (feature.getGeometry() as SimpleGeometry).applyTransform(
+                    (input: number[], ouput: number[], dimension: number) => {
+                      for (let i = 0; i < input.length; i += dimension) {
+                        const y = input[i];
+                        const x = input[i + 1];
+                        ouput[i] = x;
+                        ouput[i + 1] = y;
+                      }
+                      return ouput;
+                    }
+                  );
+                }
+              }
+              if (feature.getGeometry()) {
+                feature.getGeometry().transform(dataProjection, featureProjectionCode);
+              }
+              features.push(feature);
+            }
+          });
+        }
+        return features;
+      },
+      (err) => {
+        console.error('Get WMS feature info in error');
+        return err;
       }
-      return features;
-    },
-    (err) => {
-      console.error('Get WMS feature info in error');
-      return err;
-    }
-  );
+    );
 }
 
 export function executeWmsQuery(

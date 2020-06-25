@@ -1,10 +1,11 @@
 import OlEsriJSON from 'ol/format/EsriJSON';
-import { send, IResponse } from 'bhreq';
+import { IResponse } from 'bhreq';
 import { ExternalVector } from './ExternalVector';
 import { SourceType, SourceTypeEnum } from './types/sourceType';
 import { LayerType, LayerTypeEnum } from './types/layerType';
 import { ISnapshotOptions } from './IExtended';
 import { Options } from 'ol/source/Vector';
+import { HttpEngine } from '../HttpInterceptor';
 
 export interface IQueryArcGISRestOptions extends ISnapshotOptions, Options {}
 
@@ -57,11 +58,13 @@ export class QueryArcGISRest extends ExternalVector {
     if (this.options.where) {
       url += `&where=${this.options.where}`;
     }
-    return send({ url, contentType: 'application/json' }).then(
-      (response: IResponse) => this.esriJSONFormat.readFeatures(response.body),
-      () => {
-        console.error(`Request error ${url}`);
-      }
-    );
+    return HttpEngine.getInstance()
+      .send({ url, contentType: 'application/json' })
+      .then(
+        (response: IResponse) => this.esriJSONFormat.readFeatures(response.body),
+        () => {
+          console.error(`Request error ${url}`);
+        }
+      );
   }
 }
