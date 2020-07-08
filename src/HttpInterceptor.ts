@@ -28,11 +28,11 @@ export class HttpEngine {
     return send(request).then(this.treatResponse);
   }
 
-  private treatResponse = (rawResponse: IResponse): IResponse =>  {
+  private treatResponse = (rawResponse: IResponse): IResponse => {
     let response = rawResponse;
     this.afterReceivedInterceptors.forEach((interceptor) => {
       response = interceptor(response);
     });
     return response;
-  }
+  };
 }
