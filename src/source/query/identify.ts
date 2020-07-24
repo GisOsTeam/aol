@@ -7,7 +7,6 @@ import { walk } from '../../utils';
 import Geometry from 'ol/geom/Geometry';
 
 export type IdentifyFilterType = (extended: IQuerySource) => boolean;
-export type IdentifyEntity = Pixel | Geometry;
 export function identify(
   identifyEntity: Pixel | Geometry,
   map: Map,
