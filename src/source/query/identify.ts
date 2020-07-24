@@ -2,20 +2,33 @@ import { Pixel } from 'ol/pixel';
 import { Map } from 'ol';
 import OlBaseLayer from 'ol/layer/Base';
 import Layer from 'ol/layer/Layer';
-import { IQueryResponse, constructIdentifyQueryRequestFromPixel, IQuerySource } from '../IExtended';
+import { IQueryResponse, constructIdentifyQueryRequestFromPixel, IQuerySource, IQueryRequest } from '../IExtended';
 import { walk } from '../../utils';
+import Geometry from 'ol/geom/Geometry';
 
 export type IdentifyFilterType = (extended: IQuerySource) => boolean;
+export type IdentifyEntity = Pixel | Geometry;
 export function identify(
-  pixel: Pixel,
+  identifyEntity: Pixel | Geometry,
   map: Map,
   limit = 10,
   tolerance = 4,
   filter?: IdentifyFilterType
-): Promise<IQueryResponse[]> {
-  if (map && pixel) {
+) {
+  if (map && identifyEntity) {
     const promises: Promise<IQueryResponse>[] = [];
-    const queryRequest = constructIdentifyQueryRequestFromPixel(pixel, map);
+    let queryRequest: IQueryRequest;
+    if (identifyEntity instanceof Geometry) {
+      queryRequest = {
+        olMap: map,
+        geometry: identifyEntity,
+        geometryProjection: map.getView().getProjection(),
+        queryType: 'identify',
+      };
+    } else {
+      queryRequest = constructIdentifyQueryRequestFromPixel(identifyEntity, map);
+    }
+
     queryRequest.limit = limit;
     queryRequest.identifyTolerance = tolerance;
 
