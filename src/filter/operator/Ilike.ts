@@ -3,7 +3,7 @@ import { FilterBuilderType, FilterBuilderTypeEnum } from '../IFilter';
 
 export class Ilike implements IOperator {
   public not: boolean;
-  public readonly type: OperatorType = OperatorEnum.like;
+  public readonly type: OperatorType = OperatorEnum.ilike;
 
   constructor(not = false) {
     this.not = not;

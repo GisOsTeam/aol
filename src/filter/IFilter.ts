@@ -19,19 +19,21 @@ export type FieldType =
   | FieldTypeEnum.Geometry
   | FieldTypeEnum.Unknown;
 
-export interface IField<T = any> {
-  key: keyof T;
+export interface IField<T> {
+  key: string | keyof T;
   type: FieldType;
   alias?: string;
 }
 
-export interface IFilter<T = any> {
+export interface IFilter<T> {
   field: IField<T>;
   operator: IOperator;
   value: string | number | boolean | any[];
 }
 
-export type Predicate = string;
+export interface IPredicate<T> extends IFilter<T> {
+  toString(filterBuilderType?: FilterBuilderType): string;
+}
 
 export enum FilterBuilderTypeEnum {
   CQL = 'CQL',
