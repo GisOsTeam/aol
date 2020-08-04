@@ -1,0 +1,61 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`aol.filter filterBuilder empty  1`] = `"INCLUDE"`;
+
+exports[`aol.filter filterBuilder multiple cql equal number AND string 1`] = `"(foo = 1) && (Concatenate(bar) = 'bar')"`;
+
+exports[`aol.filter filterBuilder simple cql equal boolean 1`] = `"(foo = true)"`;
+
+exports[`aol.filter filterBuilder simple cql equal not.boolean 1`] = `"(foo <> true)"`;
+
+exports[`aol.filter filterBuilder simple cql equal not.number 1`] = `"(foo <> 1)"`;
+
+exports[`aol.filter filterBuilder simple cql equal not.string 1`] = `"(Concatenate(foo) <> '1')"`;
+
+exports[`aol.filter filterBuilder simple cql equal number 1`] = `"(foo = 1)"`;
+
+exports[`aol.filter filterBuilder simple cql equal string 1`] = `"(Concatenate(foo) = '1')"`;
+
+exports[`aol.filter filterBuilder simple cql ilike not.string 1`] = `"(Concatenate(foo) NOT ILIKE '%bar%')"`;
+
+exports[`aol.filter filterBuilder simple cql ilike string 1`] = `"(Concatenate(foo) ILIKE '%bar%')"`;
+
+exports[`aol.filter filterBuilder simple cql in not.number 1`] = `"(foo NOT IN (1,2,3))"`;
+
+exports[`aol.filter filterBuilder simple cql in not.string 1`] = `"(foo NOT IN ('bar1','bar2','bar3'))"`;
+
+exports[`aol.filter filterBuilder simple cql in number 1`] = `"(foo IN (1,2,3))"`;
+
+exports[`aol.filter filterBuilder simple cql in string 1`] = `"(foo IN ('bar1','bar2','bar3'))"`;
+
+exports[`aol.filter filterBuilder simple cql like not.string 1`] = `"(Concatenate(foo) NOT LIKE '%bar%')"`;
+
+exports[`aol.filter filterBuilder simple cql like string 1`] = `"(Concatenate(foo) LIKE '%bar%')"`;
+
+exports[`aol.filter filterBuilder simple sql equal boolean 1`] = `"(foo = true)"`;
+
+exports[`aol.filter filterBuilder simple sql equal not.boolean 1`] = `"(foo <> true)"`;
+
+exports[`aol.filter filterBuilder simple sql equal not.number 1`] = `"(foo <> 1)"`;
+
+exports[`aol.filter filterBuilder simple sql equal not.string 1`] = `"(foo <> '1')"`;
+
+exports[`aol.filter filterBuilder simple sql equal number 1`] = `"(foo = 1)"`;
+
+exports[`aol.filter filterBuilder simple sql equal string 1`] = `"(foo = '1')"`;
+
+exports[`aol.filter filterBuilder simple sql ilike not.string 1`] = `"(UPPER(foo) NOT LIKE '%BAR%')"`;
+
+exports[`aol.filter filterBuilder simple sql ilike string 1`] = `"(UPPER(foo) LIKE '%BAR%')"`;
+
+exports[`aol.filter filterBuilder simple sql in not.number 1`] = `"(foo NOT IN (1,2,3))"`;
+
+exports[`aol.filter filterBuilder simple sql in not.string 1`] = `"(foo NOT IN ('bar1','bar2','bar3'))"`;
+
+exports[`aol.filter filterBuilder simple sql in number 1`] = `"(foo IN (1,2,3))"`;
+
+exports[`aol.filter filterBuilder simple sql in string 1`] = `"(foo IN ('bar1','bar2','bar3'))"`;
+
+exports[`aol.filter filterBuilder simple sql like not.string 1`] = `"(foo NOT LIKE '%bar%')"`;
+
+exports[`aol.filter filterBuilder simple sql like string 1`] = `"(foo LIKE '%bar%')"`;
