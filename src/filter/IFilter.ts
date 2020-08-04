@@ -19,14 +19,14 @@ export type FieldType =
   | FieldTypeEnum.Geometry
   | FieldTypeEnum.Unknown;
 
-export interface IField {
-  key: string;
+export interface IField<T> {
+  key: keyof T;
   type: FieldType;
   alias?: string;
 }
 
-export interface IFilter {
-  field: IField;
+export interface IFilter<T> {
+  field: IField<T>;
   operator: IOperator;
   not: boolean;
   value: string | number | boolean | any[];
