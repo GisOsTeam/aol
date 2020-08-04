@@ -2,10 +2,10 @@ import { IOperator, OperatorEnum, OperatorType } from './IOperator';
 import { FilterBuilderType, FilterBuilderTypeEnum } from '../IFilter';
 
 export class Ilike implements IOperator {
-  public not: boolean = false;
+  public not: boolean;
   public readonly type: OperatorType = OperatorEnum.like;
 
-  constructor(not: boolean) {
+  constructor(not = false) {
     this.not = not;
   }
 
@@ -21,6 +21,5 @@ export class Ilike implements IOperator {
       return 'NOT ILIKE';
     }
     return 'ILIKE';
-
   }
 }

@@ -1,10 +1,10 @@
 import { IOperator, OperatorEnum, OperatorType } from './IOperator';
 
 export class Like implements IOperator {
-  public not: boolean = false;
+  public not: boolean;
   public readonly type: OperatorType = OperatorEnum.like;
 
-  constructor(not: boolean) {
+  constructor(not = false) {
     this.not = not;
   }
 

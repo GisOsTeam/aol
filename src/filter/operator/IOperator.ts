@@ -5,14 +5,14 @@ export interface IOperator {
 
   type: OperatorType;
 
-  toString(filterBuilderType?: FilterBuilderType): string
+  toString(filterBuilderType?: FilterBuilderType): string;
 }
 
 export enum OperatorEnum {
   equal = 'equal',
   ilike = 'ilike',
   in = 'in',
-  like = 'like'
+  like = 'like',
 }
 
 export type OperatorType = OperatorEnum.equal | OperatorEnum.ilike | OperatorEnum.in | OperatorEnum.like | string;

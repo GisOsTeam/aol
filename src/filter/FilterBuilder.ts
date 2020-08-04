@@ -5,9 +5,9 @@ import {
   FilterBuilderTypeEnum,
   IField,
   IFilter,
-  Predicate
+  Predicate,
 } from './IFilter';
-import { OperatorEnum } from './operator/IOperator';
+import { OperatorEnum } from './operator';
 
 export class FilterBuilder {
   public static build(filters: IFilter[], type: FilterBuilderType): string {
@@ -15,12 +15,12 @@ export class FilterBuilder {
     if (filters != null) {
       filters.forEach((filter: IFilter) => {
         let fieldKey = filter.field.key;
-        let operatorAsString = filter.operator.toString(type);
-        let fieldType = this.retrieveFieldType(filter.field, filter.value);
+        const operatorAsString = filter.operator.toString(type);
+        const fieldType = this.retrieveFieldType(filter.field, filter.value);
 
         let value = filter.value;
         if (filter.operator.type === OperatorEnum.in) {
-          value = (value as any[]).map(v => (typeof v === 'string' ? `'${v}'` : v)).join(',');
+          value = (value as any[]).map((v) => (typeof v === 'string' ? `'${v}'` : v)).join(',');
         } else if (filter.operator.type === OperatorEnum.ilike) {
           if (type === FilterBuilderTypeEnum.SQL) {
             fieldKey = `UPPER(${fieldKey})`;
@@ -69,6 +69,6 @@ export class FilterBuilder {
     if (!!field.type) {
       return field.type;
     }
-    return FieldTypeEnum.Unknown
+    return FieldTypeEnum.Unknown;
   }
 }
