@@ -7,15 +7,14 @@ import {
   IFilter,
   Predicate,
 } from './IFilter';
-import { OperatorEnum } from './operator';
+import { IOperator, OperatorEnum } from './operator';
 
 export class FilterBuilder {
   public static build(filters: IFilter[], type: FilterBuilderType): string {
     const predicates: Predicate[] = [];
     if (filters != null) {
       filters.forEach((filter: IFilter) => {
-        let fieldKey = filter.field.key;
-        const operatorAsString = filter.operator.toString(type);
+        let fieldKey = `${filter.field.key}`;
         const fieldType = this.retrieveFieldType(filter.field, filter.value);
 
         let value = filter.value;
@@ -27,7 +26,7 @@ export class FilterBuilder {
             value = (value as string).toUpperCase();
           }
         }
-        predicates.push(this.generatePredicate(type, fieldKey, fieldType, value, operatorAsString));
+        predicates.push(this.generatePredicate(type, fieldKey, fieldType, value, filter.operator));
       });
     }
     if (predicates.length === 0) {
@@ -41,21 +40,21 @@ export class FilterBuilder {
     fieldKey: string,
     fieldType: string,
     value: string | number | boolean | any[],
-    cqlSqlOperator: string
+    operator: IOperator
   ): string {
     if (
       (typeof value === 'number' || typeof value === 'boolean') &&
       (fieldType === FieldTypeEnum.Number || fieldType === FieldTypeEnum.Boolean) &&
-      (cqlSqlOperator === '=' || cqlSqlOperator === '!=')
+      operator.type === OperatorEnum.equal
     ) {
-      return `(${fieldKey} ${cqlSqlOperator} ${value})`;
+      return `(${fieldKey} ${operator.toString()} ${value})`;
     } else {
-      if ('IN' === cqlSqlOperator || 'NOT IN' === cqlSqlOperator) {
-        return `(${fieldKey} ${cqlSqlOperator} (${value}))`;
+      if (operator.type === OperatorEnum.in) {
+        return `(${fieldKey} ${operator.toString()} (${value}))`;
       } else if (type === 'cql') {
         fieldKey = `Concatenate(${fieldKey})`;
       }
-      return `(${fieldKey} ${cqlSqlOperator} '${value}')`;
+      return `(${fieldKey} ${operator.toString()} '${value}')`;
     }
   }
 
