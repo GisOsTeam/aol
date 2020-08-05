@@ -1,5 +1,3 @@
-import { IOperator } from './operator';
-
 export enum FieldTypeEnum {
   Oid = 'Oid',
   Boolean = 'Boolean',
@@ -25,15 +23,7 @@ export interface IField<T> {
   alias?: string;
 }
 
-export interface IFilter<T> {
-  field: IField<T>;
-  operator: IOperator;
-  value: string | number | boolean | any[];
-}
-
-export interface IPredicate<T> extends IFilter<T> {
-  toString(filterBuilderType?: FilterBuilderType): string;
-}
+export type FilterValueType = string | number | boolean | any[];
 
 export enum FilterBuilderTypeEnum {
   CQL = 'CQL',

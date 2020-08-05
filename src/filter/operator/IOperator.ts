@@ -9,10 +9,19 @@ export interface IOperator {
 }
 
 export enum OperatorEnum {
+  and = 'and',
   equal = 'equal',
   ilike = 'ilike',
   in = 'in',
   like = 'like',
+  or = 'or',
 }
 
-export type OperatorType = OperatorEnum.equal | OperatorEnum.ilike | OperatorEnum.in | OperatorEnum.like | string;
+export type OperatorType =
+  | OperatorEnum.and
+  | OperatorEnum.equal
+  | OperatorEnum.ilike
+  | OperatorEnum.in
+  | OperatorEnum.like
+  | OperatorEnum.or
+  | string;

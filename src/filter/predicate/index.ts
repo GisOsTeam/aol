@@ -3,8 +3,10 @@
  */
 
 export * from './And';
+export * from './BasePredicate';
 export * from './Equal';
-export * from './IOperator';
+export * from './FilterPredicate';
+export * from './IPredicate';
 export * from './Ilike';
 export * from './In';
 export * from './Like';
