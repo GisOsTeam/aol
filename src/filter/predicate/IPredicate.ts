@@ -2,9 +2,9 @@ import { IOperator } from '../operator';
 import { FilterBuilderType, FilterValueType, IField } from '../IFilter';
 
 export interface IPredicate<
-  LH extends IPredicate<unknown, unknown, unknown> | IField<unknown>,
+  LH extends IPredicate<any, any, any> | IField<any>,
   O extends IOperator,
-  RH extends IPredicate<unknown, unknown, unknown> | FilterValueType
+  RH extends IPredicate<any, any, any> | FilterValueType
 > {
   leftHand: LH;
   operator: O;

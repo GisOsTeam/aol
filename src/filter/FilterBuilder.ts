@@ -1,5 +1,5 @@
 import { FilterBuilderType } from './IFilter';
-import { And, BasePredicate, Or } from './predicate';
+import { AndPre, BasePredicate, Or } from './predicate';
 import { IOperator } from './operator';
 
 export class FilterBuilder {
@@ -24,7 +24,7 @@ export class FilterBuilder {
   }
 
   public and<RP extends BasePredicate<any, IOperator, any>>(rightPredicate: RP): FilterBuilder {
-    return new FilterBuilder(new And(this.predicate, rightPredicate));
+    return new FilterBuilder(new AndPre(this.predicate, rightPredicate));
   }
 
   public or<RP extends BasePredicate<any, IOperator, any>>(rightPredicate: RP): FilterBuilder {

@@ -13,7 +13,7 @@ export class In<T> extends FilterPredicate<T, InOp> {
 
   protected buildRightHandString(type: FilterBuilderType): string {
     try {
-      return `(${(this.rightHand as unknown[]).map((v) => (typeof v === 'string' ? `'${v}'` : v)).join(',')})`;
+      return `(${(this.rightHand as any[]).map((v) => (typeof v === 'string' ? `'${v}'` : v)).join(',')})`;
     } catch (e) {
       return `(${this.rightHand})`;
     }

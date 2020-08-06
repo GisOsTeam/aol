@@ -1,5 +1,5 @@
 import {
-  And as AndOp,
+  AndOp,
   Equal as EqualOp,
   Ilike as IlikeOp,
   In as InOp,
@@ -7,7 +7,7 @@ import {
   Or as OrOp,
 } from '../../filter/operator';
 import { FieldTypeEnum, FilterBuilder, FilterBuilderTypeEnum, IField } from '../../filter';
-import { And, Equal, Ilike, In, Like, Or } from '../../filter/predicate';
+import { AndPre, Equal, Ilike, In, Like, Or } from '../../filter/predicate';
 
 const numberField: IField<{ foo: number }> = {
   type: FieldTypeEnum.Number,
@@ -259,7 +259,7 @@ describe('aol.filter', () => {
             };
             const predicate2 = new Equal(field2, new EqualOp(), 'bar');
 
-            const predicate3 = new And(predicate1, predicate2);
+            const predicate3 = new AndPre(predicate1, predicate2);
 
             expect(FilterBuilder.build(predicate3, FilterBuilderTypeEnum.CQL)).toMatchSnapshot();
           });

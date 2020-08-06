@@ -1,6 +1,6 @@
 import { IOperator, OperatorEnum, OperatorType } from './IOperator';
 
-export class And implements IOperator {
+export class AndOp implements IOperator {
   public not: boolean;
   public readonly type: OperatorType = OperatorEnum.and;
 
