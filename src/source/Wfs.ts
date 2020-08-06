@@ -27,26 +27,11 @@ export class Wfs extends ExternalVector {
       format: new OlGeoJSON(),
       loader: (extent, resolution, projection) => {
         const proj = projection.getCode();
-        const xhr = new XMLHttpRequest();
 
-        let url =
-          this.options.url +
-          '?service=WFS&' +
-          'version=' +
-          this.options.version +
-          '&' +
-          'request=GetFeature&' +
-          'TypeName=' +
-          this.options.type.id +
-          '&' +
-          'outputFormat=' +
-          this.options.outputFormat +
-          '&' +
-          'srsname=' +
-          proj;
+        let url = `${this.options.url}?service=WFS&version=${this.options.version}&request=GetFeature&TypeName=${this.options.type.id}&outputFormat=${this.options.outputFormat}&srsname=${proj}`;
 
         if (!this.options.swapX) {
-          url += '&bbox=' + extent.join(',') + ',' + proj;
+          url += `&bbox=${extent.join(',')},${proj}`;
         } else {
           url += `&bbox=${extent[1]},${extent[0]},${extent[3]},${extent[2]},${proj}`;
         }
