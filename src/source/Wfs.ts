@@ -1,34 +1,60 @@
 import OlGeoJSON from 'ol/format/GeoJSON';
-import Projection from 'ol/proj/Projection';
 import { ExternalVector } from './ExternalVector';
-import { SourceType, SourceTypeEnum } from './types/sourceType';
-import { LayerType, LayerTypeEnum } from './types/layerType';
-import { ISnapshotOptions, IFeatureType } from './IExtended';
+import { LayerType, LayerTypeEnum, SourceType, SourceTypeEnum } from './types';
+import { IFeatureType, ISnapshotOptions } from './IExtended';
 import { Options } from 'ol/source/Vector';
+import { HttpEngine } from '../HttpInterceptor';
+import { IResponse } from 'bhreq';
 
 export interface IWfsOptions extends ISnapshotOptions, Options {
   type: IFeatureType<string>;
   outputFormat?: string;
   version?: string;
+  swapX?: boolean;
 }
 
 export class Wfs extends ExternalVector {
   protected options: IWfsOptions;
-  private readonly defaultOptions: Pick<IWfsOptions, 'outputFormat' | 'version'> = {
+  private readonly defaultOptions: Pick<IWfsOptions, 'outputFormat' | 'version' | 'swapX'> = {
     outputFormat: 'application/json',
     version: '1.1.0',
+    swapX: false,
   };
 
   constructor(options: IWfsOptions) {
     super({
       ...options,
       format: new OlGeoJSON(),
-      url: (extent: [number, number, number, number], resolution: number, projection: Projection) => {
-        return `${this.options.url}?service=WFS&version=${this.options.version}&request=GetFeature&TypeName=${
-          this.options.type.id
-        }&outputFormat=${this.options.outputFormat}&srsname=${projection.getCode()}&bbox=${extent.join(
-          ','
-        )},${projection.getCode()}`;
+      loader: (extent, resolution, projection) => {
+        const proj = projection.getCode();
+
+        let url = `${this.options.url}?service=WFS&version=${this.options.version}&request=GetFeature&TypeName=${this.options.type.id}&outputFormat=${this.options.outputFormat}&srsname=${proj}`;
+
+        if (!this.options.swapX) {
+          url += `&bbox=${extent.join(',')},${proj}`;
+        } else {
+          url += `&bbox=${extent[1]},${extent[0]},${extent[3]},${extent[2]},${proj}`;
+        }
+
+        const httpEngine = HttpEngine.getInstance();
+        const onError = () => {
+          this.removeLoadedExtent(extent);
+        };
+
+        httpEngine
+          .send({
+            url,
+            method: 'GET',
+            responseType: 'text',
+          })
+          .then((res: IResponse) => {
+            if (res.status === 200) {
+              this.addFeatures(this.getFormat().readFeatures(res.text as any) as any);
+            } else {
+              onError();
+            }
+          })
+          .catch(onError);
       },
     });
     this.options = { ...this.defaultOptions, ...options };
