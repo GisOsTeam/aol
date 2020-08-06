@@ -3,6 +3,8 @@ import { ExternalVector } from './ExternalVector';
 import { LayerType, LayerTypeEnum, SourceType, SourceTypeEnum } from './types';
 import { IFeatureType, ISnapshotOptions } from './IExtended';
 import { Options } from 'ol/source/Vector';
+import { HttpEngine } from '../HttpInterceptor';
+import { IResponse } from 'bhreq';
 
 export interface IWfsOptions extends ISnapshotOptions, Options {
   type: IFeatureType<string>;
@@ -49,19 +51,25 @@ export class Wfs extends ExternalVector {
           url += `&bbox=${extent[1]},${extent[0]},${extent[3]},${extent[2]},${proj}`;
         }
 
-        xhr.open('GET', url);
+        const httpEngine = HttpEngine.getInstance();
         const onError = () => {
           this.removeLoadedExtent(extent);
         };
-        xhr.onerror = onError;
-        xhr.onload = () => {
-          if (xhr.status === 200) {
-            this.addFeatures(this.getFormat().readFeatures(xhr.responseText as any) as any);
-          } else {
-            onError();
-          }
-        };
-        xhr.send();
+
+        httpEngine
+          .send({
+            url,
+            method: 'GET',
+            responseType: 'text',
+          })
+          .then((res: IResponse) => {
+            if (res.status === 200) {
+              this.addFeatures(this.getFormat().readFeatures(res.text as any) as any);
+            } else {
+              onError();
+            }
+          })
+          .catch(onError);
       },
     });
     this.options = { ...this.defaultOptions, ...options };
