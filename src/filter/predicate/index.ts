@@ -12,4 +12,6 @@ export * from './IPredicate';
 export * from './Ilike';
 export * from './In';
 export * from './Like';
+export * from './LowerOrEqualThan';
+export * from './LowerThan';
 export * from './Or';

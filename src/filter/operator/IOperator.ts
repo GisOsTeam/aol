@@ -11,9 +11,13 @@ export interface IOperator {
 export enum OperatorEnum {
   and = 'and',
   equal = 'equal',
+  greaterThan = 'greaterThan',
+  greaterOrEqualThan = 'greaterOrEqualThan',
   ilike = 'ilike',
   in = 'in',
   like = 'like',
+  lowerThan = 'lowerThan',
+  lowerOrEqualThan = 'lowerOrEqualThan',
   or = 'or',
 }
 

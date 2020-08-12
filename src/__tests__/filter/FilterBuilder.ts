@@ -6,10 +6,23 @@ import {
   Ilike as IlikeOp,
   In as InOp,
   Like as LikeOp,
+  LowerThan as LowerThanOp,
+  LowerOrEqualThan as LowerOrEqualThanOp,
   Or as OrOp,
 } from '../../filter/operator';
 import { FieldTypeEnum, FilterBuilder, FilterBuilderTypeEnum, IField } from '../../filter';
-import { AndPre, Equal, GreaterThan, GreaterOrEqualThan, Ilike, In, Like, Or } from '../../filter/predicate';
+import {
+  AndPre,
+  Equal,
+  GreaterThan,
+  GreaterOrEqualThan,
+  Ilike,
+  In,
+  Like,
+  LowerOrEqualThan,
+  LowerThan,
+  Or
+} from '../../filter/predicate';
 
 const numberField: IField<{ foo: number }> = {
   type: FieldTypeEnum.Number,
@@ -65,6 +78,14 @@ describe('aol.filter', () => {
       expect<string>(operator.toString()).toEqual('LIKE');
       operator = new LikeOp(true);
       expect<string>(operator.toString()).toEqual('NOT LIKE');
+    });
+    test('LowerThan', () => {
+      const operator = new LowerThanOp();
+      expect<string>(operator.toString()).toEqual('<');
+    });
+    test('LowerOrEqualThan', () => {
+      const operator = new LowerOrEqualThanOp();
+      expect<string>(operator.toString()).toEqual('<=');
     });
     test('Or', () => {
       let operator = new OrOp();
@@ -261,6 +282,34 @@ describe('aol.filter', () => {
         test('string', () => {
           const predicate = new Like(stringField, new LikeOp(), '%bar%');
           expect(FilterBuilder.build(predicate, FilterBuilderTypeEnum.SQL)).toMatchSnapshot();
+        });
+      });
+    });
+
+    describe('lowerOrEqualThan', () => {
+      describe('sql', () => {
+        test('number', () => {
+          const predicate = new LowerOrEqualThan(numberField, 1);
+          expect(predicate.toString(FilterBuilderTypeEnum.SQL)).toMatchSnapshot();
+        });
+
+        test('string', () => {
+          const predicate = new LowerOrEqualThan(stringField, '1');
+          expect(predicate.toString(FilterBuilderTypeEnum.SQL)).toMatchSnapshot();
+        });
+      });
+    });
+
+    describe('lowerThan', () => {
+      describe('sql', () => {
+        test('number', () => {
+          const predicate = new LowerThan(numberField, 1);
+          expect(predicate.toString(FilterBuilderTypeEnum.SQL)).toMatchSnapshot();
+        });
+
+        test('string', () => {
+          const predicate = new LowerThan(stringField, '1');
+          expect(predicate.toString(FilterBuilderTypeEnum.SQL)).toMatchSnapshot();
         });
       });
     });
