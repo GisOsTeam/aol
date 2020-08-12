@@ -14,4 +14,5 @@ export * from './In';
 export * from './Like';
 export * from './LowerOrEqualThan';
 export * from './LowerThan';
+export * from './Null';
 export * from './Or';

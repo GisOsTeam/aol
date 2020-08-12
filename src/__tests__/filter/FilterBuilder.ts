@@ -8,6 +8,7 @@ import {
   Like as LikeOp,
   LowerThan as LowerThanOp,
   LowerOrEqualThan as LowerOrEqualThanOp,
+  Null as NullOp,
   Or as OrOp,
 } from '../../filter/operator';
 import { FieldTypeEnum, FilterBuilder, FilterBuilderTypeEnum, IField } from '../../filter';
@@ -21,8 +22,9 @@ import {
   Like,
   LowerOrEqualThan,
   LowerThan,
-  Or
+  Or,
 } from '../../filter/predicate';
+import { Null } from '../../filter/predicate/Null';
 
 const numberField: IField<{ foo: number }> = {
   type: FieldTypeEnum.Number,
@@ -86,6 +88,12 @@ describe('aol.filter', () => {
     test('LowerOrEqualThan', () => {
       const operator = new LowerOrEqualThanOp();
       expect<string>(operator.toString()).toEqual('<=');
+    });
+    test('Null', () => {
+      let operator = new NullOp();
+      expect<string>(operator.toString()).toEqual('IS NULL');
+      operator = new NullOp(true);
+      expect<string>(operator.toString()).toEqual('IS NOT NULL');
     });
     test('Or', () => {
       let operator = new OrOp();
@@ -222,6 +230,7 @@ describe('aol.filter', () => {
         });
       });
     });
+
     describe('in', () => {
       describe('cql', () => {
         test('not.number', () => {
@@ -309,6 +318,20 @@ describe('aol.filter', () => {
 
         test('string', () => {
           const predicate = new LowerThan(stringField, '1');
+          expect(predicate.toString(FilterBuilderTypeEnum.SQL)).toMatchSnapshot();
+        });
+      });
+    });
+
+    describe('null', () => {
+      describe('sql', () => {
+        test('not', () => {
+          const predicate = new Null(numberField, new NullOp(true), 1);
+          expect(predicate.toString(FilterBuilderTypeEnum.SQL)).toMatchSnapshot();
+        });
+
+        test('', () => {
+          const predicate = new Null(stringField, new NullOp(), '1');
           expect(predicate.toString(FilterBuilderTypeEnum.SQL)).toMatchSnapshot();
         });
       });

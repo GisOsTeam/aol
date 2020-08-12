@@ -18,6 +18,7 @@ export enum OperatorEnum {
   like = 'like',
   lowerThan = 'lowerThan',
   lowerOrEqualThan = 'lowerOrEqualThan',
+  null = 'null',
   or = 'or',
 }
 

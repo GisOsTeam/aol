@@ -77,3 +77,11 @@ exports[`aol.filter predicate lowerOrEqualThan sql string 1`] = `"(foo <= '1')"`
 exports[`aol.filter predicate lowerThan sql number 1`] = `"(foo < 1)"`;
 
 exports[`aol.filter predicate lowerThan sql string 1`] = `"(foo < '1')"`;
+
+exports[`aol.filter predicate null sql`] = `"(foo IS NULL)"`;
+
+exports[`aol.filter predicate null sql  1`] = `"(foo IS NULL '1')"`;
+
+exports[`aol.filter predicate null sql not`] = `"(foo IS NOT NULL)"`;
+
+exports[`aol.filter predicate null sql not 1`] = `"(foo IS NOT NULL 1)"`;
