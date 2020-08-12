@@ -326,12 +326,12 @@ describe('aol.filter', () => {
     describe('null', () => {
       describe('sql', () => {
         test('not', () => {
-          const predicate = new Null(numberField, new NullOp(true), 1);
+          const predicate = new Null(numberField, new NullOp(true));
           expect(predicate.toString(FilterBuilderTypeEnum.SQL)).toMatchSnapshot();
         });
 
         test('', () => {
-          const predicate = new Null(stringField, new NullOp(), '1');
+          const predicate = new Null(stringField, new NullOp());
           expect(predicate.toString(FilterBuilderTypeEnum.SQL)).toMatchSnapshot();
         });
       });
