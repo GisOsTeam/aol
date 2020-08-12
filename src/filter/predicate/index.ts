@@ -6,6 +6,8 @@ export * from './AndPre';
 export * from './BasePredicate';
 export * from './Equal';
 export * from './FilterPredicate';
+export * from './GreaterOrEqualThan';
+export * from './GreaterThan';
 export * from './IPredicate';
 export * from './Ilike';
 export * from './In';

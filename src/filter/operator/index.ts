@@ -4,6 +4,8 @@
 
 export * from './AndOp';
 export * from './Equal';
+export * from './GreaterOrEqualThan';
+export * from './GreaterThan';
 export * from './IOperator';
 export * from './Ilike';
 export * from './In';

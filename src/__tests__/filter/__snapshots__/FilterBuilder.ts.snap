@@ -30,6 +30,14 @@ exports[`aol.filter predicate equal sql number 1`] = `"(foo = 1)"`;
 
 exports[`aol.filter predicate equal sql string 1`] = `"(foo = '1')"`;
 
+exports[`aol.filter predicate greaterOrEqualThan sql number 1`] = `"(foo >= 1)"`;
+
+exports[`aol.filter predicate greaterOrEqualThan sql string 1`] = `"(foo >= '1')"`;
+
+exports[`aol.filter predicate greaterThan sql number 1`] = `"(foo > 1)"`;
+
+exports[`aol.filter predicate greaterThan sql string 1`] = `"(foo > '1')"`;
+
 exports[`aol.filter predicate ilike cql not.string 1`] = `"(Concatenate(foo) NOT ILIKE '%bar%')"`;
 
 exports[`aol.filter predicate ilike cql string 1`] = `"(Concatenate(foo) ILIKE '%bar%')"`;
