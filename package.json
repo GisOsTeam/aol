@@ -1,6 +1,6 @@
 {
   "name": "@gisosteam/aol",
-  "version": "0.0.43",
+  "version": "0.0.44",
   "description": "OpenLayers sources extentions",
   "scripts": {
     "test": "jest",
