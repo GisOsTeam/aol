@@ -3,9 +3,9 @@ import { IOperator } from '../operator';
 import { IPredicate } from './IPredicate';
 
 export abstract class BasePredicate<
-  LH extends IPredicate<any, any, any> | IField<any>,
+  LH extends IPredicate | IField<any>,
   O extends IOperator,
-  RH extends IPredicate<any, any, any> | FilterValueType
+  RH extends IPredicate | FilterValueType
 > implements IPredicate<LH, O, RH> {
   public readonly leftHand: LH;
   public readonly operator: O;
