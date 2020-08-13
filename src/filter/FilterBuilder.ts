@@ -1,15 +1,14 @@
 import { FilterBuilderType } from './IFilter';
-import { AndPre, BasePredicate, Or } from './predicate';
-import { IOperator } from './operator';
+import { AndPre, IPredicate, Or } from './predicate';
 
 export class FilterBuilder {
-  public predicate: BasePredicate<any, any, any>;
+  public predicate: IPredicate;
 
-  constructor(predicate: BasePredicate<any, any, any>) {
+  constructor(predicate: IPredicate) {
     this.predicate = predicate;
   }
 
-  public static build(predicate: BasePredicate<any, IOperator, any>, type: FilterBuilderType): string {
+  public static build(predicate: IPredicate, type: FilterBuilderType): string {
     if (!predicate) {
       return 'INCLUDE';
     }
@@ -23,11 +22,11 @@ export class FilterBuilder {
     return this.predicate.toString(type);
   }
 
-  public and<RP extends BasePredicate<any, IOperator, any>>(rightPredicate: RP): FilterBuilder {
+  public and<RP extends IPredicate>(rightPredicate: RP): FilterBuilder {
     return new FilterBuilder(new AndPre(this.predicate, rightPredicate));
   }
 
-  public or<RP extends BasePredicate<any, IOperator, any>>(rightPredicate: RP): FilterBuilder {
+  public or<RP extends IPredicate>(rightPredicate: RP): FilterBuilder {
     return new FilterBuilder(new Or<any, RP>(this.predicate, rightPredicate));
   }
 }

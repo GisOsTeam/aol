@@ -1,13 +1,14 @@
 import Feature from 'ol/Feature';
 import { transformExtent } from 'ol/proj';
 import EsriJSON from 'ol/format/EsriJSON';
-import { IQueryRequest, IFeatureType, IQueryFeatureTypeResponse, IExtended, IAttribute } from '../IExtended';
+import { IAttribute, IExtended, IFeatureType, IQueryFeatureTypeResponse, IQueryRequest } from '../IExtended';
 import { IResponse } from 'bhreq';
 import { getForViewAndSize } from 'ol/extent';
 import { fromCircle } from 'ol/geom/Polygon';
 import Circle from 'ol/geom/Circle';
 import Projection from 'ol/proj/Projection';
 import { HttpEngine } from '../../HttpInterceptor';
+import { FilterBuilder, FilterBuilderTypeEnum } from '../../filter';
 
 const format = new EsriJSON();
 
@@ -87,7 +88,11 @@ export function executeAgsQuery(
     url += `/${type.id}/query`;
     body.inSR = srId;
     body.outSR = srId;
-    body.where = ''; // TODO
+    if (request.filters) {
+      body.where = new FilterBuilder(request.filters).build(FilterBuilderTypeEnum.SQL);
+    } else {
+      body.where = '';
+    }
     body.f = 'json';
   }
   const httpEngine = HttpEngine.getInstance();

@@ -1,9 +1,10 @@
 import { FilterBuilderType } from '../IFilter';
 import { AndOp } from '../operator';
 import { BasePredicate } from './BasePredicate';
+import { IPredicate } from './IPredicate';
 
-export class AndPre extends BasePredicate<BasePredicate<any, any, any>, AndOp, BasePredicate<any, any, any>> {
-  constructor(leftHand: BasePredicate<any, any, any>, rightHand: BasePredicate<any, any, any>) {
+export class AndPre extends BasePredicate<IPredicate, AndOp, IPredicate> {
+  constructor(leftHand: IPredicate, rightHand: IPredicate) {
     super(leftHand, new AndOp(), rightHand);
   }
 
