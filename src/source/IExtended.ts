@@ -94,7 +94,7 @@ export interface IFeatureType<IDT extends number | string> {
   attributes?: IAttribute[];
 }
 
-export function constructIdentifyQueryRequestFromPixel(pixel: number[], olMap: OlMap): IQueryRequest {
+export function constructIdentifyQueryRequestFromPixel(pixel: number[], olMap: OlMap): IIdentifyRequest {
   const coord = olMap.getCoordinateFromPixel(pixel);
   return {
     olMap,

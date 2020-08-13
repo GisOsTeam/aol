@@ -2,7 +2,13 @@ import { Pixel } from 'ol/pixel';
 import { Map } from 'ol';
 import OlBaseLayer from 'ol/layer/Base';
 import Layer from 'ol/layer/Layer';
-import { IQueryResponse, constructIdentifyQueryRequestFromPixel, IQuerySource, IQueryRequest } from '../IExtended';
+import {
+  IQueryResponse,
+  constructIdentifyQueryRequestFromPixel,
+  IQuerySource,
+  IQueryRequest,
+  IIdentifyRequest,
+} from '../IExtended';
 import { walk } from '../../utils';
 import Geometry from 'ol/geom/Geometry';
 
@@ -16,7 +22,7 @@ export function identify(
 ) {
   if (map && identifyEntity) {
     const promises: Promise<IQueryResponse>[] = [];
-    let queryRequest: IQueryRequest;
+    let queryRequest: IIdentifyRequest;
     if (identifyEntity instanceof Geometry) {
       queryRequest = {
         olMap: map,
