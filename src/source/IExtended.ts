@@ -50,25 +50,22 @@ export interface IExtended extends IInitSource, IQuerySource, IInitSource {}
 // TODO: faudrait rename le type mais ca va faire des breakings changes :/
 export type IQueryRequest = IGisQueryRequest | IIdentifyRequest;
 
-export interface IAbstractGisRequest {
+export interface IAbstractGisRequest<T extends string> {
   olMap: OlMap;
 
-  queryType: string;
+  queryType: T;
   filters?: IPredicate<any, any, any>;
   limit?: number;
 }
 
-export interface IGisQueryRequest extends IAbstractGisRequest {
+export interface IGisQueryRequest extends IAbstractGisRequest<'query'> {
   geometry?: Geometry;
   geometryProjection?: Projection;
-  queryType: 'query';
 }
 
-export interface IIdentifyRequest extends IAbstractGisRequest {
+export interface IIdentifyRequest extends IAbstractGisRequest<'identify'> {
   geometry: Geometry;
   geometryProjection: Projection;
-  queryType: 'identify';
-
   identifyTolerance?: number;
 }
 

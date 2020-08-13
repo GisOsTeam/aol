@@ -1,7 +1,7 @@
 import Feature from 'ol/Feature';
 import { get as getProjection, transformExtent } from 'ol/proj';
 import WMSGetFeatureInfo from 'ol/format/WMSGetFeatureInfo';
-import { IQueryRequest, IFeatureType, IQueryFeatureTypeResponse, IExtended, IAttribute } from '../IExtended';
+import { IQueryRequest, IFeatureType, IQueryFeatureTypeResponse, IExtended, IAttribute, IIdentifyRequest } from '../IExtended';
 import { IResponse } from 'bhreq';
 import { toGeoJSONGeometry, disjoint } from '../../utils';
 import { getForViewAndSize } from 'ol/extent';
@@ -15,7 +15,7 @@ const format = new WMSGetFeatureInfo();
 function getFeatureInfoOnBBOX(
   source: IExtended,
   type: IFeatureType<string>,
-  queryType: 'query' | 'identify',
+  queryType: string,
   requestProjectionCode: string,
   featureProjectionCode: string,
   bbox: number[],
@@ -136,7 +136,7 @@ export function executeWmsQuery(
   type: IFeatureType<string>,
   request: IQueryRequest
 ): Promise<IQueryFeatureTypeResponse> {
-  const { olMap, geometry, geometryProjection, queryType, limit, identifyTolerance } = request;
+  const { olMap, geometry, geometryProjection, queryType, limit } = request;
   const requestProjectionCode = 'EPSG:3857';
   const olView = olMap.getView();
   const mapProjection = olView.getProjection();
@@ -148,21 +148,26 @@ export function executeWmsQuery(
     [1001, 1001]
   );
   let tolerance;
-  if (queryType === 'identify') {
-    if (Math.round(identifyTolerance) > 0) {
-      tolerance = Math.round(identifyTolerance);
-    } else {
-      tolerance = 4;
-    }
-  } else {
-    const mapH = Math.sqrt(
-      (mapExtent[2] - mapExtent[0]) * (mapExtent[2] - mapExtent[0]) + (mapExtent[3] - mapExtent[1])
-    );
-    const geomH = Math.sqrt(
-      (extent[2] - extent[0]) * (extent[2] - extent[0]) + (extent[3] - extent[1]) * (extent[3] - extent[1])
-    );
-    tolerance = 1 + Math.round((500 * geomH) / mapH);
+  switch (queryType) {
+    case 'identify':
+      const { identifyTolerance } = request as IIdentifyRequest;
+      if (Math.round(identifyTolerance) > 0) {
+        tolerance = Math.round(identifyTolerance);
+      } else {
+        tolerance = 4;
+      }
+      break;
+    case 'query':
+      const mapH = Math.sqrt(
+        (mapExtent[2] - mapExtent[0]) * (mapExtent[2] - mapExtent[0]) + (mapExtent[3] - mapExtent[1])
+      );
+      const geomH = Math.sqrt(
+        (extent[2] - extent[0]) * (extent[2] - extent[0]) + (extent[3] - extent[1]) * (extent[3] - extent[1])
+      );
+      tolerance = 1 + Math.round((500 * geomH) / mapH);
+      break;
   }
+
   return getFeatureInfoOnBBOX(
     source,
     type,

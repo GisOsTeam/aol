@@ -77,33 +77,38 @@ export function executeAgsQuery(
   } else if ('getUrls' in source) {
     url = (source as any).getUrls()[0];
   }
-  if (queryType === 'identify') {
-    const { identifyTolerance } = request as IIdentifyRequest;
-    url += '/identify';
-    const extent = transformExtent(geometry.getExtent(), geometryProjection, 'EPSG:' + srId);
-    const mapExtent = getForViewAndSize(
-      [0.5 * extent[0] + 0.5 * extent[2], 0.5 * extent[1] + 0.5 * extent[3]],
-      olView.getResolution(),
-      0,
-      [1001, 1001]
-    );
-    body.mapExtent = mapExtent.join(',');
-    body.imageDisplay = '1001,1001';
-    body.layers = `all:${type.id}`;
-    body.sr = srId;
-    if (Math.round(identifyTolerance) > 0) {
-      body.tolerance = `${Math.round(identifyTolerance)}`;
-    } else {
-      body.tolerance = '4';
-    }
-    body.f = 'json';
-  } else {
-    url += `/${type.id}/query`;
-    body.inSR = srId;
-    body.outSR = srId;
-    body.where = ''; // TODO
-    body.f = 'json';
+
+  switch (queryType) {
+    case 'identify':
+      const { identifyTolerance } = request as IIdentifyRequest;
+      url += '/identify';
+      const extent = transformExtent(geometry.getExtent(), geometryProjection, 'EPSG:' + srId);
+      const mapExtent = getForViewAndSize(
+        [0.5 * extent[0] + 0.5 * extent[2], 0.5 * extent[1] + 0.5 * extent[3]],
+        olView.getResolution(),
+        0,
+        [1001, 1001]
+      );
+      body.mapExtent = mapExtent.join(',');
+      body.imageDisplay = '1001,1001';
+      body.layers = `all:${type.id}`;
+      body.sr = srId;
+      if (Math.round(identifyTolerance) > 0) {
+        body.tolerance = `${Math.round(identifyTolerance)}`;
+      } else {
+        body.tolerance = '4';
+      }
+      body.f = 'json';
+      break;
+    case 'query':
+      url += `/${type.id}/query`;
+      body.inSR = srId;
+      body.outSR = srId;
+      body.where = '';
+      body.f = 'json';
+      break;
   }
+
   const httpEngine = HttpEngine.getInstance();
   return httpEngine
     .send({
