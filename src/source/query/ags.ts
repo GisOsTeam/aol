@@ -1,7 +1,7 @@
 import Feature from 'ol/Feature';
 import { transformExtent } from 'ol/proj';
 import EsriJSON from 'ol/format/EsriJSON';
-import { IQueryRequest, IFeatureType, IQueryFeatureTypeResponse, IExtended, IAttribute } from '../IExtended';
+import { IQueryRequest, IFeatureType, IQueryFeatureTypeResponse, IExtended, IAttribute, IIdentifyRequest } from '../IExtended';
 import { IResponse } from 'bhreq';
 import { getForViewAndSize } from 'ol/extent';
 import { fromCircle } from 'ol/geom/Polygon';
@@ -16,40 +16,52 @@ export function executeAgsQuery(
   type: IFeatureType<number>,
   request: IQueryRequest
 ): Promise<IQueryFeatureTypeResponse> {
-  const { olMap, geometryProjection, queryType, limit, identifyTolerance } = request;
+  const { olMap, geometryProjection, queryType, limit } = request;
   const srId = '3857';
+
+  const body: { [id: string]: string } = {};
+  body.outFields = '*';
+  body.returnFieldName = 'true';
+  body.returnGeometry = 'true';
+
   let geometry = request.geometry;
-  if (geometry.getType() === 'Circle') {
-    geometry = fromCircle(geometry as Circle);
+  if (geometry) {
+    if (geometry.getType() === 'Circle') {
+      geometry = fromCircle(geometry as Circle);
+    }
+    const geometryStr = format.writeGeometry(geometry, {
+      featureProjection: geometryProjection,
+      dataProjection: 'EPSG:' + srId,
+    });
+    let geometryType = '';
+    switch (geometry.getType()) {
+      case 'Point':
+        geometryType = 'esriGeometryPoint';
+        break;
+      case 'LineString':
+        geometryType = 'esriGeometryPolyline';
+        break;
+      case 'LinearRing':
+        geometryType = 'esriGeometryPolyline';
+        break;
+      case 'Polygon':
+        geometryType = 'esriGeometryPolygon';
+        break;
+      case 'MultiPoint':
+        geometryType = 'esriGeometryMultipoint';
+        break;
+      case 'MultiLineString':
+        geometryType = 'esriGeometryPoint';
+        break;
+      case 'MultiPolygon':
+        geometryType = 'esriGeometryPolygon';
+        break;
+    }
+
+    body.geometry = geometryStr;
+    body.geometryType = geometryType;
   }
-  const geometryStr = format.writeGeometry(geometry, {
-    featureProjection: geometryProjection,
-    dataProjection: 'EPSG:' + srId,
-  });
-  let geometryType = '';
-  switch (geometry.getType()) {
-    case 'Point':
-      geometryType = 'esriGeometryPoint';
-      break;
-    case 'LineString':
-      geometryType = 'esriGeometryPolyline';
-      break;
-    case 'LinearRing':
-      geometryType = 'esriGeometryPolyline';
-      break;
-    case 'Polygon':
-      geometryType = 'esriGeometryPolygon';
-      break;
-    case 'MultiPoint':
-      geometryType = 'esriGeometryMultipoint';
-      break;
-    case 'MultiLineString':
-      geometryType = 'esriGeometryPoint';
-      break;
-    case 'MultiPolygon':
-      geometryType = 'esriGeometryPolygon';
-      break;
-  }
+
   const olView = olMap.getView();
   const mapProjection = olView.getProjection();
   let url = '';
@@ -58,13 +70,8 @@ export function executeAgsQuery(
   } else if ('getUrls' in source) {
     url = (source as any).getUrls()[0];
   }
-  const body: { [id: string]: string } = {};
-  body.geometry = geometryStr;
-  body.geometryType = geometryType;
-  body.outFields = '*';
-  body.returnFieldName = 'true';
-  body.returnGeometry = 'true';
   if (queryType === 'identify') {
+    const { identifyTolerance } = request as IIdentifyRequest;
     url += '/identify';
     const extent = transformExtent(geometry.getExtent(), geometryProjection, 'EPSG:' + srId);
     const mapExtent = getForViewAndSize(

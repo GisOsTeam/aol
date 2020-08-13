@@ -47,13 +47,29 @@ export interface ILegendSource {
 
 export interface IExtended extends IInitSource, IQuerySource, IInitSource {}
 
-export interface IQueryRequest {
+// TODO: faudrait rename le type mais ca va faire des breakings changes :/
+export type IQueryRequest = IGisQueryRequest | IIdentifyRequest;
+
+
+export interface IAbstractGisRequest {
   olMap: OlMap;
-  geometry: Geometry;
-  geometryProjection: Projection;
-  queryType: 'query' | 'identify';
+
+  queryType: string;
   filters?: IPredicate<any, any, any>;
   limit?: number;
+}
+
+export interface IGisQueryRequest extends IAbstractGisRequest {
+  geometry?: Geometry;
+  geometryProjection?: Projection;
+  queryType: 'query';
+}
+
+export interface IIdentifyRequest extends IAbstractGisRequest {
+  geometry: Geometry;
+  geometryProjection: Projection;
+  queryType: 'identify';
+
   identifyTolerance?: number;
 }
 
