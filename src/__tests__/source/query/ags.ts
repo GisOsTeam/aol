@@ -16,8 +16,8 @@ const states = new ImageArcGISRest({
 
 const stateNameField: IField<any> = {
   key: 'state_name',
-  type: FieldTypeEnum.String
-}
+  type: FieldTypeEnum.String,
+};
 
 test('describe ags', () => {
   const type: IFeatureType<number> = states.get('types')[0];
