@@ -1,7 +1,14 @@
 import Feature from 'ol/Feature';
 import { get as getProjection, transformExtent } from 'ol/proj';
 import WMSGetFeatureInfo from 'ol/format/WMSGetFeatureInfo';
-import { IQueryRequest, IFeatureType, IQueryFeatureTypeResponse, IExtended, IAttribute, IIdentifyRequest } from '../IExtended';
+import {
+  IQueryRequest,
+  IFeatureType,
+  IQueryFeatureTypeResponse,
+  IExtended,
+  IAttribute,
+  IIdentifyRequest,
+} from '../IExtended';
 import { IResponse } from 'bhreq';
 import { toGeoJSONGeometry, disjoint } from '../../utils';
 import { getForViewAndSize } from 'ol/extent';
