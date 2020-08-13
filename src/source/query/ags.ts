@@ -1,7 +1,14 @@
 import Feature from 'ol/Feature';
 import { transformExtent } from 'ol/proj';
 import EsriJSON from 'ol/format/EsriJSON';
-import { IQueryRequest, IFeatureType, IQueryFeatureTypeResponse, IExtended, IAttribute, IIdentifyRequest } from '../IExtended';
+import {
+  IQueryRequest,
+  IFeatureType,
+  IQueryFeatureTypeResponse,
+  IExtended,
+  IAttribute,
+  IIdentifyRequest,
+} from '../IExtended';
 import { IResponse } from 'bhreq';
 import { getForViewAndSize } from 'ol/extent';
 import { fromCircle } from 'ol/geom/Polygon';

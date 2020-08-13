@@ -50,7 +50,6 @@ export interface IExtended extends IInitSource, IQuerySource, IInitSource {}
 // TODO: faudrait rename le type mais ca va faire des breakings changes :/
 export type IQueryRequest = IGisQueryRequest | IIdentifyRequest;
 
-
 export interface IAbstractGisRequest {
   olMap: OlMap;
 
