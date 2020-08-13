@@ -1,4 +1,5 @@
 import { IOperator, OperatorEnum, OperatorType } from './IOperator';
+import { FilterBuilderTypeEnum } from '../IFilter';
 
 export class AndOp implements IOperator {
   public not: boolean;
@@ -8,10 +9,15 @@ export class AndOp implements IOperator {
     this.not = not;
   }
 
-  public toString(): string {
-    if (this.not) {
-      return '&& !';
+  public toString(type?: FilterBuilderTypeEnum): string {
+    switch (type) {
+      case FilterBuilderTypeEnum.OGC:
+        throw new Error('Unsupported value type for And operator');
+      default:
+        if (this.not) {
+          return 'AND NOT';
+        }
+        return 'AND';
     }
-    return '&&';
   }
 }

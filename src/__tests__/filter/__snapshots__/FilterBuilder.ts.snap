@@ -2,9 +2,11 @@
 
 exports[`aol.filter filterBuilder empty  1`] = `"INCLUDE"`;
 
-exports[`aol.filter filterBuilder multiple cql equal complex 1`] = `"(((foo = 1) && (Concatenate(bar) = 'bar')) || (Concatenate(bar3) = 'bar3'))"`;
+exports[`aol.filter filterBuilder multiple cql equal complex 1`] = `"(((foo = 1) AND (Concatenate(bar) = 'bar')) OR (Concatenate(bar3) = 'bar3'))"`;
 
-exports[`aol.filter filterBuilder multiple cql equal number AND string 1`] = `"((foo = 1) && (Concatenate(bar) = 'bar'))"`;
+exports[`aol.filter filterBuilder multiple cql equal number AND string 1`] = `"((foo = 1) AND (Concatenate(bar) = 'bar'))"`;
+
+exports[`aol.filter filterBuilder multiple sql complex 1`] = `"((((date_fin IS NULL) OR (date_fin > '2020-01-12')) AND (date_debut <= '2020-01-12')) AND (id_dependance IN (1,2,3,4,5)))"`;
 
 exports[`aol.filter predicate equal cql boolean 1`] = `"(foo = true)"`;
 

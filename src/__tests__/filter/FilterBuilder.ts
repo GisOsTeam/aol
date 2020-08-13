@@ -1,13 +1,13 @@
 import {
   AndOp,
   Equal as EqualOp,
-  GreaterThan as GreaterThanOp,
   GreaterOrEqualThan as GreaterOrEqualThanOp,
+  GreaterThan as GreaterThanOp,
   Ilike as IlikeOp,
   In as InOp,
   Like as LikeOp,
-  LowerThan as LowerThanOp,
   LowerOrEqualThan as LowerOrEqualThanOp,
+  LowerThan as LowerThanOp,
   Null as NullOp,
   Or as OrOp,
 } from '../../filter/operator';
@@ -15,8 +15,8 @@ import { FieldTypeEnum, FilterBuilder, FilterBuilderTypeEnum, IField } from '../
 import {
   AndPre,
   Equal,
-  GreaterThan,
   GreaterOrEqualThan,
+  GreaterThan,
   Ilike,
   In,
   Like,
@@ -43,9 +43,9 @@ describe('aol.filter', () => {
   describe('operator', () => {
     test('And', () => {
       let operator = new AndOp();
-      expect<string>(operator.toString()).toEqual('&&');
+      expect<string>(operator.toString()).toEqual('AND');
       operator = new AndOp(true);
-      expect<string>(operator.toString()).toEqual('&& !');
+      expect<string>(operator.toString()).toEqual('AND NOT');
     });
     test('Equal', () => {
       let operator = new EqualOp();
@@ -97,9 +97,9 @@ describe('aol.filter', () => {
     });
     test('Or', () => {
       let operator = new OrOp();
-      expect<string>(operator.toString()).toEqual('||');
+      expect<string>(operator.toString()).toEqual('OR');
       operator = new OrOp(true);
-      expect<string>(operator.toString()).toEqual('|| !');
+      expect<string>(operator.toString()).toEqual('OR NOT');
     });
   });
 
@@ -396,6 +396,36 @@ describe('aol.filter', () => {
               new FilterBuilder(predicate1).and(predicate2).or(predicate3).build(FilterBuilderTypeEnum.CQL)
             ).toMatchSnapshot();
           });
+        });
+      });
+      describe('sql', () => {
+        test('complex', () => {
+          const dateDebutField: IField<any> = {
+            key: 'date_debut',
+            type: FieldTypeEnum.String,
+          };
+          const dateFinField: IField<any> = {
+            key: 'date_fin',
+            type: FieldTypeEnum.String,
+          };
+          const predicate1 = new LowerOrEqualThan(dateDebutField, '2020-01-12');
+          const predicate2 = new Null(dateFinField, new NullOp());
+          const predicate3 = new GreaterThan(dateFinField, '2020-01-12');
+
+          const ids = '1,2,3,4,5';
+          const field: IField<any> = {
+            key: 'id_dependance',
+            type: FieldTypeEnum.String,
+          };
+          const predicate4 = new In(field, new InOp(), ids);
+
+          expect(
+            new FilterBuilder(predicate2)
+              .or(predicate3)
+              .and(predicate1)
+              .and(predicate4)
+              .build(FilterBuilderTypeEnum.SQL)
+          ).toMatchSnapshot();
         });
       });
     });
