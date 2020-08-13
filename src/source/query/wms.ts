@@ -22,7 +22,7 @@ const format = new WMSGetFeatureInfo();
 function getFeatureInfoOnBBOX(
   source: IExtended,
   type: IFeatureType<string>,
-  queryType: string,
+  queryType: 'query' | 'identify',
   requestProjectionCode: string,
   featureProjectionCode: string,
   bbox: number[],
