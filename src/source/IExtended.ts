@@ -52,9 +52,8 @@ export type IQueryRequest = IGisQueryRequest | IIdentifyRequest;
 
 export interface IAbstractGisRequest<T extends string> {
   olMap: OlMap;
-
   queryType: T;
-  filters?: IPredicate<any, any, any>;
+  filters?: IPredicate;
   limit?: number;
 }
 
@@ -92,6 +91,7 @@ export interface IFeatureType<IDT extends number | string> {
   name?: string;
   identifierAttribute?: IAttribute;
   attributes?: IAttribute[];
+  predicate?: IPredicate;
 }
 
 export function constructIdentifyQueryRequestFromPixel(pixel: number[], olMap: OlMap): IIdentifyRequest {
