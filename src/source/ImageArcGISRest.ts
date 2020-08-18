@@ -1,20 +1,19 @@
-import OlImageArcGISRest from 'ol/source/ImageArcGISRest';
+import OlImageArcGISRest, { Options } from 'ol/source/ImageArcGISRest';
 import {
+  IExtended,
+  IFeatureType,
+  ILayerLegend,
+  IQueryFeatureTypeResponse,
   IQueryRequest,
   IQueryResponse,
   ISnapshotOptions,
-  IQueryFeatureTypeResponse,
-  IFeatureType,
-  IExtended,
-  ILayerLegend,
 } from './IExtended';
 import { getAgsLayersFromTypes } from '../utils';
-import { SourceType, SourceTypeEnum } from './types/sourceType';
-import { LayerType, LayerTypeEnum } from './types/layerType';
-import { executeAgsQuery, retrieveAgsFeature, loadAgsFeatureDescription } from './query/ags';
-import { Options } from 'ol/source/ImageArcGISRest';
+import { LayerType, LayerTypeEnum, SourceType, SourceTypeEnum } from './types';
+import { executeAgsQuery, loadAgsFeatureDescription, retrieveAgsFeature } from './query';
 import Feature from 'ol/Feature';
 import Projection from 'ol/proj/Projection';
+import { FilterBuilder, FilterBuilderTypeEnum } from '../filter';
 
 export interface IImageArcGISRestOptions extends ISnapshotOptions, Options {
   types: IFeatureType<number>[];
@@ -23,9 +22,10 @@ export interface IImageArcGISRestOptions extends ISnapshotOptions, Options {
 export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
   protected options: IImageArcGISRestOptions;
   protected legendByLayer: Record<string, ILayerLegend[]>;
+  protected defaultTypes: Map<number, IFeatureType<number>>;
 
   constructor(options: IImageArcGISRestOptions) {
-    super({ ...options } as any);
+    super({ ...options });
     this.options = { ...options };
     if (this.options.snapshotable != false) {
       this.options.snapshotable = true;
@@ -33,7 +33,18 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
     if (this.options.listable != false) {
       this.options.listable = true;
     }
+
+    this.defaultTypes = new Map<number, IFeatureType<number>>();
+
     this.setSourceOptions(this.options);
+
+    if (this.options.types) {
+      for (const type of this.options.types) {
+        if (!this.defaultTypes.has(type.id)) {
+          this.defaultTypes.set(type.id, type);
+        }
+      }
+    }
   }
 
   public async init(): Promise<void> {
@@ -60,7 +71,24 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
     this.options = { ...options };
     this.un('propertychange', this.handlePropertychange);
     this.set('types', options.types);
-    this.updateParams({ ...this.getParams(), LAYERS: getAgsLayersFromTypes(options.types) });
+    const params = { ...this.getParams(), LAYERS: getAgsLayersFromTypes(options.types) };
+
+    let layerDefsAsObject: any;
+    for (const type of options.types) {
+      let filterBuilder = this.buildFilterBuilderFromType_(type);
+      if (filterBuilder) {
+        if (!layerDefsAsObject) {
+          layerDefsAsObject = {};
+        }
+        layerDefsAsObject[type.id] = filterBuilder.build(FilterBuilderTypeEnum.SQL);
+        filterBuilder = undefined;
+      }
+    }
+    if (layerDefsAsObject) {
+      params.LAYERDEFS = JSON.stringify(layerDefsAsObject);
+    }
+
+    this.updateParams(params);
     this.on('propertychange', this.handlePropertychange);
   }
 
@@ -83,6 +111,10 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
   public query(request: IQueryRequest): Promise<IQueryResponse> {
     const promises: Promise<IQueryFeatureTypeResponse>[] = [];
     for (const type of this.options.types) {
+      let filterBuilder = this.buildFilterBuilderFromType_(type);
+      if (request.filters) {
+        filterBuilder = filterBuilder ? filterBuilder.and(request.filters) : new FilterBuilder(request.filters);
+      }
       promises.push(executeAgsQuery(this, type, request));
     }
     return Promise.all(promises).then((featureTypeResponses: IQueryFeatureTypeResponse[]) => {
@@ -140,5 +172,16 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
     });
 
     return this.legendByLayer;
+  }
+
+  private buildFilterBuilderFromType_(type: IFeatureType<number>): FilterBuilder | undefined {
+    let filterBuilder;
+    if (this.defaultTypes.has(type.id) && this.defaultTypes.get(type.id).predicate) {
+      filterBuilder = new FilterBuilder(this.defaultTypes.get(type.id).predicate);
+    }
+    if (type.predicate) {
+      filterBuilder = filterBuilder ? filterBuilder.and(type.predicate) : new FilterBuilder(type.predicate);
+    }
+    return filterBuilder;
   }
 }
