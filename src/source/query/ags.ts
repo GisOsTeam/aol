@@ -93,6 +93,9 @@ export function executeAgsQuery(
       body.mapExtent = mapExtent.join(',');
       body.imageDisplay = '1001,1001';
       body.layers = `all:${type.id}`;
+      if (request.filters) {
+        body.layerDefs = `{"${type.id}":"${new FilterBuilder(request.filters).build(FilterBuilderTypeEnum.SQL)}"}`;
+      }
       body.sr = srId;
       if (Math.round(identifyTolerance) > 0) {
         body.tolerance = `${Math.round(identifyTolerance)}`;
@@ -107,8 +110,6 @@ export function executeAgsQuery(
       body.outSR = srId;
       if (request.filters) {
         body.where = new FilterBuilder(request.filters).build(FilterBuilderTypeEnum.SQL);
-      } else {
-        body.where = '';
       }
       body.f = 'json';
       break;

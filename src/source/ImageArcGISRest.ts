@@ -14,6 +14,7 @@ import { executeAgsQuery, loadAgsFeatureDescription, retrieveAgsFeature } from '
 import Feature from 'ol/Feature';
 import Projection from 'ol/proj/Projection';
 import { FilterBuilder, FilterBuilderTypeEnum } from '../filter';
+import { IPredicate } from '../filter/predicate';
 
 export interface IImageArcGISRestOptions extends ISnapshotOptions, Options {
   types: IFeatureType<number>[];
@@ -22,7 +23,7 @@ export interface IImageArcGISRestOptions extends ISnapshotOptions, Options {
 export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
   protected options: IImageArcGISRestOptions;
   protected legendByLayer: Record<string, ILayerLegend[]>;
-  protected defaultTypes: Map<number, IFeatureType<number>>;
+  protected defaultTypePredicateAsMAp: Map<number, IPredicate>;
 
   constructor(options: IImageArcGISRestOptions) {
     super({ ...options });
@@ -34,14 +35,14 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
       this.options.listable = true;
     }
 
-    this.defaultTypes = new Map<number, IFeatureType<number>>();
+    this.defaultTypePredicateAsMAp = new Map<number, IPredicate>();
 
     this.setSourceOptions(this.options);
 
     if (this.options.types) {
       for (const type of this.options.types) {
-        if (!this.defaultTypes.has(type.id)) {
-          this.defaultTypes.set(type.id, type);
+        if (!this.defaultTypePredicateAsMAp.has(type.id) && type.predicate) {
+          this.defaultTypePredicateAsMAp.set(type.id, type.predicate);
         }
       }
     }
@@ -115,6 +116,9 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
       if (request.filters) {
         filterBuilder = filterBuilder ? filterBuilder.and(request.filters) : new FilterBuilder(request.filters);
       }
+      if (filterBuilder) {
+        request.filters = filterBuilder.predicate;
+      }
       promises.push(executeAgsQuery(this, type, request));
     }
     return Promise.all(promises).then((featureTypeResponses: IQueryFeatureTypeResponse[]) => {
@@ -176,8 +180,8 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
 
   private buildFilterBuilderFromType_(type: IFeatureType<number>): FilterBuilder | undefined {
     let filterBuilder;
-    if (this.defaultTypes.has(type.id) && this.defaultTypes.get(type.id).predicate) {
-      filterBuilder = new FilterBuilder(this.defaultTypes.get(type.id).predicate);
+    if (this.defaultTypePredicateAsMAp.has(type.id)) {
+      filterBuilder = new FilterBuilder(this.defaultTypePredicateAsMAp.get(type.id));
     }
     if (type.predicate) {
       filterBuilder = filterBuilder ? filterBuilder.and(type.predicate) : new FilterBuilder(type.predicate);
