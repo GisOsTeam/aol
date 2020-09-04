@@ -100,7 +100,7 @@ export abstract class Vector extends OlVector implements IQuerySource {
       featureTypeResponses: [
         {
           type: null,
-          features: [],
+          features,
           source: this,
         },
       ],
