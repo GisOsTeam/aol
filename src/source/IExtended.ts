@@ -42,27 +42,27 @@ export interface ILayerLegend {
 }
 
 export interface ILegendSource {
-  fetchLegend(): Promise<Record<string, ILayerLegend[]>>;
+  fetchLegend(): Promise<Record<number | string, ILayerLegend[]>>;
 }
 
-export interface IExtended extends IInitSource, IQuerySource, IInitSource {}
+export interface IExtended extends IInitSource, IQuerySource, ILegendSource {}
 
 // TODO: faudrait rename le type mais ca va faire des breakings changes :/
 export type IQueryRequest = IGisQueryRequest | IIdentifyRequest;
 
-export interface IAbstractGisRequest<T extends string> {
+export interface IAbstractQueryRequest<T extends string> {
   olMap: OlMap;
   queryType: T;
   filters?: IPredicate;
   limit?: number;
 }
 
-export interface IGisQueryRequest extends IAbstractGisRequest<'query'> {
+export interface IGisQueryRequest extends IAbstractQueryRequest<'query'> {
   geometry?: Geometry;
   geometryProjection?: Projection;
 }
 
-export interface IIdentifyRequest extends IAbstractGisRequest<'identify'> {
+export interface IIdentifyRequest extends IAbstractQueryRequest<'identify'> {
   geometry: Geometry;
   geometryProjection: Projection;
   identifyTolerance?: number;

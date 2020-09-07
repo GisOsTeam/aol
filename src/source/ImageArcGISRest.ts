@@ -15,6 +15,7 @@ import Feature from 'ol/Feature';
 import Projection from 'ol/proj/Projection';
 import { FilterBuilder, FilterBuilderTypeEnum } from '../filter';
 import { IPredicate } from '../filter/predicate';
+import { HttpEngine } from '../HttpInterceptor';
 
 export interface IImageArcGISRestOptions extends ISnapshotOptions, Options {
   types: IFeatureType<number>[];
@@ -76,7 +77,7 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
 
     let layerDefsAsObject: any;
     for (const type of options.types) {
-      let filterBuilder = this.buildFilterBuilderFromType_(type);
+      let filterBuilder = this.buildFilterBuilderFromType(type);
       if (filterBuilder) {
         if (!layerDefsAsObject) {
           layerDefsAsObject = {};
@@ -112,7 +113,7 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
   public query(request: IQueryRequest): Promise<IQueryResponse> {
     const promises: Promise<IQueryFeatureTypeResponse>[] = [];
     for (const type of this.options.types) {
-      let filterBuilder = this.buildFilterBuilderFromType_(type);
+      let filterBuilder = this.buildFilterBuilderFromType(type);
       if (request.filters) {
         filterBuilder = filterBuilder ? filterBuilder.and(request.filters) : new FilterBuilder(request.filters);
       }
@@ -145,6 +146,31 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
     return Promise.resolve(feature);
   }
 
+  public fetchLegend(options: { refresh: boolean } = { refresh: false }): Promise<Record<string, ILayerLegend[]>> {
+    if (this.legendByLayer && options.refresh == false) {
+      return Promise.resolve(this.legendByLayer);
+    }
+
+    const httpEngine = HttpEngine.getInstance();
+    return httpEngine.send({ url: `${this.options.url}/legend?f=json`, responseType: 'json' }).then((resp) => {
+      this.legendByLayer = {};
+      const displayedLayers = this.options.types.map((type) => type.id);
+      const legendResp = resp.body();
+      legendResp.layers.forEach((layer: any) => {
+        if (displayedLayers.indexOf(layer.layerId) >= 0) {
+          this.legendByLayer[layer.layerId] = layer.legend.map(
+            (legend: any): ILayerLegend => ({
+              srcImage: `data:image/png;base64, ${legend.imageData}`,
+              label: legend.label || layer.layerName,
+            })
+          );
+        }
+      });
+
+      return this.legendByLayer;
+    });
+  }
+
   private handlePropertychange = (event: any) => {
     const key = event.key;
     const value = event.target.get(key);
@@ -154,31 +180,7 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
     }
   };
 
-  async fetchLegend() {
-    if (this.legendByLayer) {
-      return this.legendByLayer;
-    }
-
-    const resp = await fetch(`${this.options.url}/legend?f=json`);
-    const legendResp = await resp.json();
-
-    this.legendByLayer = {};
-    const displayedLayers = this.options.types.map((type) => type.id);
-    legendResp.layers.forEach((layer: any) => {
-      if (displayedLayers.indexOf(layer.layerId) >= 0) {
-        this.legendByLayer[layer.layerId] = layer.legend.map(
-          (legend: any): ILayerLegend => ({
-            srcImage: `data:image/png;base64, ${legend.imageData}`,
-            label: legend.label || layer.layerName,
-          })
-        );
-      }
-    });
-
-    return this.legendByLayer;
-  }
-
-  private buildFilterBuilderFromType_(type: IFeatureType<number>): FilterBuilder | undefined {
+  private buildFilterBuilderFromType(type: IFeatureType<number>): FilterBuilder | undefined {
     let filterBuilder;
     if (this.defaultTypePredicateAsMAp.has(type.id)) {
       filterBuilder = new FilterBuilder(this.defaultTypePredicateAsMAp.get(type.id));
