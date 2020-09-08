@@ -9,13 +9,12 @@ import {
   IAttribute,
   IIdentifyRequest,
 } from '../IExtended';
-import { IResponse } from 'bhreq';
 import { toGeoJSONGeometry, disjoint } from '../../utils';
 import { getForViewAndSize } from 'ol/extent';
 import SimpleGeometry from 'ol/geom/SimpleGeometry';
 import Projection from 'ol/proj/Projection';
 import Geometry from 'ol/geom/Geometry';
-import { HttpEngine } from '../../HttpInterceptor';
+import { HttpEngine } from '../../HttpEngine';
 
 const format = new WMSGetFeatureInfo();
 
@@ -82,7 +81,7 @@ function getFeatureInfoOnBBOX(
       responseType: 'text',
     })
     .then(
-      (res: IResponse) => {
+      res => {
         // Read features
         const features = [] as Feature[];
         // Search projection on results

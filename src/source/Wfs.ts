@@ -3,8 +3,7 @@ import { ExternalVector } from './ExternalVector';
 import { LayerType, LayerTypeEnum, SourceType, SourceTypeEnum } from './types';
 import { IFeatureType, ISnapshotOptions } from './IExtended';
 import { Options } from 'ol/source/Vector';
-import { HttpEngine } from '../HttpInterceptor';
-import { IResponse } from 'bhreq';
+import { HttpEngine } from '../HttpEngine';
 
 export interface IWfsOptions extends ISnapshotOptions, Options {
   type: IFeatureType<string>;
@@ -47,7 +46,7 @@ export class Wfs extends ExternalVector {
             method: 'GET',
             responseType: 'text',
           })
-          .then((res: IResponse) => {
+          .then(res => {
             if (res.status === 200) {
               this.addFeatures(this.getFormat().readFeatures(res.text as any) as any);
             } else {

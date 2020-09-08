@@ -1,8 +1,7 @@
 import { Wmts } from '../Wmts';
 import { WmtsFactory } from '../factory/WmtsFactory';
-import { IResponse } from 'bhreq';
 import { IWmtsCapabilitiesOptions } from '../WmtsCapabilities';
-import { HttpEngine } from '../../HttpInterceptor';
+import { HttpEngine } from '../../HttpEngine';
 
 export class WmtsProvider {
   public static provideSync(
@@ -22,7 +21,7 @@ export class WmtsProvider {
       url: wmtsCapabilitiesOptions.capabilitiesUrl,
       method: 'GET',
     };
-    const response: IResponse = await HttpEngine.getInstance().send(request);
+    const response = await HttpEngine.getInstance().send(request);
     let capabilitiesTxt = response.text;
     // HACK
     capabilitiesTxt = capabilitiesTxt.replace(/urn:ogc:def:crs:EPSG:[0-9.]*:([0-9]+)/gi, 'EPSG:$1');

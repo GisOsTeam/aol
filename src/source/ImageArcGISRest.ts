@@ -15,7 +15,7 @@ import Feature from 'ol/Feature';
 import Projection from 'ol/proj/Projection';
 import { FilterBuilder, FilterBuilderTypeEnum } from '../filter';
 import { IPredicate } from '../filter/predicate';
-import { HttpEngine } from '../HttpInterceptor';
+import { HttpEngine } from '../HttpEngine';
 
 export interface IImageArcGISRestOptions extends ISnapshotOptions, Options {
   types: IFeatureType<number>[];

@@ -9,12 +9,11 @@ import {
   IAttribute,
   IIdentifyRequest,
 } from '../IExtended';
-import { IResponse } from 'bhreq';
 import { getForViewAndSize } from 'ol/extent';
 import { fromCircle } from 'ol/geom/Polygon';
 import Circle from 'ol/geom/Circle';
 import Projection from 'ol/proj/Projection';
-import { HttpEngine } from '../../HttpInterceptor';
+import { HttpEngine } from '../../HttpEngine';
 import { FilterBuilder, FilterBuilderTypeEnum } from '../../filter';
 
 const format = new EsriJSON();
@@ -125,7 +124,7 @@ export function executeAgsQuery(
       responseType: 'json',
     })
     .then(
-      (res: IResponse) => {
+      res => {
         const features = [] as Feature[];
         // Read features
         let jsonQueryRes = res.body;
@@ -200,7 +199,7 @@ export function retrieveAgsFeature(
       responseType: 'json',
     })
     .then(
-      (res: IResponse) => {
+      res => {
         // Read features
         let feature = null;
         const jsonQueryRes = res.body;
@@ -243,7 +242,7 @@ export function loadAgsFeatureDescription(source: IExtended, type: IFeatureType<
       responseType: 'json',
     })
     .then(
-      (res: IResponse) => {
+      res => {
         if (res.body.fields != null && res.body.fields.length > 0) {
           type.attributes = [];
           res.body.fields.forEach((field: any) => {
