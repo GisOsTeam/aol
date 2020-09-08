@@ -46,7 +46,7 @@ export class Wfs extends ExternalVector {
             method: 'GET',
             responseType: 'text',
           })
-          .then(res => {
+          .then((res) => {
             if (res.status === 200) {
               this.addFeatures(this.getFormat().readFeatures(res.text as any) as any);
             } else {

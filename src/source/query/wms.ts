@@ -81,7 +81,7 @@ function getFeatureInfoOnBBOX(
       responseType: 'text',
     })
     .then(
-      res => {
+      (res) => {
         // Read features
         const features = [] as Feature[];
         // Search projection on results

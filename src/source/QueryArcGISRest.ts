@@ -60,7 +60,7 @@ export class QueryArcGISRest extends ExternalVector {
     return HttpEngine.getInstance()
       .send({ url, contentType: 'application/json' })
       .then(
-        response => this.esriJSONFormat.readFeatures(response.body),
+        (response) => this.esriJSONFormat.readFeatures(response.body),
         () => {
           console.error(`Request error ${url}`);
         }

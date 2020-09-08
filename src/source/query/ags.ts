@@ -124,7 +124,7 @@ export function executeAgsQuery(
       responseType: 'json',
     })
     .then(
-      res => {
+      (res) => {
         const features = [] as Feature[];
         // Read features
         let jsonQueryRes = res.body;
@@ -199,7 +199,7 @@ export function retrieveAgsFeature(
       responseType: 'json',
     })
     .then(
-      res => {
+      (res) => {
         // Read features
         let feature = null;
         const jsonQueryRes = res.body;
@@ -242,7 +242,7 @@ export function loadAgsFeatureDescription(source: IExtended, type: IFeatureType<
       responseType: 'json',
     })
     .then(
-      res => {
+      (res) => {
         if (res.body.fields != null && res.body.fields.length > 0) {
           type.attributes = [];
           res.body.fields.forEach((field: any) => {
