@@ -27,6 +27,9 @@ export class ImageWms extends OlImageWMS implements IExtended {
   constructor(options: IImageWMSOptions) {
     super({ ...options } as any);
     this.options = { ...options };
+    if (this.options.crossOrigin == null) {
+      this.options.crossOrigin = 'anonymous';
+    }
     if (this.options.snapshotable != false) {
       this.options.snapshotable = true;
     }

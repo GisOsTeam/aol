@@ -27,6 +27,9 @@ export class TileWms extends OlTileWMS implements IExtended {
   constructor(options: ITileWmsOptions) {
     super({ ...options });
     this.options = { ...options };
+    if (this.options.crossOrigin == null) {
+      this.options.crossOrigin = 'anonymous';
+    }
     if (this.options.snapshotable != false) {
       this.options.snapshotable = true;
     }

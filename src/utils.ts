@@ -10,19 +10,10 @@ import { fromCircle } from 'ol/geom/Polygon';
 import Circle from 'ol/geom/Circle';
 import booleanDisjoint from '@turf/boolean-disjoint';
 import { applyStyle } from 'ol-mapbox-style';
-import { SourceType, SourceTypeEnum } from './source/types/sourceType';
+import { SourceType } from './source/types/sourceType';
 import { IFeatureType, ISnapshotSource } from './source/IExtended';
-import { ExternalVector } from './source/ExternalVector';
-import { ImageArcGISRest } from './source/ImageArcGISRest';
-import { ImageStatic } from './source/ImageStatic';
-import { ImageWms } from './source/ImageWms';
-import { LocalVector } from './source/LocalVector';
-import { QueryArcGISRest } from './source/QueryArcGISRest';
-import { TileArcGISRest } from './source/TileArcGISRest';
-import { TileWms } from './source/TileWms';
-import { Wfs } from './source/Wfs';
-import { Xyz } from './source/Xyz';
 import { SourceFactory } from './source/factory/SourceFacotry';
+import { getCenter, getWidth } from 'ol/extent';
 
 const geoJSONFormat = new GeoJSON();
 
@@ -269,4 +260,110 @@ export function applyLayerStyles(layer: BaseLayer, layerStyles: LayerStyles, id:
     mbstyle.layers.push({ ...style, source: id });
   });
   applyStyle(layer, mbstyle, id);
+}
+
+/**
+ * Export to image.
+ */
+export function exportToImage(
+  map: Map,
+  imageSize: [number, number],
+  extent: [number, number, number, number],
+  format: 'JPEG' | 'PNG',
+  cancelFunction = () => false
+): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const exportOptions = {
+      filter: function (element: any) {
+        const className = element.className || '';
+        return (
+          className.indexOf('ol-control') === -1 ||
+          className.indexOf('ol-scale') > -1 ||
+          (className.indexOf('ol-attribution') > -1 && className.indexOf('ol-uncollapsible'))
+        );
+      },
+      width: imageSize[0],
+      height: imageSize[1],
+    };
+    let canceled = false;
+    const initialView = map.getView();
+    const initialSize = map.getSize();
+    const targetElement = map.getTargetElement() as HTMLDivElement;
+    const initialTargetElementWidth = targetElement.style.width;
+    const initialTargetElementHeight = targetElement.style.height;
+    const reset = () => {
+      map.setView(initialView);
+      targetElement.style.width = initialTargetElementWidth;
+      targetElement.style.height = initialTargetElementHeight;
+      map.setSize(initialSize);
+      map.updateSize();
+    };
+    const checkCanceled = () => {
+      if (canceled) {
+        return true;
+      }
+      if (cancelFunction()) {
+        canceled = true;
+        reject('Canceled');
+        reset();
+      }
+    };
+    const intervalId = setInterval(() => {
+      checkCanceled();
+    }, 5000);
+    const buildImage = () => {
+      if (checkCanceled()) {
+        return;
+      }
+      const mapCanvas = document.createElement('canvas');
+      mapCanvas.width = imageSize[0];
+      mapCanvas.height = imageSize[1];
+      const mapContext = mapCanvas.getContext('2d');
+      const elems = map.getTargetElement().querySelectorAll('.ol-layer canvas');
+      if (elems != null) {
+        elems.forEach(function (canvas: any) {
+          if (checkCanceled()) {
+            return;
+          }
+          if (canvas.width > 0) {
+            const opacity = canvas.parentNode.style.opacity;
+            mapContext.globalAlpha = opacity === '' ? 1 : +opacity;
+            const transform = canvas.style.transform;
+            // Get the transform parameters from the style's transform matrix
+            const matrix = transform
+              .match(/^matrix\(([^\(]*)\)$/)[1]
+              .split(',')
+              .map(Number);
+            // Apply the transform to the export map context
+            CanvasRenderingContext2D.prototype.setTransform.apply(mapContext, matrix);
+            mapContext.drawImage(canvas, 0, 0);
+          }
+        });
+      }
+      if (checkCanceled()) {
+        return;
+      }
+      try {
+        const dataUrl = format === 'JPEG' ? mapCanvas.toDataURL('image/jpeg') : mapCanvas.toDataURL('image/png');
+        resolve(dataUrl);
+      } catch (err) {
+        reject(err);
+      } finally {
+        clearInterval(intervalId);
+        reset();
+      }
+    };
+    map.once('rendercomplete', buildImage);
+    targetElement.style.width = `${imageSize[0]}px`;
+    targetElement.style.height = `${imageSize[1]}px`;
+    map.setSize(imageSize);
+    map.updateSize();
+    const view = new View({
+      projection: initialView.getProjection(),
+      rotation: initialView.getRotation(),
+      center: getCenter(extent),
+      resolution: getWidth(extent) / imageSize[0],
+    });
+    map.setView(view);
+  });
 }

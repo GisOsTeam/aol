@@ -10,6 +10,9 @@ export class Wmts extends OlWmts implements ISnapshotSource {
   constructor(options: IWmtsOptions) {
     super({ ...options });
     this.options = { ...options };
+    if (this.options.crossOrigin == null) {
+      this.options.crossOrigin = 'anonymous';
+    }
     if (this.options.snapshotable != false) {
       this.options.snapshotable = true;
     }

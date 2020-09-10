@@ -12,6 +12,9 @@ export class ImageStatic extends OlImageStatic implements ISnapshotSource {
   constructor(options: IImageStaticOptions) {
     super({ ...options } as any);
     this.options = options;
+    if (this.options.crossOrigin == null) {
+      this.options.crossOrigin = 'anonymous';
+    }
     if (this.options.snapshotable != false) {
       this.options.snapshotable = true;
     }
