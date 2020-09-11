@@ -45,9 +45,6 @@ export class TileWms extends OlTileWMS implements IExtended {
       promises.push(loadWmsFeatureDescription(this, type));
     }
 
-    this.legendByLayer = {
-      0: [{ srcImage: this.getLegendUrl(undefined, { TRANSPARENT: true, SLD_VERSION: '1.1.0' }) }],
-    };
     return Promise.all(promises).then(() => {
       this.setSourceOptions(this.options);
       return;
@@ -120,7 +117,14 @@ export class TileWms extends OlTileWMS implements IExtended {
     }
   };
 
-  async fetchLegend(): Promise<Record<string, ILayerLegend[]>> {
-    return this.legendByLayer;
+  public fetchLegend(options: { refresh: boolean } = { refresh: false }): Promise<Record<string, ILayerLegend[]>> {
+    if (this.legendByLayer && options.refresh == false) {
+      return Promise.resolve(this.legendByLayer);
+    }
+
+    this.legendByLayer = {
+      0: [{ srcImage: this.getLegendUrl(undefined, { TRANSPARENT: true, SLD_VERSION: '1.1.0' }) }],
+    };
+    return Promise.resolve(this.legendByLayer);
   }
 }

@@ -12,7 +12,7 @@ export class WmtsProvider {
     return WmtsFactory.create(source, wmtsCapabilitiesOptions);
   }
 
-  public static async provideAsync(wmtsCapabilitiesOptions: IWmtsCapabilitiesOptions): Promise<Wmts> {
+  public static provideAsync(wmtsCapabilitiesOptions: IWmtsCapabilitiesOptions): Promise<Wmts> {
     this.isWmtsCapabilitiesOptionsValid(wmtsCapabilitiesOptions);
     if (!wmtsCapabilitiesOptions.capabilitiesUrl) {
       wmtsCapabilitiesOptions.capabilitiesUrl = `${wmtsCapabilitiesOptions.url}?SERVICE=WMTS&REQUEST=GetCapabilities&VERSION=1.0.0`;
@@ -21,13 +21,16 @@ export class WmtsProvider {
       url: wmtsCapabilitiesOptions.capabilitiesUrl,
       method: 'GET',
     };
-    const response = await HttpEngine.getInstance().send(request);
-    let capabilitiesTxt = response.text;
-    // HACK
-    capabilitiesTxt = capabilitiesTxt.replace(/urn:ogc:def:crs:EPSG:[0-9.]*:([0-9]+)/gi, 'EPSG:$1');
-    capabilitiesTxt = capabilitiesTxt.replace(/urn:ogc:def:crs:OGC:[0-9.]*:(CRS)?([0-9]+)/gi, 'CRS:$2');
-    // FIN HACK
-    return WmtsFactory.create(capabilitiesTxt, wmtsCapabilitiesOptions);
+    return HttpEngine.getInstance()
+      .send(request)
+      .then((response) => {
+        let capabilitiesTxt = response.text;
+        // HACK
+        capabilitiesTxt = capabilitiesTxt.replace(/urn:ogc:def:crs:EPSG:[0-9.]*:([0-9]+)/gi, 'EPSG:$1');
+        capabilitiesTxt = capabilitiesTxt.replace(/urn:ogc:def:crs:OGC:[0-9.]*:(CRS)?([0-9]+)/gi, 'CRS:$2');
+        // FIN HACK
+        return WmtsFactory.create(capabilitiesTxt, wmtsCapabilitiesOptions);
+      });
   }
 
   private static isWmtsCapabilitiesOptionsValid(wmtsCapabilitiesOptions: IWmtsCapabilitiesOptions): boolean {
