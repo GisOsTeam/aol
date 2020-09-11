@@ -27,11 +27,8 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
   protected defaultTypePredicateAsMap: Map<number, IPredicate>;
 
   constructor(options: IImageArcGISRestOptions) {
-    super({ ...options });
+    super({ crossOrigin: 'anonymous', ...options });
     this.options = { ...options };
-    if (this.options.crossOrigin == null) {
-      this.options.crossOrigin = 'anonymous';
-    }
     if (this.options.snapshotable != false) {
       this.options.snapshotable = true;
     }

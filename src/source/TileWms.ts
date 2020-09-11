@@ -25,11 +25,8 @@ export class TileWms extends OlTileWMS implements IExtended {
   protected legendByLayer: Record<string, ILayerLegend[]>;
 
   constructor(options: ITileWmsOptions) {
-    super({ ...options });
+    super({ crossOrigin: 'anonymous', ...options });
     this.options = { ...options };
-    if (this.options.crossOrigin == null) {
-      this.options.crossOrigin = 'anonymous';
-    }
     if (this.options.snapshotable != false) {
       this.options.snapshotable = true;
     }

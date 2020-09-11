@@ -10,11 +10,8 @@ export class TileArcGISRest extends OlTileArcGISRest implements ISnapshotSource 
   protected options: any;
 
   constructor(options: ITileArcGISRestOptions) {
-    super({ ...options });
+    super({ crossOrigin: 'anonymous', ...options });
     this.options = { ...options };
-    if (this.options.crossOrigin == null) {
-      this.options.crossOrigin = 'anonymous';
-    }
     if (this.options.snapshotable != false) {
       this.options.snapshotable = true;
     }
