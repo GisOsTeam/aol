@@ -24,7 +24,7 @@ export interface IImageArcGISRestOptions extends ISnapshotOptions, Options {
 export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
   protected options: IImageArcGISRestOptions;
   protected legendByLayer: Record<string, ILayerLegend[]>;
-  protected defaultTypePredicateAsMAp: Map<number, IPredicate>;
+  protected defaultTypePredicateAsMap: Map<number, IPredicate>;
 
   constructor(options: IImageArcGISRestOptions) {
     super({ ...options });
@@ -39,14 +39,14 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
       this.options.listable = true;
     }
 
-    this.defaultTypePredicateAsMAp = new Map<number, IPredicate>();
+    this.defaultTypePredicateAsMap = new Map<number, IPredicate>();
 
     this.setSourceOptions(this.options);
 
     if (this.options.types) {
       for (const type of this.options.types) {
-        if (!this.defaultTypePredicateAsMAp.has(type.id) && type.predicate) {
-          this.defaultTypePredicateAsMAp.set(type.id, type.predicate);
+        if (!this.defaultTypePredicateAsMap.has(type.id) && type.predicate) {
+          this.defaultTypePredicateAsMap.set(type.id, type.predicate);
         }
       }
     }
@@ -180,8 +180,8 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
 
   private buildFilterBuilderFromType(type: IFeatureType<number>): FilterBuilder | undefined {
     let filterBuilder;
-    if (this.defaultTypePredicateAsMAp.has(type.id)) {
-      filterBuilder = new FilterBuilder(this.defaultTypePredicateAsMAp.get(type.id));
+    if (this.defaultTypePredicateAsMap.has(type.id)) {
+      filterBuilder = new FilterBuilder(this.defaultTypePredicateAsMap.get(type.id));
     }
     if (type.predicate) {
       filterBuilder = filterBuilder ? filterBuilder.and(type.predicate) : new FilterBuilder(type.predicate);
