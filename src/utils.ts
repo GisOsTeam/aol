@@ -354,8 +354,9 @@ export function exportToImage(
       }
     };
     map.once('rendercomplete', buildImage);
-    targetElement.style.width = `${imageSize[0]}px !important`;
-    targetElement.style.height = `${imageSize[1]}px !important`;
+    targetElement.style.width = '';
+    targetElement.style.height = '';
+    targetElement.style.cssText += `;width: ${imageSize[0]}px !important; height: ${imageSize[1]}px !important;`;
     map.setSize(imageSize);
     map.updateSize();
     const view = new View({
