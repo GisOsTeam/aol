@@ -268,6 +268,7 @@ export function applyLayerStyles(layer: BaseLayer, layerStyles: LayerStyles, id:
 export function srcToImage(dataUrl: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const img = new Image();
+    img.crossOrigin = 'Anonymous';
     img.onload = (e: any) => {
       resolve(img);
     };
