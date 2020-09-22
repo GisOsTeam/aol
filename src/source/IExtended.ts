@@ -32,13 +32,26 @@ export interface IQuerySource extends ISnapshotSource {
 }
 
 export interface ILayerLegend {
+  /**
+   * Label optinal
+   */
   label?: string;
   /**
-   * Either a base64 or an URL
+   * Image element
+   */
+  image: HTMLImageElement;
+  /**
+   * Image data in Base64 ou url
    */
   srcImage: string;
-  height?: number;
-  width?: number;
+  /**
+   * Height
+   */
+  height: number;
+  /**
+   * Width
+   */
+  width: number;
 }
 
 export interface ILegendSource {
@@ -47,7 +60,6 @@ export interface ILegendSource {
 
 export interface IExtended extends IInitSource, IQuerySource, ILegendSource {}
 
-// TODO: faudrait rename le type mais ca va faire des breakings changes :/
 export type IQueryRequest = IGisQueryRequest | IIdentifyRequest;
 
 export interface IAbstractQueryRequest<T extends string> {

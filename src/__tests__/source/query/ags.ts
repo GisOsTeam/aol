@@ -12,7 +12,7 @@ import { FieldTypeEnum, IField } from '../../../filter';
 const states = new ImageArcGISRest({
   url: 'https://sampleserver6.arcgisonline.com/arcgis/rest/services/USA/MapServer',
   types: [{ id: 2, identifierAttribute: { key: 'objectid' } }],
-} as any);
+});
 
 const stateNameField: IField<any> = {
   key: 'state_name',

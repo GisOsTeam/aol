@@ -15,7 +15,7 @@ import Feature from 'ol/Feature';
 import Projection from 'ol/proj/Projection';
 import { FilterBuilder, FilterBuilderTypeEnum } from '../filter';
 import { IPredicate } from '../filter/predicate';
-import { HttpEngine } from '../HttpEngine';
+import { loadLegendAgs } from './legend/ags';
 
 export interface IImageArcGISRestOptions extends ISnapshotOptions, Options {
   types: IFeatureType<number>[];
@@ -145,24 +145,9 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
     if (this.legendByLayer && options.refresh == false) {
       return Promise.resolve(this.legendByLayer);
     }
-
-    const httpEngine = HttpEngine.getInstance();
-    return httpEngine.send({ url: `${this.options.url}/legend?f=json`, responseType: 'json' }).then((resp) => {
-      this.legendByLayer = {};
-      const displayedLayers = this.options.types.map((type) => type.id);
-      const legendResp = resp.body;
-      legendResp.layers.forEach((layer: any) => {
-        if (displayedLayers.indexOf(layer.layerId) >= 0) {
-          this.legendByLayer[layer.layerId] = layer.legend.map(
-            (legend: any): ILayerLegend => ({
-              srcImage: `data:image/png;base64, ${legend.imageData}`,
-              label: legend.label || layer.layerName,
-            })
-          );
-        }
-      });
-
-      return this.legendByLayer;
+    return loadLegendAgs(this).then((res) => {
+      this.legendByLayer = res;
+      return res;
     });
   }
 

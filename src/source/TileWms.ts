@@ -15,6 +15,7 @@ import { LayerType, LayerTypeEnum } from './types/layerType';
 import { Options } from 'ol/source/TileWMS';
 import Feature from 'ol/Feature';
 import Projection from 'ol/proj/Projection';
+import { loadLegendWms } from './legend/wms';
 
 export interface ITileWmsOptions extends ISnapshotOptions, Options {
   types: IFeatureType<string>[];
@@ -118,10 +119,9 @@ export class TileWms extends OlTileWMS implements IExtended {
     if (this.legendByLayer && options.refresh == false) {
       return Promise.resolve(this.legendByLayer);
     }
-
-    this.legendByLayer = {
-      0: [{ srcImage: this.getLegendUrl(undefined, { TRANSPARENT: true, SLD_VERSION: '1.1.0' }) }],
-    };
-    return Promise.resolve(this.legendByLayer);
+    return loadLegendWms(this).then((res) => {
+      this.legendByLayer = res;
+      return res;
+    });
   }
 }

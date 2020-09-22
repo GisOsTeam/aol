@@ -9,7 +9,8 @@ import { ImageWms } from '../../../source/ImageWms';
 const states = new ImageWms({
   url: 'https://ahocevar.com/geoserver/wms',
   types: [{ id: 'topp:states' }],
-} as any);
+  params: {},
+});
 
 test('describe wms', () => {
   const type: IFeatureType<string> = states.get('types')[0];

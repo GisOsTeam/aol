@@ -263,6 +263,25 @@ export function applyLayerStyles(layer: BaseLayer, layerStyles: LayerStyles, id:
 }
 
 /**
+ * Create image element from source.
+ */
+export function srcToImage(dataUrl: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = (e: any) => {
+      resolve(img);
+    };
+    img.onerror = () => {
+      reject('Error on image loading');
+    };
+    setTimeout(() => {
+      resolve(img);
+    }, 10000);
+    img.src = dataUrl;
+  });
+}
+
+/**
  * Export to image.
  */
 export function exportToImage(
@@ -313,12 +332,17 @@ export function exportToImage(
     }, 5000);
     const buildImage = () => {
       if (checkCanceled()) {
+        reject('Canceled');
         return;
       }
       const mapCanvas = document.createElement('canvas');
       mapCanvas.width = imageSize[0];
       mapCanvas.height = imageSize[1];
       const mapContext = mapCanvas.getContext('2d');
+      if (mapContext == null) {
+        reject('Canvas context null');
+        return;
+      }
       const elems = map.getTargetElement().querySelectorAll('.ol-layer canvas');
       if (elems != null) {
         elems.forEach(function (canvas: any) {
