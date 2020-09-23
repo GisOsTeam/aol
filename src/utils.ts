@@ -423,6 +423,9 @@ export const exportLegendToImage = (
   }
   legendContext.fillStyle = 'white';
   legendContext.fillRect(0, 0, imageSize[0], imageSize[1]);
+  const textSize = 12;
+  const maxRatio = 1.5;
+  const labelSizeRatio = 0.5;
   const promises: Promise<[number, number, Record<number | string, ILayerLegend[]>]>[] = [];
   for (const source of sources) {
     if (cancelFunction()) {
@@ -430,23 +433,28 @@ export const exportLegendToImage = (
     }
     if (typeof source.fetchLegend === 'function') {
       promises.push(
-        source.fetchLegend().then((res: Record<number | string, ILayerLegend[]>) => {
-          let width = 0;
-          let height = 0;
-          for (const key in res) {
-            const legends = res[key];
-            for (const legend of legends) {
-              if (legend.width > width) {
-                width = legend.width;
-                if (legend.label != null && legend.label.length > 0) {
-                  width += 10 * legend.label.length;
+        source.fetchLegend().then(
+          (res: Record<number | string, ILayerLegend[]>) => {
+            let width = 0;
+            let height = 0;
+            for (const key in res) {
+              const legends = res[key];
+              for (const legend of legends) {
+                if (legend.width > width) {
+                  width = legend.width;
+                  if (legend.label != null && legend.label.length > 0) {
+                    width += labelSizeRatio * textSize * legend.label.length;
+                  }
                 }
+                height += legend.height;
               }
-              height += legend.height;
             }
+            return [width, height, res];
+          },
+          () => {
+            return [0, 0, {}];
           }
-          return [width, height, res];
-        })
+        )
       );
     }
   }
@@ -462,9 +470,8 @@ export const exportLegendToImage = (
       records.push(record);
     }
 
-    const ratio = Math.min(imageSize[0] / width, imageSize[1] / height, 1);
-    const textSize = 10;
-    legendContext.font = `${textSize}px sans-serif`;
+    const ratio = Math.min(imageSize[0] / width, imageSize[1] / height, maxRatio);
+    legendContext.font = `${ratio * textSize}px sans-serif`;
     legendContext.fillStyle = 'black';
 
     let pos = 0;
@@ -479,7 +486,7 @@ export const exportLegendToImage = (
           if (legend.label != null && legend.label.length > 0) {
             legendContext.fillText(
               legend.label,
-              ratio * legend.width,
+              ratio * (legend.width + 2),
               pos + 0.5 * ratio * legend.height + 0.5 * ratio * textSize
             );
           }
