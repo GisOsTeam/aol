@@ -26,5 +26,5 @@ export function loadLegendWms(source: ILegendSource): Promise<Record<number | st
       };
     });
   }
-  return Promise.reject('Source is not a WMS source');
+  return Promise.reject(new Error('Source is not a WMS source'));
 }

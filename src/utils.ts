@@ -11,7 +11,7 @@ import Circle from 'ol/geom/Circle';
 import booleanDisjoint from '@turf/boolean-disjoint';
 import { applyStyle } from 'ol-mapbox-style';
 import { SourceType } from './source/types/sourceType';
-import { IFeatureType, ISnapshotSource } from './source/IExtended';
+import { IFeatureType, ISnapshotSource, ILegendSource, ILayerLegend } from './source/IExtended';
 import { SourceFactory } from './source/factory/SourceFacotry';
 import { getCenter, getWidth } from 'ol/extent';
 
@@ -265,19 +265,30 @@ export function applyLayerStyles(layer: BaseLayer, layerStyles: LayerStyles, id:
 /**
  * Create image element from source.
  */
-export function srcToImage(dataUrl: string): Promise<HTMLImageElement> {
+export function srcToImage(
+  dataUrl: string,
+  options: { emptyImageOnError: boolean; timeout: number } = { emptyImageOnError: true, timeout: 10000 }
+): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const img = new Image();
-    img.crossOrigin = 'Anonymous';
+    img.crossOrigin = 'anonymous';
     img.onload = (e: any) => {
       resolve(img);
     };
     img.onerror = () => {
-      reject('Error on image loading');
+      if (options.emptyImageOnError === true) {
+        resolve(new Image());
+      } else {
+        reject(new Error('Error on image loading'));
+      }
     };
     setTimeout(() => {
-      resolve(img);
-    }, 10000);
+      if (options.emptyImageOnError === true) {
+        resolve(new Image());
+      } else {
+        reject(new Error('Error on image loading (timeout)'));
+      }
+    }, options.timeout);
     img.src = dataUrl;
   });
 }
@@ -324,8 +335,9 @@ export function exportToImage(
       }
       if (cancelFunction()) {
         canceled = true;
-        reject('Canceled');
+        reject(new Error('Canceled'));
         reset();
+        return true;
       }
     };
     const intervalId = setInterval(() => {
@@ -333,7 +345,6 @@ export function exportToImage(
     }, 5000);
     const buildImage = () => {
       if (checkCanceled()) {
-        reject('Canceled');
         return;
       }
       const mapCanvas = document.createElement('canvas');
@@ -341,7 +352,7 @@ export function exportToImage(
       mapCanvas.height = imageSize[1];
       const mapContext = mapCanvas.getContext('2d');
       if (mapContext == null) {
-        reject('Canvas context null');
+        reject(new Error('Canvas context null'));
         return;
       }
       const elems = map.getTargetElement().querySelectorAll('.ol-layer canvas');
@@ -393,3 +404,91 @@ export function exportToImage(
     map.setView(view);
   });
 }
+
+/**
+ * Export legend to image.
+ */
+export const exportLegendToImage = (
+  sources: ILegendSource[],
+  imageSize: [number, number],
+  format: 'JPEG' | 'PNG',
+  cancelFunction = () => false
+): Promise<string> => {
+  const legendCanvas = document.createElement('canvas');
+  legendCanvas.width = imageSize[0];
+  legendCanvas.height = imageSize[1];
+  const legendContext = legendCanvas.getContext('2d');
+  if (legendContext == null) {
+    return Promise.reject(new Error('Canvas context null'));
+  }
+  legendContext.fillStyle = 'white';
+  legendContext.fillRect(0, 0, imageSize[0], imageSize[1]);
+  const promises: Promise<[number, number, Record<number | string, ILayerLegend[]>]>[] = [];
+  for (const source of sources) {
+    if (cancelFunction()) {
+      return Promise.reject(new Error('Canceled'));
+    }
+    if (typeof source.fetchLegend === 'function') {
+      promises.push(
+        source.fetchLegend().then((res: Record<number | string, ILayerLegend[]>) => {
+          let width = 0;
+          let height = 0;
+          for (const key in res) {
+            const legends = res[key];
+            for (const legend of legends) {
+              if (legend.width > width) {
+                width = legend.width;
+                if (legend.label != null && legend.label.length > 0) {
+                  width += 10 * legend.label.length;
+                }
+              }
+              height += legend.height;
+            }
+          }
+          return [width, height, res];
+        })
+      );
+    }
+  }
+  let width = 0;
+  let height = 0;
+  return Promise.all(promises).then((res) => {
+    const records: Record<number | string, ILayerLegend[]>[] = [];
+    for (const [w, h, record] of res) {
+      if (w > width) {
+        width = w;
+      }
+      height += h;
+      records.push(record);
+    }
+
+    const ratio = Math.min(imageSize[0] / width, imageSize[1] / height, 1);
+    const textSize = 10;
+    legendContext.font = `${textSize}px sans-serif`;
+    legendContext.fillStyle = 'black';
+
+    let pos = 0;
+    for (const record of records) {
+      for (const key in record) {
+        const legends = record[key];
+        for (const legend of legends) {
+          if (cancelFunction()) {
+            return Promise.reject(new Error('Canceled'));
+          }
+          legendContext.drawImage(legend.image, 0, pos, ratio * legend.width, ratio * legend.height);
+          if (legend.label != null && legend.label.length > 0) {
+            legendContext.fillText(
+              legend.label,
+              ratio * legend.width,
+              pos + 0.5 * ratio * legend.height + 0.5 * ratio * textSize
+            );
+          }
+          pos += ratio * legend.height;
+        }
+      }
+    }
+
+    const dataUrl = format === 'JPEG' ? legendCanvas.toDataURL('image/jpeg') : legendCanvas.toDataURL('image/png');
+    return Promise.resolve(dataUrl);
+  });
+};

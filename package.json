@@ -1,6 +1,6 @@
 {
   "name": "@gisosteam/aol",
-  "version": "0.0.51",
+  "version": "0.0.52",
   "description": "OpenLayers sources extentions",
   "scripts": {
     "test": "jest",
@@ -30,11 +30,11 @@
   "devDependencies": {
     "@babel/core": "^7.11.6",
     "@babel/preset-env": "^7.11.5",
-    "@types/jest": "^26.0.13",
+    "@types/jest": "^26.0.14",
     "@types/jszip": "^3.4.1",
-    "@types/ol": "^6.3.1",
-    "@typescript-eslint/eslint-plugin": "^4.1.0",
-    "@typescript-eslint/parser": "^4.1.0",
+    "@types/ol": "^6.4.1",
+    "@typescript-eslint/eslint-plugin": "^4.2.0",
+    "@typescript-eslint/parser": "^4.2.0",
     "babel-jest": "^26.3.0",
     "barrelsby": "^2.2.0",
     "eslint": "^7.9.0",
@@ -42,11 +42,11 @@
     "jest": "^26.4.2",
     "jest-canvas-mock": "^2.2.0",
     "ol": "^6.4.3",
-    "prettier": "^2.1.1",
+    "prettier": "^2.1.2",
     "proj4": "2.6.2",
     "rimraf": "^3.0.2",
-    "ts-jest": "^26.3.0",
-    "typescript": "4.0.2"
+    "ts-jest": "^26.4.0",
+    "typescript": "4.0.3"
   },
   "dependencies": {
     "@turf/turf": "^5.1.6",

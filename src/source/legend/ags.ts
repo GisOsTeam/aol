@@ -45,5 +45,5 @@ export function loadLegendAgs(source: ILegendSource): Promise<Record<number | st
         });
       });
   }
-  return Promise.reject('Source is not a AGS source');
+  return Promise.reject(new Error('Source is not a AGS source'));
 }
