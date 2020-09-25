@@ -2,15 +2,21 @@ import { Pixel } from 'ol/pixel';
 import { Map } from 'ol';
 import OlBaseLayer from 'ol/layer/Base';
 import Layer from 'ol/layer/Layer';
-import {
-  IQueryResponse,
-  constructIdentifyQueryRequestFromPixel,
-  IQuerySource,
-  IQueryRequest,
-  IIdentifyRequest,
-} from '../IExtended';
+import { IQueryResponse, IQuerySource, IIdentifyRequest } from '../IExtended';
 import { walk } from '../../utils';
 import Geometry from 'ol/geom/Geometry';
+import Point from 'ol/geom/Point';
+import OlMap from 'ol/Map';
+
+export function constructIdentifyQueryRequestFromPixel(pixel: number[], olMap: OlMap): IIdentifyRequest {
+  const coord = olMap.getCoordinateFromPixel(pixel);
+  return {
+    olMap,
+    geometry: new Point(coord),
+    geometryProjection: olMap.getView().getProjection(),
+    queryType: 'identify',
+  };
+}
 
 export type IdentifyFilterType = (extended: IQuerySource) => boolean;
 export function identify(

@@ -1,7 +1,6 @@
 import OlMap from 'ol/Map';
 import Source, { Options } from 'ol/source/Source';
 import Feature from 'ol/Feature';
-import Point from 'ol/geom/Point';
 import Geometry from 'ol/geom/Geometry';
 import Projection from 'ol/proj/Projection';
 import { SourceType } from './types/sourceType';
@@ -11,6 +10,7 @@ import { IPredicate } from '../filter/predicate';
 export interface ISnapshotOptions extends Options {
   snapshotable?: boolean;
   listable?: boolean;
+  removable?: boolean;
 }
 
 export interface ISnapshotSource extends Source {
@@ -20,6 +20,7 @@ export interface ISnapshotSource extends Source {
   getLayerType(): LayerType;
   isSnapshotable(): boolean; // Can save snapshot
   isListable(): boolean; // Visible by others tools
+  isRemovable(): boolean; // Removable from map by others tools
 }
 
 export interface IInitSource extends ISnapshotSource {
@@ -54,8 +55,10 @@ export interface ILayerLegend {
   width: number;
 }
 
+export type ILegendRecord = Record<number | string, ILayerLegend[]>;
+
 export interface ILegendSource {
-  fetchLegend(): Promise<Record<number | string, ILayerLegend[]>>;
+  fetchLegend(): Promise<ILegendRecord>;
 }
 
 export interface IExtended extends IInitSource, IQuerySource, ILegendSource {}
@@ -104,14 +107,4 @@ export interface IFeatureType<IDT extends number | string> {
   identifierAttribute?: IAttribute;
   attributes?: IAttribute[];
   predicate?: IPredicate;
-}
-
-export function constructIdentifyQueryRequestFromPixel(pixel: number[], olMap: OlMap): IIdentifyRequest {
-  const coord = olMap.getCoordinateFromPixel(pixel);
-  return {
-    olMap,
-    geometry: new Point(coord),
-    geometryProjection: olMap.getView().getProjection(),
-    queryType: 'identify',
-  };
 }

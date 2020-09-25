@@ -34,6 +34,9 @@ export class TileWms extends OlTileWMS implements IExtended {
     if (this.options.listable != false) {
       this.options.listable = true;
     }
+    if (this.options.removable != false) {
+      this.options.removable = true;
+    }
     this.setSourceOptions(this.options);
   }
 
@@ -75,6 +78,10 @@ export class TileWms extends OlTileWMS implements IExtended {
 
   public isListable(): boolean {
     return this.options.listable;
+  }
+
+  public isRemovable(): boolean {
+    return this.options.removable;
   }
 
   public query(request: IQueryRequest): Promise<IQueryResponse> {

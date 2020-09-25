@@ -63,6 +63,9 @@ export class Wfs extends ExternalVector {
     if (this.options.listable != false) {
       this.options.listable = true;
     }
+    if (this.options.removable != false) {
+      this.options.removable = true;
+    }
   }
 
   public getSourceType(): SourceType {
@@ -87,5 +90,9 @@ export class Wfs extends ExternalVector {
 
   public isListable(): boolean {
     return this.options.listable;
+  }
+
+  public isRemovable(): boolean {
+    return this.options.removable;
   }
 }

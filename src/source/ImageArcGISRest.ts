@@ -35,6 +35,9 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
     if (this.options.listable != false) {
       this.options.listable = true;
     }
+    if (this.options.removable != false) {
+      this.options.removable = true;
+    }
 
     this.defaultTypePredicateAsMap = new Map<number, IPredicate>();
 
@@ -103,6 +106,10 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
 
   public isListable(): boolean {
     return this.options.listable;
+  }
+
+  public isRemovable(): boolean {
+    return this.options.removable;
   }
 
   public query(request: IQueryRequest): Promise<IQueryResponse> {

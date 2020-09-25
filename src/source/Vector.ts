@@ -30,6 +30,9 @@ export abstract class Vector extends OlVector implements IQuerySource {
     if (this.options.listable != false) {
       this.options.listable = true;
     }
+    if (this.options.removable != false) {
+      this.options.removable = true;
+    }
   }
 
   public getSourceType(): SourceType {
@@ -54,6 +57,10 @@ export abstract class Vector extends OlVector implements IQuerySource {
 
   public isListable(): boolean {
     return this.options.listable;
+  }
+
+  public isRemovable(): boolean {
+    return this.options.removable;
   }
 
   public loadFeatures(extent: [number, number, number, number], resolution: number, projection: Projection) {

@@ -1,8 +1,8 @@
 import { HttpEngine } from '../../HttpEngine';
 import { srcToImage } from '../../utils';
-import { ILayerLegend, ILegendSource } from '../IExtended';
+import { ILayerLegend, ILegendRecord, ILegendSource } from '../IExtended';
 
-export function loadLegendAgs(source: ILegendSource): Promise<Record<number | string, ILayerLegend[]>> {
+export function loadLegendAgs(source: ILegendSource): Promise<ILegendRecord> {
   if ((source as any).options != null && (source as any).options.url != null && (source as any).options.types != null) {
     return HttpEngine.getInstance()
       .send({ url: `${(source as any).options.url}/legend?f=json`, responseType: 'json' })
@@ -32,7 +32,7 @@ export function loadLegendAgs(source: ILegendSource): Promise<Record<number | st
           }
         }
         return Promise.all(promises).then((layerIdLegends) => {
-          const result: Record<number | string, ILayerLegend[]> = {};
+          const result: ILegendRecord = {};
           for (const layerIdLegend of layerIdLegends) {
             const layerId = layerIdLegend[0];
             if (result[layerId] != null) {

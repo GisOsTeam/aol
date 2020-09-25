@@ -11,7 +11,7 @@ import Circle from 'ol/geom/Circle';
 import booleanDisjoint from '@turf/boolean-disjoint';
 import { applyStyle } from 'ol-mapbox-style';
 import { SourceType } from './source/types/sourceType';
-import { IFeatureType, ISnapshotSource, ILegendSource, ILayerLegend } from './source/IExtended';
+import { IFeatureType, ISnapshotSource, ILegendSource, ILayerLegend, ILegendRecord } from './source/IExtended';
 import { SourceFactory } from './source/factory/SourceFacotry';
 import { getCenter, getWidth } from 'ol/extent';
 
@@ -272,7 +272,7 @@ export function srcToImage(
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.crossOrigin = 'anonymous';
-    img.onload = (e: any) => {
+    img.onload = () => {
       resolve(img);
     };
     img.onerror = () => {
@@ -426,7 +426,7 @@ export const exportLegendToImage = (
   const textSize = 12;
   const maxRatio = 1.5;
   const labelSizeRatio = 0.5;
-  const promises: Promise<[number, number, Record<number | string, ILayerLegend[]>]>[] = [];
+  const promises: Promise<[number, number, ILegendRecord]>[] = [];
   for (const source of sources) {
     if (cancelFunction()) {
       return Promise.reject(new Error('Canceled'));
@@ -434,7 +434,7 @@ export const exportLegendToImage = (
     if (typeof source.fetchLegend === 'function') {
       promises.push(
         source.fetchLegend().then(
-          (res: Record<number | string, ILayerLegend[]>) => {
+          (res: ILegendRecord) => {
             let width = 0;
             let height = 0;
             for (const key in res) {
@@ -461,7 +461,7 @@ export const exportLegendToImage = (
   let width = 0;
   let height = 0;
   return Promise.all(promises).then((res) => {
-    const records: Record<number | string, ILayerLegend[]>[] = [];
+    const records: ILegendRecord[] = [];
     for (const [w, h, record] of res) {
       if (w > width) {
         width = w;

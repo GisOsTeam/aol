@@ -14,6 +14,9 @@ export class ExternalVector extends Vector {
     if (this.options.listable != false) {
       this.options.listable = true;
     }
+    if (this.options.removable != false) {
+      this.options.removable = true;
+    }
   }
 
   public getSourceType(): SourceType {
@@ -38,5 +41,9 @@ export class ExternalVector extends Vector {
 
   public isListable(): boolean {
     return this.options.listable;
+  }
+
+  public isRemovable(): boolean {
+    return this.options.removable;
   }
 }

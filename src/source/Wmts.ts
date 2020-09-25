@@ -16,6 +16,9 @@ export class Wmts extends OlWmts implements ISnapshotSource {
     if (this.options.listable != false) {
       this.options.listable = true;
     }
+    if (this.options.removable != false) {
+      this.options.removable = true;
+    }
   }
 
   public getLayerType(): LayerTypeEnum {
@@ -36,6 +39,10 @@ export class Wmts extends OlWmts implements ISnapshotSource {
 
   public isListable(): boolean {
     return this.options.listable;
+  }
+
+  public isRemovable(): boolean {
+    return this.options.removable;
   }
 
   public setSourceOptions(options: IWmtsOptions): void {
