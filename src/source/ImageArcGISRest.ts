@@ -71,6 +71,11 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
     return this.options;
   }
 
+  public refresh(): void {
+    this.updateParams({ ...this.getParams(), now: Date.now() });
+    super.refresh();
+  }
+
   public setSourceOptions(options: IImageArcGISRestOptions): void {
     this.options = { ...options };
     this.un('propertychange', this.handlePropertychange);
@@ -91,6 +96,8 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
     if (layerDefsAsObject) {
       params.LAYERDEFS = JSON.stringify(layerDefsAsObject);
     }
+
+    params.now = Date.now();
 
     this.updateParams(params);
     this.on('propertychange', this.handlePropertychange);
