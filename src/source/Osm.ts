@@ -1,6 +1,6 @@
-import OlOsm, { Options } from "ol/source/OSM";
-import { ISnapshotOptions, ISnapshotSource } from "./IExtended";
-import { LayerType, LayerTypeEnum, SourceType, SourceTypeEnum } from "./types";
+import OlOsm, { Options } from 'ol/source/OSM';
+import { ISnapshotOptions, ISnapshotSource } from './IExtended';
+import { LayerType, LayerTypeEnum, SourceType, SourceTypeEnum } from './types';
 
 export interface IOsmOptions extends ISnapshotOptions, Options {}
 
@@ -8,7 +8,7 @@ export class Osm extends OlOsm implements ISnapshotSource {
   protected options: IOsmOptions;
 
   constructor(options: IOsmOptions) {
-    super({ crossOrigin: "anonymous", ...options });
+    super({ crossOrigin: 'anonymous', ...options });
     this.options = { ...options };
     if (this.options.snapshotable != false) {
       this.options.snapshotable = true;

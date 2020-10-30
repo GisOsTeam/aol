@@ -1,18 +1,18 @@
-import { SourceType, SourceTypeEnum } from "../types/sourceType";
-import { IFeatureType, ISnapshotSource } from "../IExtended";
-import { ExternalVector } from "../ExternalVector";
-import { ImageArcGISRest } from "../ImageArcGISRest";
-import { ImageStatic } from "../ImageStatic";
-import { ImageWms } from "../ImageWms";
-import { LocalVector } from "../LocalVector";
-import { QueryArcGISRest } from "../QueryArcGISRest";
-import { TileArcGISRest } from "../TileArcGISRest";
-import { TileWms } from "../TileWms";
-import { Wfs } from "../Wfs";
-import { Wmts } from "../Wmts";
-import { Xyz } from "../Xyz";
-import { WmtsCapabilities } from "../WmtsCapabilities";
-import { Osm } from "../Osm";
+import { SourceType, SourceTypeEnum } from '../types/sourceType';
+import { IFeatureType, ISnapshotSource } from '../IExtended';
+import { ExternalVector } from '../ExternalVector';
+import { ImageArcGISRest } from '../ImageArcGISRest';
+import { ImageStatic } from '../ImageStatic';
+import { ImageWms } from '../ImageWms';
+import { LocalVector } from '../LocalVector';
+import { QueryArcGISRest } from '../QueryArcGISRest';
+import { TileArcGISRest } from '../TileArcGISRest';
+import { TileWms } from '../TileWms';
+import { Wfs } from '../Wfs';
+import { Wmts } from '../Wmts';
+import { Xyz } from '../Xyz';
+import { WmtsCapabilities } from '../WmtsCapabilities';
+import { Osm } from '../Osm';
 
 export class SourceFactory {
   public static create(sourceTypeName: SourceType, sourceOptions: any): ISnapshotSource {
