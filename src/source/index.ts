@@ -8,6 +8,7 @@ export * from './ImageArcGISRest';
 export * from './ImageStatic';
 export * from './ImageWms';
 export * from './LocalVector';
+export * from './Osm';
 export * from './QueryArcGISRest';
 export * from './TileArcGISRest';
 export * from './TileImage';
