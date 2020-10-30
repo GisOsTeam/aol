@@ -4,6 +4,7 @@ export type SourceType =
   | SourceTypeEnum.ImageStatic
   | SourceTypeEnum.ImageWms
   | SourceTypeEnum.LocalVector
+  | SourceTypeEnum.Osm
   | SourceTypeEnum.QueryArcGISRest
   | SourceTypeEnum.TileArcGISRest
   | SourceTypeEnum.TileWms
@@ -15,18 +16,19 @@ export type SourceType =
   | SourceTypeEnum.Xyz;
 
 export enum SourceTypeEnum {
-  ExternalVector = 'ExternalVector',
-  ImageArcGISRest = 'ImageArcGISRest',
-  ImageStatic = 'ImageStatic',
-  ImageWms = 'ImageWms',
-  LocalVector = 'LocalVector',
-  QueryArcGISRest = 'QueryArcGISRest',
-  TileArcGISRest = 'TileArcGISRest',
-  TileWms = 'TileWms',
-  Vector = 'Vector',
-  VectorTile = 'VectorTile',
-  Wfs = 'Wfs',
-  Wmts = 'Wmts',
-  WmtsCapabilities = 'WmtsCapabilities',
-  Xyz = 'Xyz',
+  ExternalVector = "ExternalVector",
+  ImageArcGISRest = "ImageArcGISRest",
+  ImageStatic = "ImageStatic",
+  ImageWms = "ImageWms",
+  LocalVector = "LocalVector",
+  Osm = "Osm",
+  QueryArcGISRest = "QueryArcGISRest",
+  TileArcGISRest = "TileArcGISRest",
+  TileWms = "TileWms",
+  Vector = "Vector",
+  VectorTile = "VectorTile",
+  Wfs = "Wfs",
+  Wmts = "Wmts",
+  WmtsCapabilities = "WmtsCapabilities",
+  Xyz = "Xyz",
 }
