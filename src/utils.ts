@@ -257,7 +257,7 @@ export function applyLayerStyles(layer: BaseLayer, layerStyles: LayerStyles, id:
   };
   mbstyle.sources[id] = { type: 'vector' };
   layerStyles.forEach((style) => {
-    mbstyle.layers.push({ ...style, source: id });
+    mbstyle.layers.push({ ...style, id, source: id });
   });
   applyStyle(layer, mbstyle, id);
 }
