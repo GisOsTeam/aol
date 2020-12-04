@@ -122,7 +122,7 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
   public query(request: IQueryRequest, onlyVisible = false): Promise<IQueryResponse> {
     const promises: Promise<IQueryFeatureTypeResponse>[] = [];
     for (const type of this.options.types) {
-      const isVisible = !type.hide || true;
+      const isVisible = type.hide !== true;
       if (!onlyVisible || isVisible) {
         let filterBuilder = this.buildFilterBuilderFromType(type);
         if (request.filters) {
