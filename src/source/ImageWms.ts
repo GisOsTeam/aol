@@ -84,10 +84,13 @@ export class ImageWms extends OlImageWMS implements IExtended {
     return this.options.removable;
   }
 
-  public query(request: IQueryRequest): Promise<IQueryResponse> {
+  public query(request: IQueryRequest, onlyVisible = false): Promise<IQueryResponse> {
     const promises: Promise<IQueryFeatureTypeResponse>[] = [];
     for (const type of this.options.types) {
-      promises.push(executeWmsQuery(this, type, request));
+      const isVisible = !type.hide || true;
+      if (!onlyVisible || isVisible) {
+        promises.push(executeWmsQuery(this, type, request));
+      }
     }
     return Promise.all(promises).then((featureTypeResponses: IQueryFeatureTypeResponse[]) => {
       return {

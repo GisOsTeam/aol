@@ -119,17 +119,20 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
     return this.options.removable;
   }
 
-  public query(request: IQueryRequest): Promise<IQueryResponse> {
+  public query(request: IQueryRequest, onlyVisible = false): Promise<IQueryResponse> {
     const promises: Promise<IQueryFeatureTypeResponse>[] = [];
     for (const type of this.options.types) {
-      let filterBuilder = this.buildFilterBuilderFromType(type);
-      if (request.filters) {
-        filterBuilder = filterBuilder ? filterBuilder.and(request.filters) : new FilterBuilder(request.filters);
+      const isVisible = !type.hide || true;
+      if (!onlyVisible || isVisible) {
+        let filterBuilder = this.buildFilterBuilderFromType(type);
+        if (request.filters) {
+          filterBuilder = filterBuilder ? filterBuilder.and(request.filters) : new FilterBuilder(request.filters);
+        }
+        if (filterBuilder) {
+          request.filters = filterBuilder.predicate;
+        }
+        promises.push(executeAgsQuery(this, type, request));
       }
-      if (filterBuilder) {
-        request.filters = filterBuilder.predicate;
-      }
-      promises.push(executeAgsQuery(this, type, request));
     }
     return Promise.all(promises).then((featureTypeResponses: IQueryFeatureTypeResponse[]) => {
       return {

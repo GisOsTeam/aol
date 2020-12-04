@@ -49,7 +49,7 @@ export function identify(
         if (source && 'query' in source) {
           const extended = source as IQuerySource;
           if (!filter || filter(extended)) {
-            promises.push(extended.query(queryRequest));
+            promises.push(extended.query(queryRequest, true));
           }
         }
       }
