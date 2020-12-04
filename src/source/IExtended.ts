@@ -28,7 +28,7 @@ export interface IInitSource extends ISnapshotSource {
 }
 
 export interface IQuerySource extends ISnapshotSource {
-  query(identifyRequest: IQueryRequest): Promise<IQueryResponse>;
+  query(identifyRequest: IQueryRequest, onlyVisible?: boolean): Promise<IQueryResponse>;
   retrieveFeature(id: number | string, featureProjection: Projection): Promise<Feature>;
 }
 
