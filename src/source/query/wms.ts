@@ -99,8 +99,16 @@ function getFeatureInfoOnBBOX(
         } catch (err) {
           console.error(err);
         }
+        // Hack for GeoServer with space in name
+        let txt = res.text;
+        if (/\s/.test(type.id)) {
+          const withoutSpace = type.id.replace(/\s/g, '_');
+          const withSpace = type.id.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, '\\$1');
+          txt = txt.replace(new RegExp('<' + withSpace, 'g'), '<' + withoutSpace);
+          txt = txt.replace(new RegExp('</' + withSpace, 'g'), '</' + withoutSpace);
+        }
         // Read features
-        const allFeatures = format.readFeatures(res.body);
+        const allFeatures = format.readFeatures(txt);
         if (allFeatures != null && allFeatures.length > 0) {
           allFeatures.forEach((feature: Feature) => {
             if (limit == null || features.length < limit) {
