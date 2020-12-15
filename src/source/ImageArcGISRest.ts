@@ -146,10 +146,10 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
       const featureTypeResponse = await executeAgsQuery(this, layer, request);
       return {
         featureTypeResponses: [featureTypeResponse],
-        request
-      }
+        request,
+      };
     } else {
-      console.warn(`Unable to find ${layerId} in this source`)
+      console.warn(`Unable to find ${layerId} in this source`);
     }
   }
 
