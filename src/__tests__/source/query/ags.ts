@@ -18,7 +18,7 @@ const stateNameField: IField<any> = {
   key: 'state_name',
   type: FieldTypeEnum.String,
 };
-describe('Ags',() => {
+describe('Ags', () => {
   test('describe ags', () => {
     const type: IFeatureType<number> = states.get('types')[0];
     return loadAgsFeatureDescription(states, type).then(() => {

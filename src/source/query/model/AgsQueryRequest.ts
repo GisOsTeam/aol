@@ -65,11 +65,7 @@ export class AgsQueryRequest implements AgsQueryRequestParameters {
 
   private format = new EsriJSON();
 
-  constructor(
-    source: IExtended,
-    type: IFeatureType<number>,
-    request: IQueryRequest
-  ) {
+  constructor(source: IExtended, type: IFeatureType<number>, request: IQueryRequest) {
     const { geometryProjection } = request;
     this.inSR = '3857';
     this.outSR = '3857';

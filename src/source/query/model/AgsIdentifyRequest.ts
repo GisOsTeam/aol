@@ -43,11 +43,7 @@ export class AgsIdentifyRequest implements AgsIdentifyRequestParameters {
 
   private format = new EsriJSON();
 
-  constructor(
-    source: IExtended,
-    type: IFeatureType<number>,
-    request: IQueryRequest
-  ) {
+  constructor(source: IExtended, type: IFeatureType<number>, request: IQueryRequest) {
     const { olMap, geometryProjection, queryType } = request;
     this.sr = '3857';
 
@@ -102,7 +98,6 @@ export class AgsIdentifyRequest implements AgsIdentifyRequestParameters {
         ? `${(request as IIdentifyRequest).geometryPrecision}`
         : '10';
     }
-
 
     const olView = olMap.getView();
 

@@ -1,6 +1,6 @@
 import Feature from 'ol/Feature';
 import EsriJSON from 'ol/format/EsriJSON';
-import { IAttribute, IExtended, IFeatureType, IQueryFeatureTypeResponse, IQueryRequest, } from '../IExtended';
+import { IAttribute, IExtended, IFeatureType, IQueryFeatureTypeResponse, IQueryRequest } from '../IExtended';
 import Projection from 'ol/proj/Projection';
 import { HttpEngine } from '../../HttpEngine';
 import { AgsIdentifyRequest } from './model/AgsIdentifyRequest';
@@ -23,7 +23,7 @@ export function executeAgsQuery(
   } else if ('getUrls' in source) {
     url = (source as any).getUrls()[0];
   }
-  url += queryType === 'identify' ? '/identify': `/${type.id}/query`;
+  url += queryType === 'identify' ? '/identify' : `/${type.id}/query`;
 
   let body: AgsIdentifyRequest | AgsQueryRequest;
   switch (queryType) {
@@ -35,59 +35,59 @@ export function executeAgsQuery(
       break;
   }
 
-      const httpEngine = HttpEngine.getInstance();
-      return httpEngine
-        .send({
-          url,
-          body,
-          method: 'POST',
-          contentType: 'application/x-www-form-urlencoded',
-          responseType: 'json',
-        })
-        .then(
-          (res) => {
-            const features = [] as Feature[];
-            // Read features
-            let jsonQueryRes = res.body;
-            if (typeof jsonQueryRes === 'string') {
-              try {
-                jsonQueryRes = JSON.parse(jsonQueryRes);
-              } catch (e) {
-                console.error(`Error occurred during reading identify response body `);
-                return e;
-              }
-            }
-            if (jsonQueryRes != null) {
-              const jsonFeatures = jsonQueryRes.features || jsonQueryRes.results;
-              if (jsonFeatures != null && jsonFeatures.length > 0) {
-                jsonFeatures.forEach((jsonFeature: any) => {
-                  if (limit == null || features.length < limit) {
-                    const feature = format.readFeature(jsonFeature, {
-                      dataProjection: 'EPSG:' + body.getSrId(),
-                      featureProjection: mapProjection,
-                    }) as Feature;
-                    if (feature.getId() == null && type.identifierAttribute != null) {
-                      // Search id
-                      const properties = feature.getProperties();
-                      feature.setId(properties[type.identifierAttribute.key]);
-                    }
-                    features.push(feature);
-                  }
-                });
-              }
-            }
-            return {
-              type,
-              features,
-              source,
-            };
-          },
-          (err) => {
-            console.error(`Execute AGS query/identify in error: ${err}`);
-            return err;
+  const httpEngine = HttpEngine.getInstance();
+  return httpEngine
+    .send({
+      url,
+      body,
+      method: 'POST',
+      contentType: 'application/x-www-form-urlencoded',
+      responseType: 'json',
+    })
+    .then(
+      (res) => {
+        const features = [] as Feature[];
+        // Read features
+        let jsonQueryRes = res.body;
+        if (typeof jsonQueryRes === 'string') {
+          try {
+            jsonQueryRes = JSON.parse(jsonQueryRes);
+          } catch (e) {
+            console.error(`Error occurred during reading identify response body `);
+            return e;
           }
-        );
-  }
+        }
+        if (jsonQueryRes != null) {
+          const jsonFeatures = jsonQueryRes.features || jsonQueryRes.results;
+          if (jsonFeatures != null && jsonFeatures.length > 0) {
+            jsonFeatures.forEach((jsonFeature: any) => {
+              if (limit == null || features.length < limit) {
+                const feature = format.readFeature(jsonFeature, {
+                  dataProjection: 'EPSG:' + body.getSrId(),
+                  featureProjection: mapProjection,
+                }) as Feature;
+                if (feature.getId() == null && type.identifierAttribute != null) {
+                  // Search id
+                  const properties = feature.getProperties();
+                  feature.setId(properties[type.identifierAttribute.key]);
+                }
+                features.push(feature);
+              }
+            });
+          }
+        }
+        return {
+          type,
+          features,
+          source,
+        };
+      },
+      (err) => {
+        console.error(`Execute AGS query/identify in error: ${err}`);
+        return err;
+      }
+    );
+}
 
 export function retrieveAgsFeature(
   source: IExtended,
