@@ -24,7 +24,8 @@ export function identify(
   map: Map,
   limit = 10,
   tolerance = 4,
-  filter?: IdentifyFilterType
+  filter?: IdentifyFilterType,
+  atScale = false
 ) {
   if (map && identifyEntity) {
     const promises: Promise<IQueryResponse>[] = [];
@@ -42,6 +43,10 @@ export function identify(
 
     queryRequest.limit = limit;
     queryRequest.identifyTolerance = tolerance;
+
+    if (atScale) {
+      queryRequest.layersPrefix = 'visible';
+    }
 
     walk(map, (layer: OlBaseLayer) => {
       if (layer.getVisible() && 'getSource' in layer) {
