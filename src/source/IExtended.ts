@@ -81,6 +81,8 @@ export interface IIdentifyRequest extends IAbstractQueryRequest<'identify'> {
   geometry: Geometry;
   geometryProjection: Projection;
   identifyTolerance?: number;
+
+  layersPrefix?: 'all' | 'top' | 'visible';
 }
 
 export interface IQueryResponse {

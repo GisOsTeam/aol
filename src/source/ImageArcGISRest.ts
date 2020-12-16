@@ -19,6 +19,8 @@ import { loadLegendAgs } from './legend/ags';
 
 export interface IImageArcGISRestOptions extends ISnapshotOptions, Options {
   types: IFeatureType<number>[];
+
+  layersPrefix?: 'all' | 'top' | 'visible';
 }
 
 export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
@@ -80,7 +82,7 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
     this.options = { ...options };
     this.un('propertychange', this.handlePropertychange);
     this.set('types', options.types);
-    const params = { ...this.getParams(), LAYERS: getAgsLayersFromTypes(options.types) };
+    const params = { ...this.getParams(), LAYERS: getAgsLayersFromTypes(options.types, options.layersPrefix) };
 
     let layerDefsAsObject: any;
     for (const type of options.types) {
@@ -124,13 +126,7 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
     for (const type of this.options.types) {
       const isVisible = type.hide !== true;
       if (!onlyVisible || isVisible) {
-        let filterBuilder = this.buildFilterBuilderFromType(type);
-        if (request.filters) {
-          filterBuilder = filterBuilder ? filterBuilder.and(request.filters) : new FilterBuilder(request.filters);
-        }
-        if (filterBuilder) {
-          request.filters = filterBuilder.predicate;
-        }
+        this.alterRequestFilterFromType(request, type);
         promises.push(executeAgsQuery(this, type, request));
       }
     }
@@ -140,6 +136,21 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
         featureTypeResponses,
       };
     });
+  }
+
+  public async queryLayer(request: IQueryRequest, layerId: number): Promise<IQueryResponse> {
+    const layer = this.options.types.find((subLayer) => subLayer.id === layerId);
+    if (layer) {
+      this.alterRequestFilterFromType(request, layer);
+
+      const featureTypeResponse = await executeAgsQuery(this, layer, request);
+      return {
+        featureTypeResponses: [featureTypeResponse],
+        request,
+      };
+    } else {
+      console.warn(`Unable to find ${layerId} in this source`);
+    }
   }
 
   public retrieveFeature(id: number | string, projection: Projection): Promise<Feature> {
@@ -172,7 +183,7 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
     const key = event.key;
     const value = event.target.get(key);
     if (key === 'types') {
-      this.updateParams({ ...this.getParams(), LAYERS: getAgsLayersFromTypes(value) });
+      this.updateParams({ ...this.getParams(), LAYERS: getAgsLayersFromTypes(value, this.options.layersPrefix) });
       this.options.types = value;
     }
   };
@@ -186,5 +197,16 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
       filterBuilder = filterBuilder ? filterBuilder.and(type.predicate) : new FilterBuilder(type.predicate);
     }
     return filterBuilder;
+  }
+
+  private alterRequestFilterFromType(request: IQueryRequest, type: IFeatureType<number>) {
+    let filterBuilder = this.buildFilterBuilderFromType(type);
+    if (request.filters) {
+      filterBuilder = filterBuilder ? filterBuilder.and(request.filters) : new FilterBuilder(request.filters);
+    }
+    if (filterBuilder) {
+      return filterBuilder.predicate;
+    }
+    return;
   }
 }
