@@ -79,10 +79,14 @@ export interface IGisQueryRequest extends IAbstractQueryRequest<'query'> {
 
 export interface IIdentifyRequest extends IAbstractQueryRequest<'identify'> {
   geometry: Geometry;
+  geometryPrecision?: number;
   geometryProjection: Projection;
   identifyTolerance?: number;
-
   layersPrefix?: 'all' | 'top' | 'visible';
+  outFields?: string;
+  returnFieldName?: 'true' | 'false';
+  returnGeometry?: 'true' | 'false';
+  srId?: string;
 }
 
 export interface IQueryResponse {

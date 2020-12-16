@@ -1,0 +1,55 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Simple AgsQueryRequest: agsQueryRequest.distance 1`] = `undefined`;
+
+exports[`Simple AgsQueryRequest: agsQueryRequest.f 1`] = `"json"`;
+
+exports[`Simple AgsQueryRequest: agsQueryRequest.geometry 1`] = `"{\\"hasZ\\":false,\\"hasM\\":false,\\"rings\\":[[[-11580733.168194728,4880526.966432655],[-11580733.168194728,4964673.98309528],[-11496586.151532097,4964673.983095286],[-11496586.151532097,4880526.966432655],[-11580733.168194728,4880526.966432655]]]}"`;
+
+exports[`Simple AgsQueryRequest: agsQueryRequest.geometryPrecision 1`] = `"10"`;
+
+exports[`Simple AgsQueryRequest: agsQueryRequest.geometryType 1`] = `"esriGeometryPolygon"`;
+
+exports[`Simple AgsQueryRequest: agsQueryRequest.historicMoment 1`] = `undefined`;
+
+exports[`Simple AgsQueryRequest: agsQueryRequest.inSR 1`] = `"3857"`;
+
+exports[`Simple AgsQueryRequest: agsQueryRequest.maxAllowableOffset 1`] = `undefined`;
+
+exports[`Simple AgsQueryRequest: agsQueryRequest.objectIds 1`] = `undefined`;
+
+exports[`Simple AgsQueryRequest: agsQueryRequest.orderByFields 1`] = `undefined`;
+
+exports[`Simple AgsQueryRequest: agsQueryRequest.outFields 1`] = `"*"`;
+
+exports[`Simple AgsQueryRequest: agsQueryRequest.outSR 1`] = `"3857"`;
+
+exports[`Simple AgsQueryRequest: agsQueryRequest.parameterValues 1`] = `undefined`;
+
+exports[`Simple AgsQueryRequest: agsQueryRequest.rangeValues 1`] = `undefined`;
+
+exports[`Simple AgsQueryRequest: agsQueryRequest.relationParam 1`] = `undefined`;
+
+exports[`Simple AgsQueryRequest: agsQueryRequest.resultOffset 1`] = `undefined`;
+
+exports[`Simple AgsQueryRequest: agsQueryRequest.returnCountOnly 1`] = `undefined`;
+
+exports[`Simple AgsQueryRequest: agsQueryRequest.returnExtentOnly 1`] = `undefined`;
+
+exports[`Simple AgsQueryRequest: agsQueryRequest.returnGeometry 1`] = `"true"`;
+
+exports[`Simple AgsQueryRequest: agsQueryRequest.returnIdsOnly 1`] = `undefined`;
+
+exports[`Simple AgsQueryRequest: agsQueryRequest.returnM 1`] = `undefined`;
+
+exports[`Simple AgsQueryRequest: agsQueryRequest.returnZ 1`] = `undefined`;
+
+exports[`Simple AgsQueryRequest: agsQueryRequest.spatialRel 1`] = `undefined`;
+
+exports[`Simple AgsQueryRequest: agsQueryRequest.text 1`] = `undefined`;
+
+exports[`Simple AgsQueryRequest: agsQueryRequest.time 1`] = `undefined`;
+
+exports[`Simple AgsQueryRequest: agsQueryRequest.units 1`] = `undefined`;
+
+exports[`Simple AgsQueryRequest: agsQueryRequest.where 1`] = `undefined`;
