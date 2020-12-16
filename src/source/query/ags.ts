@@ -80,7 +80,7 @@ export function executeAgsQuery(
 
   switch (queryType) {
     case 'identify':
-      const { identifyTolerance } = request as IIdentifyRequest;
+      const { identifyTolerance, layersPrefix = 'all' } = request as IIdentifyRequest;
       url += '/identify';
       const extent = transformExtent(geometry.getExtent(), geometryProjection, 'EPSG:' + srId);
       const mapExtent = getForViewAndSize(
@@ -91,7 +91,7 @@ export function executeAgsQuery(
       );
       body.mapExtent = mapExtent.join(',');
       body.imageDisplay = '1001,1001';
-      body.layers = `all:${type.id}`;
+      body.layers = `${layersPrefix}:${type.id}`;
       if (request.filters) {
         body.layerDefs = `{"${type.id}":"${new FilterBuilder(request.filters).build(FilterBuilderTypeEnum.SQL)}"}`;
       }

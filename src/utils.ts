@@ -192,12 +192,12 @@ export function getWmsLayersFromTypes(types: IFeatureType<string>[]): string {
  * Generate LAYERS param from IFeatureType array.
  * @param {IFeatureType<number>[]} types list of feature type
  */
-export function getAgsLayersFromTypes(types: IFeatureType<number>[]): string {
+export function getAgsLayersFromTypes(types: IFeatureType<number>[], prefix = 'show'): string {
   if (types == null || types.length === 0) {
     return 'show:-1';
   } else {
     const shownTypes = types.filter((t) => t.id !== -1 && !t.hide).map((t) => t.id);
-    return `show:${shownTypes.length > 0 ? shownTypes.join(',') : '-1'}`;
+    return `${prefix}:${shownTypes.length > 0 ? shownTypes.join(',') : '-1'}`;
   }
 }
 
