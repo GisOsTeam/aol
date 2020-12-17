@@ -35,7 +35,8 @@ export function identify(
   limit = 10,
   tolerance = 4,
   filter?: IdentifyFilterType,
-  atScale = false
+  atScale = false,
+  returnGeo = true
 ) {
   if (map && identifyEntity) {
     const promises: Promise<IQueryResponse>[] = [];
@@ -51,6 +52,7 @@ export function identify(
       queryRequest = constructIdentifyQueryRequestFromPixel(identifyEntity, map);
     }
 
+    queryRequest.returnGeometry = returnGeo ? 'true' : 'false';
     queryRequest.limit = limit;
     queryRequest.identifyTolerance = tolerance;
 

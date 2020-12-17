@@ -102,7 +102,10 @@ export class AgsIdentifyRequest implements AgsIdentifyRequestParameters {
     const olView = olMap.getView();
 
     const { identifyTolerance, layersPrefix = 'all' } = request as IIdentifyRequest;
-    const extent = transformExtent(geometry.getExtent(), geometryProjection, 'EPSG:' + this.sr);
+    let extent = geometry.getExtent();
+    if (geometryProjection.getCode() !== 'EPSG:' + this.sr) {
+      extent = transformExtent(geometry.getExtent(), geometryProjection, 'EPSG:' + this.sr);
+    }
     const mapExtent = getForViewAndSize(
       [0.5 * extent[0] + 0.5 * extent[2], 0.5 * extent[1] + 0.5 * extent[3]],
       olView.getResolution(),
