@@ -19,12 +19,23 @@ export function constructIdentifyQueryRequestFromPixel(pixel: number[], olMap: O
 }
 
 export type IdentifyFilterType = (extended: IQuerySource) => boolean;
+
+/**
+ *
+ * @param identifyEntity
+ * @param map
+ * @param limit
+ * @param tolerance
+ * @param filter
+ * @param atScale Pris en charge que pour les couches AGS
+ */
 export function identify(
   identifyEntity: Pixel | Geometry,
   map: Map,
   limit = 10,
   tolerance = 4,
-  filter?: IdentifyFilterType
+  filter?: IdentifyFilterType,
+  atScale = false
 ) {
   if (map && identifyEntity) {
     const promises: Promise<IQueryResponse>[] = [];
@@ -42,6 +53,10 @@ export function identify(
 
     queryRequest.limit = limit;
     queryRequest.identifyTolerance = tolerance;
+
+    if (atScale) {
+      queryRequest.layersPrefix = 'visible';
+    }
 
     walk(map, (layer: OlBaseLayer) => {
       if (layer.getVisible() && 'getSource' in layer) {
