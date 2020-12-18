@@ -15,9 +15,13 @@ export interface ISnapshotOptions extends Options {
 
 export interface ISnapshotSource extends Source {
   getSourceType(): SourceType;
+
   getSourceOptions(): ISnapshotOptions;
+
   setSourceOptions(options: ISnapshotOptions): void;
+
   getLayerType(): LayerType;
+
   isSnapshotable(): boolean; // Can save snapshot
   isListable(): boolean; // Visible by others tools
   isRemovable(): boolean; // Removable from map by others tools
@@ -29,6 +33,7 @@ export interface IInitSource extends ISnapshotSource {
 
 export interface IQuerySource extends ISnapshotSource {
   query(identifyRequest: IQueryRequest, onlyVisible?: boolean): Promise<IQueryResponse>;
+
   retrieveFeature(id: number | string, featureProjection: Projection): Promise<Feature>;
 }
 
@@ -79,10 +84,14 @@ export interface IGisQueryRequest extends IAbstractQueryRequest<'query'> {
 
 export interface IIdentifyRequest extends IAbstractQueryRequest<'identify'> {
   geometry: Geometry;
+  geometryPrecision?: number;
   geometryProjection: Projection;
   identifyTolerance?: number;
-
-  layersPrefix?: 'all' | 'top' | 'visible';
+  layersPrefix?: LayersPrefix;
+  outFields?: string;
+  returnFieldName?: boolean;
+  returnGeometry?: boolean;
+  srId?: string;
 }
 
 export interface IQueryResponse {
@@ -109,4 +118,10 @@ export interface IFeatureType<IDT extends number | string> {
   identifierAttribute?: IAttribute;
   attributes?: IAttribute[];
   predicate?: IPredicate;
+}
+export type LayersPrefix = LayersPrefixEnum.ALL | LayersPrefixEnum.TOP | LayersPrefixEnum.VISIBLE;
+export enum LayersPrefixEnum {
+  ALL = 'all',
+  TOP = 'top',
+  VISIBLE = 'visible',
 }

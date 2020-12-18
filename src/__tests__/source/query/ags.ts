@@ -18,92 +18,93 @@ const stateNameField: IField<any> = {
   key: 'state_name',
   type: FieldTypeEnum.String,
 };
-
-test('describe ags', () => {
-  const type: IFeatureType<number> = states.get('types')[0];
-  return loadAgsFeatureDescription(states, type).then(() => {
-    expect<string>(type.identifierAttribute.key).toEqual('objectid');
+describe('Ags', () => {
+  test('describe ags', () => {
+    const type: IFeatureType<number> = states.get('types')[0];
+    return loadAgsFeatureDescription(states, type).then(() => {
+      expect<string>(type.identifierAttribute.key).toEqual('objectid');
+    });
   });
-});
 
-test('query ags geometry', () => {
-  const request: IQueryRequest = {
-    olMap: new OlMap({
-      view: new OlView({
-        center: [0, 0],
-        zoom: 1,
+  test('query ags geometry', () => {
+    const request: IQueryRequest = {
+      olMap: new OlMap({
+        view: new OlView({
+          center: [0, 0],
+          zoom: 1,
+        }),
       }),
-    }),
-    geometry: new Polygon([
-      [
-        [-11580733.168194728, 4880526.966432655],
-        [-11580733.168194728, 4964673.98309528],
-        [-11496586.151532097, 4964673.983095286],
-        [-11496586.151532097, 4880526.966432655],
-        [-11580733.168194728, 4880526.966432655],
-      ],
-    ]),
-    geometryProjection: getProjection('EPSG:3857'),
-    queryType: 'query',
-  };
-  const type: IFeatureType<number> = states.get('types')[0];
-  return executeAgsQuery(states, type, request).then((response: IQueryFeatureTypeResponse) => {
-    expect<number>(response.features.length).toEqual(1);
-    expect<string>(response.features[0].getProperties().state_name).toEqual('Colorado');
+      geometry: new Polygon([
+        [
+          [-11580733.168194728, 4880526.966432655],
+          [-11580733.168194728, 4964673.98309528],
+          [-11496586.151532097, 4964673.983095286],
+          [-11496586.151532097, 4880526.966432655],
+          [-11580733.168194728, 4880526.966432655],
+        ],
+      ]),
+      geometryProjection: getProjection('EPSG:3857'),
+      queryType: 'query',
+    };
+    const type: IFeatureType<number> = states.get('types')[0];
+    return executeAgsQuery(states, type, request).then((response: IQueryFeatureTypeResponse) => {
+      expect<number>(response.features.length).toEqual(1);
+      expect<string>(response.features[0].getProperties().state_name).toEqual('Colorado');
+    });
   });
-});
 
-test('query ags attr', () => {
-  const request: IQueryRequest = {
-    olMap: new OlMap({
-      view: new OlView({
-        center: [0, 0],
-        zoom: 1,
+  test('query ags attr', () => {
+    const request: IQueryRequest = {
+      olMap: new OlMap({
+        view: new OlView({
+          center: [0, 0],
+          zoom: 1,
+        }),
       }),
-    }),
-    geometry: new Polygon([
-      [
-        [-11580733.168194728, 4880526.966432655],
-        [-11580733.168194728, 4964673.98309528],
-        [-11496586.151532097, 4964673.983095286],
-        [-11496586.151532097, 4880526.966432655],
-        [-11580733.168194728, 4880526.966432655],
-      ],
-    ]),
-    filters: new Like(stateNameField, new LikeOp(), 'Col%'),
-    geometryProjection: getProjection('EPSG:3857'),
-    queryType: 'query',
-  };
-  const type: IFeatureType<number> = states.get('types')[0];
-  return executeAgsQuery(states, type, request).then((response: IQueryFeatureTypeResponse) => {
-    expect<number>(response.features.length).toEqual(1);
-    expect<string>(response.features[0].getProperties().state_name).toEqual('Colorado');
+      geometry: new Polygon([
+        [
+          [-11580733.168194728, 4880526.966432655],
+          [-11580733.168194728, 4964673.98309528],
+          [-11496586.151532097, 4964673.983095286],
+          [-11496586.151532097, 4880526.966432655],
+          [-11580733.168194728, 4880526.966432655],
+        ],
+      ]),
+      filters: new Like(stateNameField, new LikeOp(), 'Col%'),
+      geometryProjection: getProjection('EPSG:3857'),
+      queryType: 'query',
+    };
+    const type: IFeatureType<number> = states.get('types')[0];
+    return executeAgsQuery(states, type, request).then((response: IQueryFeatureTypeResponse) => {
+      expect<number>(response.features.length).toEqual(1);
+      expect<string>(response.features[0].getProperties().state_name).toEqual('Colorado');
+    });
   });
-});
 
-test('identify ags', () => {
-  const request: IQueryRequest = {
-    olMap: new OlMap({
-      view: new OlView({
-        center: [0, 0],
-        zoom: 1,
+  test('identify ags', () => {
+    const request: IQueryRequest = {
+      olMap: new OlMap({
+        view: new OlView({
+          center: [0, 0],
+          zoom: 1,
+        }),
       }),
-    }),
-    geometry: new Polygon([
-      [
-        [-11580733.168194728, 4880526.966432655],
-        [-11580733.168194728, 4964673.98309528],
-        [-11496586.151532097, 4964673.983095286],
-        [-11496586.151532097, 4880526.966432655],
-        [-11580733.168194728, 4880526.966432655],
-      ],
-    ]),
-    geometryProjection: getProjection('EPSG:3857'),
-    queryType: 'identify',
-  };
-  const type: IFeatureType<number> = states.get('types')[0];
-  return executeAgsQuery(states, type, request).then((response: IQueryFeatureTypeResponse) => {
-    expect<number>(response.features.length).toEqual(1);
-    expect<string>(response.features[0].getProperties().state_name).toEqual('Colorado');
+      geometry: new Polygon([
+        [
+          [-11580733.168194728, 4880526.966432655],
+          [-11580733.168194728, 4964673.98309528],
+          [-11496586.151532097, 4964673.983095286],
+          [-11496586.151532097, 4880526.966432655],
+          [-11580733.168194728, 4880526.966432655],
+        ],
+      ]),
+      geometryProjection: getProjection('EPSG:3857'),
+      queryType: 'identify',
+    };
+    const type: IFeatureType<number> = states.get('types')[0];
+    return executeAgsQuery(states, type, request).then((response: IQueryFeatureTypeResponse) => {
+      expect<number>(response.features.length).toEqual(1);
+      expect<string>(response.features[0].getProperties().state_name).toEqual('Colorado');
+    });
   });
 });

@@ -2,7 +2,7 @@ import { Pixel } from 'ol/pixel';
 import { Map } from 'ol';
 import OlBaseLayer from 'ol/layer/Base';
 import Layer from 'ol/layer/Layer';
-import { IQueryResponse, IQuerySource, IIdentifyRequest } from '../IExtended';
+import { IIdentifyRequest, IQueryResponse, IQuerySource, LayersPrefix } from '../IExtended';
 import { walk } from '../../utils';
 import Geometry from 'ol/geom/Geometry';
 import Point from 'ol/geom/Point';
@@ -27,7 +27,8 @@ export type IdentifyFilterType = (extended: IQuerySource) => boolean;
  * @param limit
  * @param tolerance
  * @param filter
- * @param atScale Pris en charge que pour les couches AGS
+ * @param layersPrefix
+ * @param returnGeometry
  */
 export function identify(
   identifyEntity: Pixel | Geometry,
@@ -35,7 +36,8 @@ export function identify(
   limit = 10,
   tolerance = 4,
   filter?: IdentifyFilterType,
-  atScale = false
+  layersPrefix?: LayersPrefix,
+  returnGeometry = true
 ) {
   if (map && identifyEntity) {
     const promises: Promise<IQueryResponse>[] = [];
@@ -51,12 +53,11 @@ export function identify(
       queryRequest = constructIdentifyQueryRequestFromPixel(identifyEntity, map);
     }
 
+    queryRequest.returnGeometry = returnGeometry;
     queryRequest.limit = limit;
     queryRequest.identifyTolerance = tolerance;
 
-    if (atScale) {
-      queryRequest.layersPrefix = 'visible';
-    }
+    queryRequest.layersPrefix = layersPrefix;
 
     walk(map, (layer: OlBaseLayer) => {
       if (layer.getVisible() && 'getSource' in layer) {
