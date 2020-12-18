@@ -1,4 +1,4 @@
-import { IExtended, IFeatureType, IIdentifyRequest, IQueryRequest } from '../../IExtended';
+import { IExtended, IFeatureType, IIdentifyRequest, IQueryRequest, LayersPrefixEnum } from '../../IExtended';
 import { transformExtent } from 'ol/proj';
 import { getForViewAndSize } from 'ol/extent';
 import { FilterBuilder, FilterBuilderTypeEnum } from '../../../filter';
@@ -51,12 +51,8 @@ export class AgsIdentifyRequest implements AgsIdentifyRequestParameters {
       this.sr = (request as IIdentifyRequest).srId;
     }
 
-    this.returnFieldName = !!(request as IIdentifyRequest).returnFieldName
-      ? (request as IIdentifyRequest).returnFieldName
-      : 'true';
-    this.returnGeometry = !!(request as IIdentifyRequest).returnGeometry
-      ? (request as IIdentifyRequest).returnGeometry
-      : 'true';
+    this.returnFieldName = (request as IIdentifyRequest).returnFieldName ? 'true' : 'false';
+    this.returnGeometry = (request as IIdentifyRequest).returnGeometry ? 'true' : 'false';
 
     let geometry = request.geometry;
     if (geometry) {
@@ -101,7 +97,7 @@ export class AgsIdentifyRequest implements AgsIdentifyRequestParameters {
 
     const olView = olMap.getView();
 
-    const { identifyTolerance, layersPrefix = 'all' } = request as IIdentifyRequest;
+    const { identifyTolerance, layersPrefix = LayersPrefixEnum.ALL } = request as IIdentifyRequest;
     let extent = geometry.getExtent();
     if (geometryProjection.getCode() !== 'EPSG:' + this.sr) {
       extent = transformExtent(geometry.getExtent(), geometryProjection, 'EPSG:' + this.sr);

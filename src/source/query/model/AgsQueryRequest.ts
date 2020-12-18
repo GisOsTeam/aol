@@ -76,9 +76,7 @@ export class AgsQueryRequest implements AgsQueryRequestParameters {
     }
 
     this.outFields = '*';
-    this.returnGeometry = !!(request as IIdentifyRequest).returnGeometry
-      ? (request as IIdentifyRequest).returnGeometry
-      : 'true';
+    this.returnGeometry = !!(request as IIdentifyRequest).returnGeometry ? 'true' : 'false';
 
     let geometry = request.geometry;
     if (geometry) {
