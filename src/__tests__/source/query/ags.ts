@@ -3,7 +3,7 @@ import OlMap from 'ol/Map';
 import OlView from 'ol/View';
 import { get as getProjection } from 'ol/proj';
 import Polygon from 'ol/geom/Polygon';
-import { IFeatureType, IQueryFeatureTypeResponse, IQueryRequest } from '../../../source/IExtended';
+import { IFeatureType, IQueryFeatureTypeResponse, IGisRequest } from '../../../source/IExtended';
 import { ImageArcGISRest } from '../../../source/ImageArcGISRest';
 import { Like } from '../../../filter/predicate';
 import { Like as LikeOp } from '../../../filter/operator';
@@ -27,7 +27,7 @@ describe('Ags', () => {
   });
 
   test('query ags geometry', () => {
-    const request: IQueryRequest = {
+    const request: IGisRequest = {
       olMap: new OlMap({
         view: new OlView({
           center: [0, 0],
@@ -54,7 +54,7 @@ describe('Ags', () => {
   });
 
   test('query ags attr', () => {
-    const request: IQueryRequest = {
+    const request: IGisRequest = {
       olMap: new OlMap({
         view: new OlView({
           center: [0, 0],
@@ -82,7 +82,7 @@ describe('Ags', () => {
   });
 
   test('identify ags', () => {
-    const request: IQueryRequest = {
+    const request: IGisRequest = {
       olMap: new OlMap({
         view: new OlView({
           center: [0, 0],

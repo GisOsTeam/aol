@@ -1,7 +1,7 @@
 import OlImageWMS from 'ol/source/ImageWMS';
 import {
   IQueryFeatureTypeResponse,
-  IQueryRequest,
+  IGisRequest,
   IQueryResponse,
   ISnapshotOptions,
   IFeatureType,
@@ -84,7 +84,7 @@ export class ImageWms extends OlImageWMS implements IExtended {
     return this.options.removable;
   }
 
-  public query(request: IQueryRequest, onlyVisible = false): Promise<IQueryResponse> {
+  public query(request: IGisRequest, onlyVisible = false): Promise<IQueryResponse> {
     const promises: Promise<IQueryFeatureTypeResponse>[] = [];
     for (const type of this.options.types) {
       const isVisible = type.hide !== true;

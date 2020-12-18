@@ -2,7 +2,7 @@ import OlMap from 'ol/Map';
 import OlView from 'ol/View';
 import { ImageArcGISRest } from '../../../../source';
 import { FieldTypeEnum, IField } from '../../../../filter';
-import { IFeatureType, IQueryRequest } from '../../../../source/IExtended';
+import { IFeatureType, IGisRequest } from '../../../../source/IExtended';
 import Polygon from 'ol/geom/Polygon';
 import { get as getProjection } from 'ol/proj';
 import { AgsQueryRequest } from '../../../../source/query/model/AgsQueryRequest';
@@ -15,7 +15,7 @@ const states = new ImageArcGISRest({
 const type: IFeatureType<number> = states.get('types')[0];
 
 test('Simple AgsQueryRequest', () => {
-  const request: IQueryRequest = {
+  const request: IGisRequest = {
     olMap: new OlMap({
       view: new OlView({
         center: [0, 0],

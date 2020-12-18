@@ -32,7 +32,7 @@ export interface IInitSource extends ISnapshotSource {
 }
 
 export interface IQuerySource extends ISnapshotSource {
-  query(identifyRequest: IQueryRequest, onlyVisible?: boolean): Promise<IQueryResponse>;
+  query(identifyRequest: IGisRequest, onlyVisible?: boolean): Promise<IQueryResponse>;
 
   retrieveFeature(id: number | string, featureProjection: Projection): Promise<Feature>;
 }
@@ -68,21 +68,21 @@ export interface ILegendSource {
 
 export interface IExtended extends IInitSource, IQuerySource, ILegendSource {}
 
-export type IQueryRequest = IGisQueryRequest | IIdentifyRequest;
+export type IGisRequest = IQueryRequest | IIdentifyRequest;
 
-export interface IAbstractQueryRequest<T extends string> {
+export interface IAbstractRequest<T extends string> {
   olMap: OlMap;
   queryType: T;
   filters?: IPredicate;
   limit?: number;
 }
 
-export interface IGisQueryRequest extends IAbstractQueryRequest<'query'> {
+export interface IQueryRequest extends IAbstractRequest<'query'> {
   geometry?: Geometry;
   geometryProjection?: Projection;
 }
 
-export interface IIdentifyRequest extends IAbstractQueryRequest<'identify'> {
+export interface IIdentifyRequest extends IAbstractRequest<'identify'> {
   geometry: Geometry;
   geometryPrecision?: number;
   geometryProjection: Projection;
@@ -95,7 +95,7 @@ export interface IIdentifyRequest extends IAbstractQueryRequest<'identify'> {
 }
 
 export interface IQueryResponse {
-  request: IQueryRequest;
+  request: IGisRequest;
   featureTypeResponses: IQueryFeatureTypeResponse[];
 }
 

@@ -2,7 +2,7 @@ import Feature from 'ol/Feature';
 import { get as getProjection, transformExtent } from 'ol/proj';
 import WMSGetFeatureInfo from 'ol/format/WMSGetFeatureInfo';
 import {
-  IQueryRequest,
+  IGisRequest,
   IFeatureType,
   IQueryFeatureTypeResponse,
   IExtended,
@@ -148,7 +148,7 @@ function getFeatureInfoOnBBOX(
 export function executeWmsQuery(
   source: IExtended,
   type: IFeatureType<string>,
-  request: IQueryRequest
+  request: IGisRequest
 ): Promise<IQueryFeatureTypeResponse> {
   const { olMap, geometry, geometryProjection, queryType, limit } = request;
   const requestProjectionCode = 'EPSG:3857';

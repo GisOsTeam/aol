@@ -3,7 +3,7 @@ import OlMap from 'ol/Map';
 import OlView from 'ol/View';
 import { get as getProjection } from 'ol/proj';
 import Polygon from 'ol/geom/Polygon';
-import { IQueryFeatureTypeResponse, IQueryRequest, IFeatureType } from '../../../source/IExtended';
+import { IQueryFeatureTypeResponse, IGisRequest, IFeatureType } from '../../../source/IExtended';
 import { ImageWms } from '../../../source/ImageWms';
 
 const states = new ImageWms({
@@ -20,7 +20,7 @@ test('describe wms', () => {
 });
 
 test('query wms', () => {
-  const request: IQueryRequest = {
+  const request: IGisRequest = {
     olMap: new OlMap({
       view: new OlView({
         center: [0, 0],
@@ -47,7 +47,7 @@ test('query wms', () => {
 });
 
 test('identify wms', () => {
-  const request: IQueryRequest = {
+  const request: IGisRequest = {
     olMap: new OlMap({
       view: new OlView({
         center: [0, 0],

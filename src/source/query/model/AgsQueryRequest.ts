@@ -1,4 +1,4 @@
-import { IExtended, IFeatureType, IIdentifyRequest, IQueryRequest } from '../../IExtended';
+import { IExtended, IFeatureType, IIdentifyRequest, IGisRequest } from '../../IExtended';
 import { fromCircle } from 'ol/geom/Polygon';
 import Circle from 'ol/geom/Circle';
 import { FilterBuilder, FilterBuilderTypeEnum } from '../../../filter';
@@ -65,7 +65,7 @@ export class AgsQueryRequest implements AgsQueryRequestParameters {
 
   private format = new EsriJSON();
 
-  constructor(source: IExtended, type: IFeatureType<number>, request: IQueryRequest) {
+  constructor(source: IExtended, type: IFeatureType<number>, request: IGisRequest) {
     const { geometryProjection } = request;
     this.inSR = '3857';
     this.outSR = '3857';
@@ -76,7 +76,7 @@ export class AgsQueryRequest implements AgsQueryRequestParameters {
     }
 
     this.outFields = '*';
-    this.returnGeometry = !!(request as IIdentifyRequest).returnGeometry ? 'true' : 'false';
+    this.returnGeometry = (request as IIdentifyRequest).returnGeometry !== false ? 'true' : 'false';
 
     let geometry = request.geometry;
     if (geometry) {

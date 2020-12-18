@@ -4,7 +4,7 @@ import {
   IFeatureType,
   ILayerLegend,
   IQueryFeatureTypeResponse,
-  IQueryRequest,
+  IGisRequest,
   IQueryResponse,
   ISnapshotOptions,
 } from './IExtended';
@@ -121,7 +121,7 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
     return this.options.removable;
   }
 
-  public query(request: IQueryRequest, onlyVisible = false): Promise<IQueryResponse> {
+  public query(request: IGisRequest, onlyVisible = false): Promise<IQueryResponse> {
     const promises: Promise<IQueryFeatureTypeResponse>[] = [];
     for (const type of this.options.types) {
       const isVisible = type.hide !== true;
@@ -138,7 +138,7 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
     });
   }
 
-  public async queryLayer(request: IQueryRequest, layerId: number): Promise<IQueryResponse> {
+  public async queryLayer(request: IGisRequest, layerId: number): Promise<IQueryResponse> {
     const layer = this.options.types.find((subLayer) => subLayer.id === layerId);
     if (layer) {
       this.alterRequestFilterFromType(request, layer);
@@ -199,7 +199,7 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
     return filterBuilder;
   }
 
-  private alterRequestFilterFromType(request: IQueryRequest, type: IFeatureType<number>) {
+  private alterRequestFilterFromType(request: IGisRequest, type: IFeatureType<number>) {
     let filterBuilder = this.buildFilterBuilderFromType(type);
     if (request.filters) {
       filterBuilder = filterBuilder ? filterBuilder.and(request.filters) : new FilterBuilder(request.filters);

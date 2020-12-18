@@ -1,6 +1,6 @@
 import Feature from 'ol/Feature';
 import EsriJSON from 'ol/format/EsriJSON';
-import { IAttribute, IExtended, IFeatureType, IQueryFeatureTypeResponse, IQueryRequest } from '../IExtended';
+import { IAttribute, IExtended, IFeatureType, IQueryFeatureTypeResponse, IGisRequest } from '../IExtended';
 import Projection from 'ol/proj/Projection';
 import { HttpEngine } from '../../HttpEngine';
 import { AgsIdentifyRequest } from './model/AgsIdentifyRequest';
@@ -11,7 +11,7 @@ const format = new EsriJSON();
 export function executeAgsQuery(
   source: IExtended,
   type: IFeatureType<number>,
-  request: IQueryRequest
+  request: IGisRequest
 ): Promise<IQueryFeatureTypeResponse> {
   const { olMap, queryType, limit } = request;
 

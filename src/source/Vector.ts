@@ -5,7 +5,7 @@ import { fromCircle } from 'ol/geom/Polygon';
 import Circle from 'ol/geom/Circle';
 import OlGeoJSON from 'ol/format/GeoJSON';
 import booleanDisjoint from '@turf/boolean-disjoint';
-import { IQueryRequest, IQueryResponse, ISnapshotOptions, IQuerySource } from './IExtended';
+import { IGisRequest, IQueryResponse, ISnapshotOptions, IQuerySource } from './IExtended';
 import { LayerType, LayerTypeEnum } from './types/layerType';
 import { SourceType, SourceTypeEnum } from './types/sourceType';
 import { Options } from 'ol/source/Vector';
@@ -71,7 +71,7 @@ export abstract class Vector extends OlVector implements IQuerySource {
     super.loadFeatures(extent, resolution, projection);
   }
 
-  public query(request: IQueryRequest): Promise<IQueryResponse> {
+  public query(request: IGisRequest): Promise<IQueryResponse> {
     const { olMap, geometry, geometryProjection, limit } = request;
     const features = [] as Feature[];
     let destGeometry = null;

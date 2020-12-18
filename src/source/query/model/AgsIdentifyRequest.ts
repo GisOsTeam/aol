@@ -1,4 +1,4 @@
-import { IExtended, IFeatureType, IIdentifyRequest, IQueryRequest, LayersPrefixEnum } from '../../IExtended';
+import { IExtended, IFeatureType, IIdentifyRequest, IGisRequest, LayersPrefixEnum } from '../../IExtended';
 import { transformExtent } from 'ol/proj';
 import { getForViewAndSize } from 'ol/extent';
 import { FilterBuilder, FilterBuilderTypeEnum } from '../../../filter';
@@ -43,7 +43,7 @@ export class AgsIdentifyRequest implements AgsIdentifyRequestParameters {
 
   private format = new EsriJSON();
 
-  constructor(source: IExtended, type: IFeatureType<number>, request: IQueryRequest) {
+  constructor(source: IExtended, type: IFeatureType<number>, request: IGisRequest) {
     const { olMap, geometryProjection, queryType } = request;
     this.sr = '3857';
 
