@@ -36,7 +36,7 @@ describe('AgsIdentifyRequest', () => {
       geometryProjection: getProjection('EPSG:3857'),
       queryType: 'identify',
     };
-    const agsQueryRequest = new AgsIdentifyRequest(states, type, request);
+    const agsQueryRequest = new AgsIdentifyRequest(states, [type], request);
 
     expect<string>(agsQueryRequest.f).toMatchSnapshot();
     expect<string>(agsQueryRequest.geometry).toMatchSnapshot('agsQueryRequest.geometry');
@@ -73,7 +73,7 @@ describe('AgsIdentifyRequest', () => {
       queryType: 'identify',
       srId: '2154',
     };
-    const agsQueryRequest = new AgsIdentifyRequest(states, type, request);
+    const agsQueryRequest = new AgsIdentifyRequest(states, [type], request);
 
     expect<string>(agsQueryRequest.f).toMatchSnapshot();
     expect<string>(agsQueryRequest.geometry).toMatchSnapshot('agsQueryRequest.geometry');
@@ -111,7 +111,7 @@ describe('AgsIdentifyRequest', () => {
       srId: '3296',
       geometryPrecision: 20,
     };
-    const agsQueryRequest = new AgsIdentifyRequest(states, type, request);
+    const agsQueryRequest = new AgsIdentifyRequest(states, [type], request);
 
     expect<string>(agsQueryRequest.f).toMatchSnapshot();
     expect<string>(agsQueryRequest.geometry).toMatchSnapshot('agsQueryRequest.geometry');

@@ -20,7 +20,7 @@ export function executeAgsIdentify(
   types: IFeatureType<number>[],
   request: IIdentifyRequest
 ): Promise<IQueryFeatureTypeResponse[]> {
-  const { olMap } = request;
+  const { olMap, limit } = request;
 
   const mapProjection = olMap.getView().getProjection();
 
@@ -44,52 +44,10 @@ export function executeAgsIdentify(
     })
     .then(
       (res) => {
-        const featuresByType: Map<IFeatureType<number>, Feature[]> = new Map();
-        // Read features
-        let jsonQueryRes = res.body;
-        if (typeof jsonQueryRes === 'string') {
-          try {
-            jsonQueryRes = JSON.parse(jsonQueryRes);
-          } catch (e) {
-            console.error(`Error occurred during reading identify response body `);
-            return e;
-          }
-        }
-        if (jsonQueryRes != null) {
-          const jsonResults = jsonQueryRes.results;
-          if (jsonResults != null && jsonResults.length > 0) {
-            jsonResults.forEach((jsonResult: any) => {
-              const type = types.find((type) => type.id === jsonResult.layerId);
-              if (type) {
-                const feature = format.readFeature(jsonResult, {
-                  dataProjection: 'EPSG:' + body.getSrId(),
-                  featureProjection: mapProjection,
-                }) as Feature;
-
-                if (feature.getId() == null && type && type.identifierAttribute != null) {
-                  // Search id
-                  const properties = feature.getProperties();
-                  feature.setId(properties[type.identifierAttribute.key]);
-                }
-                const oldArray = featuresByType.get(type) || [];
-                oldArray.push(feature);
-                featuresByType.set(type, oldArray);
-              }
-            });
-          }
-        }
-        const responses: IQueryFeatureTypeResponse[] = [];
-        featuresByType.forEach((features, type) => {
-          responses.push({
-            type,
-            features,
-            source,
-          });
-        });
-        return responses;
+        return processAgsResponse(res, source, types, mapProjection, body.getSrId(), limit);
       },
       (err) => {
-        console.error(`Execute AGS query/identify in error: ${err}`);
+        console.error(`Execute AGS identify in error: ${err}`);
         return err;
       }
     );
@@ -133,47 +91,63 @@ export function executeAgsQuery(
     })
     .then(
       (res) => {
-        const features = [] as Feature[];
-        // Read features
-        let jsonQueryRes = res.body;
-        if (typeof jsonQueryRes === 'string') {
-          try {
-            jsonQueryRes = JSON.parse(jsonQueryRes);
-          } catch (e) {
-            console.error(`Error occurred during reading identify response body `);
-            return e;
-          }
-        }
-        if (jsonQueryRes != null) {
-          const jsonFeatures = jsonQueryRes.features || jsonQueryRes.results;
-          if (jsonFeatures != null && jsonFeatures.length > 0) {
-            jsonFeatures.forEach((jsonFeature: any) => {
-              if (limit == null || features.length < limit) {
-                const feature = format.readFeature(jsonFeature, {
-                  dataProjection: 'EPSG:' + body.getSrId(),
-                  featureProjection: mapProjection,
-                }) as Feature;
-                if (feature.getId() == null && type.identifierAttribute != null) {
-                  // Search id
-                  const properties = feature.getProperties();
-                  feature.setId(properties[type.identifierAttribute.key]);
-                }
-                features.push(feature);
-              }
-            });
-          }
-        }
-        return {
-          type,
-          features,
-          source,
-        };
+        const [formattedResp] = processAgsResponse(res, source, [type], mapProjection, body.getSrId(), limit);
+        return formattedResp;
       },
       (err) => {
         console.error(`Execute AGS query/identify in error: ${err}`);
         return err;
       }
     );
+}
+
+function processAgsResponse(res: any, source: IExtended, types: IFeatureType<number>[], mapProjection: Projection, srId: string, limit?: number): IQueryFeatureTypeResponse[] {
+  const featuresByType: Map<IFeatureType<number>, Feature[]> = new Map();
+  // Read features
+  let jsonQueryRes = res.body;
+  if (typeof jsonQueryRes === 'string') {
+    try {
+      jsonQueryRes = JSON.parse(jsonQueryRes);
+    } catch (e) {
+      console.error(`Error occurred during reading identify response body `);
+      return e;
+    }
+  }
+  if (jsonQueryRes != null) {
+    const jsonResults = jsonQueryRes.results;
+    if (jsonResults != null && jsonResults.length > 0) {
+      jsonResults.forEach((jsonResult: any) => {
+        const type = types.find((type) => type.id === jsonResult.layerId);
+        if (type) {
+          const feature = format.readFeature(jsonResult, {
+            dataProjection: `EPSG:${srId}`,
+            featureProjection: mapProjection,
+          }) as Feature;
+
+          if (feature.getId() == null && type && type.identifierAttribute != null) {
+            // Search id
+            const properties = feature.getProperties();
+            feature.setId(properties[type.identifierAttribute.key]);
+          }
+          const oldArray = featuresByType.get(type) || [];
+          if (limit == undefined || oldArray.length < limit) {
+            oldArray.push(feature);
+          }
+          featuresByType.set(type, oldArray);
+        }
+      });
+    }
+  }
+
+  const responses: IQueryFeatureTypeResponse[] = [];
+  featuresByType.forEach((features, type) => {
+    responses.push({
+      type,
+      features,
+      source,
+    });
+  });
+  return responses;
 }
 
 export function retrieveAgsFeature(

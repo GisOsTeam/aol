@@ -119,8 +119,18 @@ export class AgsQueryRequest implements AgsQueryRequestParameters {
         : '10';
     }
 
-    if (request.filters) {
-      this.where = new FilterBuilder(request.filters).build(FilterBuilderTypeEnum.SQL);
+    let filters;
+    switch(request.queryType) {
+      case 'identify':
+        filters = request.filters[type.id]
+        break;
+      case 'query':
+        filters = request.filters;
+        break;
+    }
+
+    if (filters) {
+      this.where = new FilterBuilder(filters).build(FilterBuilderTypeEnum.SQL);
     }
     this.f = 'json';
   }
