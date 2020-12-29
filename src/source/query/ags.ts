@@ -101,7 +101,14 @@ export function executeAgsQuery(
     );
 }
 
-function processAgsResponse(res: any, source: IExtended, types: IFeatureType<number>[], mapProjection: Projection, srId: string, limit?: number): IQueryFeatureTypeResponse[] {
+function processAgsResponse(
+  res: any,
+  source: IExtended,
+  types: IFeatureType<number>[],
+  mapProjection: Projection,
+  srId: string,
+  limit?: number
+): IQueryFeatureTypeResponse[] {
   const featuresByType: Map<IFeatureType<number>, Feature[]> = new Map();
   // Read features
   let jsonQueryRes = res.body;
@@ -130,7 +137,7 @@ function processAgsResponse(res: any, source: IExtended, types: IFeatureType<num
             feature.setId(properties[type.identifierAttribute.key]);
           }
           const oldArray = featuresByType.get(type) || [];
-          if (limit == undefined || oldArray.length < limit) {
+          if (limit == undefined || oldArray.length < limit) {
             oldArray.push(feature);
           }
           featuresByType.set(type, oldArray);
