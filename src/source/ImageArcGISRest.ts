@@ -10,7 +10,7 @@ import {
 } from './IExtended';
 import { getAgsLayersFromTypes } from '../utils';
 import { LayerType, LayerTypeEnum, SourceType, SourceTypeEnum } from './types';
-import { executeAgsQuery, loadAgsFeatureDescription, retrieveAgsFeature } from './query';
+import { executeAgsIdentify, executeAgsQuery, loadAgsFeatureDescription, retrieveAgsFeature } from './query';
 import Feature from 'ol/Feature';
 import Projection from 'ol/proj/Projection';
 import { FilterBuilder, FilterBuilderTypeEnum } from '../filter';
@@ -121,21 +121,31 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
     return this.options.removable;
   }
 
-  public query(request: IGisRequest, onlyVisible = false): Promise<IQueryResponse> {
+  public async query(request: IGisRequest, onlyVisible = false): Promise<IQueryResponse> {
     const promises: Promise<IQueryFeatureTypeResponse>[] = [];
-    for (const type of this.options.types) {
-      const isVisible = type.hide !== true;
-      if (!onlyVisible || isVisible) {
-        this.alterRequestFilterFromType(request, type);
-        promises.push(executeAgsQuery(this, type, request));
-      }
+    let featureTypeResponses: IQueryFeatureTypeResponse[];
+
+    // List des FeatureType interrogés
+    const targetTypes = !onlyVisible ? this.options.types : this.options.types.filter((type) => type.hide !== true);
+    // Enrichissement des Predicats de la requête
+    targetTypes.forEach((type) => this.alterRequestFilterFromType(request, type));
+
+    switch (request.queryType) {
+      case 'identify':
+        featureTypeResponses = await executeAgsIdentify(this, targetTypes, request);
+        break;
+      case 'query':
+        for (const type of targetTypes) {
+            promises.push(executeAgsQuery(this, type, request));
+        }
+        featureTypeResponses = await Promise.all(promises);
+        break;
     }
-    return Promise.all(promises).then((featureTypeResponses: IQueryFeatureTypeResponse[]) => {
-      return {
-        request,
-        featureTypeResponses,
-      };
-    });
+
+    return {
+      request,
+      featureTypeResponses,
+    };
   }
 
   public async queryLayer(request: IGisRequest, layerId: number): Promise<IQueryResponse> {
@@ -201,8 +211,17 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
 
   private alterRequestFilterFromType(request: IGisRequest, type: IFeatureType<number>) {
     let filterBuilder = this.buildFilterBuilderFromType(type);
-    if (request.filters) {
-      filterBuilder = filterBuilder ? filterBuilder.and(request.filters) : new FilterBuilder(request.filters);
+    switch(request.queryType) {
+      case 'query':
+        if (request.filters) {
+          filterBuilder = filterBuilder ? filterBuilder.and(request.filters) : new FilterBuilder(request.filters);
+        }
+        break;
+      case 'identify':
+        const filters = request.filters ? request.filters[type.id] : undefined;
+        if (filters) {
+          filterBuilder = filterBuilder ? filterBuilder.and(filters) : new FilterBuilder(filters);
+        }
     }
     if (filterBuilder) {
       return filterBuilder.predicate;

@@ -1,12 +1,88 @@
 import Feature from 'ol/Feature';
 import EsriJSON from 'ol/format/EsriJSON';
-import { IAttribute, IExtended, IFeatureType, IQueryFeatureTypeResponse, IGisRequest } from '../IExtended';
+import { IAttribute, IExtended, IFeatureType, IQueryFeatureTypeResponse, IGisRequest, IIdentifyRequest } from '../IExtended';
 import Projection from 'ol/proj/Projection';
 import { HttpEngine } from '../../HttpEngine';
 import { AgsIdentifyRequest } from './model/AgsIdentifyRequest';
 import { AgsQueryRequest } from './model/AgsQueryRequest';
 
 const format = new EsriJSON();
+
+export function executeAgsIdentify(source: IExtended, types: IFeatureType<number>[], request: IIdentifyRequest): Promise<IQueryFeatureTypeResponse[]> {
+  const { olMap } = request;
+
+  const mapProjection = olMap.getView().getProjection();
+
+  let url = '';
+  if ('getUrl' in source) {
+    url = (source as any).getUrl();
+  } else if ('getUrls' in source) {
+    url = (source as any).getUrls()[0];
+  }
+  url += '/identify';
+
+  const body = new AgsIdentifyRequest(source, types, request);
+  const httpEngine = HttpEngine.getInstance();
+  return httpEngine
+    .send({
+      url,
+      body,
+      method: 'POST',
+      contentType: 'application/x-www-form-urlencoded',
+      responseType: 'json',
+    })
+    .then(
+      (res) => {
+        const featuresByType: Map<IFeatureType<number>, Feature[]> = new Map();
+        // Read features
+        let jsonQueryRes = res.body;
+        if (typeof jsonQueryRes === 'string') {
+          try {
+            jsonQueryRes = JSON.parse(jsonQueryRes);
+          } catch (e) {
+            console.error(`Error occurred during reading identify response body `);
+            return e;
+          }
+        }
+        if (jsonQueryRes != null) {
+          const jsonResults = jsonQueryRes.results;
+          if (jsonResults != null && jsonResults.length > 0) {
+            jsonResults.forEach((jsonResult: any) => {
+              const type = types.find((type) => type.id === jsonResult.layerId);
+              if (type) {
+                const feature = format.readFeature(jsonResult, {
+                  dataProjection: 'EPSG:' + body.getSrId(),
+                  featureProjection: mapProjection,
+                }) as Feature;
+
+                if (feature.getId() == null && type && type.identifierAttribute != null) {
+                  // Search id
+                  const properties = feature.getProperties();
+                  feature.setId(properties[type.identifierAttribute.key]);
+                }
+                const oldArray = featuresByType.get(type) || [];
+                oldArray.push(feature);
+                featuresByType.set(type, oldArray);
+              }
+            });
+          }
+        }
+        const responses: IQueryFeatureTypeResponse[] = [];
+        featuresByType.forEach((features, type) => {
+          responses.push({
+            type,
+            features,
+            source,
+          });
+        });
+        return responses;
+      },
+      (err) => {
+        console.error(`Execute AGS query/identify in error: ${err}`);
+        return err;
+      }
+    );
+}
 
 export function executeAgsQuery(
   source: IExtended,
@@ -28,7 +104,7 @@ export function executeAgsQuery(
   let body: AgsIdentifyRequest | AgsQueryRequest;
   switch (queryType) {
     case 'identify':
-      body = new AgsIdentifyRequest(source, type, request);
+      body = new AgsIdentifyRequest(source, [type], request as IIdentifyRequest);
       break;
     case 'query':
       body = new AgsQueryRequest(source, type, request);

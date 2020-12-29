@@ -73,13 +73,14 @@ export type IGisRequest = IQueryRequest | IIdentifyRequest;
 export interface IAbstractRequest<T extends string> {
   olMap: OlMap;
   queryType: T;
-  filters?: IPredicate;
+  filters?: unknown;
   limit?: number;
 }
 
 export interface IQueryRequest extends IAbstractRequest<'query'> {
   geometry?: Geometry;
   geometryProjection?: Projection;
+  filters?: IPredicate
 }
 
 export interface IIdentifyRequest extends IAbstractRequest<'identify'> {
@@ -91,6 +92,8 @@ export interface IIdentifyRequest extends IAbstractRequest<'identify'> {
   outFields?: string;
   returnFieldName?: boolean;
   returnGeometry?: boolean;
+
+  filters?: Record<number, IPredicate>
   srId?: string;
 }
 
