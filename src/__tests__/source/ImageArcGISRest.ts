@@ -7,7 +7,7 @@ import ImageWrapper from 'ol/Image';
 import { IFeatureType } from '../../source/IExtended';
 
 // Mock la date pour les fonctions gérant le cache
-Date.now = jest.fn(() => 1487076708000) //14.02.2017
+Date.now = jest.fn(() => 1487076708000); //14.02.2017
 
 describe('aol.source.imageArcGISRest', () => {
   describe('ArcGIS Online', () => {
