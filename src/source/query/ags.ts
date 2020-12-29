@@ -1,6 +1,13 @@
 import Feature from 'ol/Feature';
 import EsriJSON from 'ol/format/EsriJSON';
-import { IAttribute, IExtended, IFeatureType, IQueryFeatureTypeResponse, IGisRequest, IIdentifyRequest } from '../IExtended';
+import {
+  IAttribute,
+  IExtended,
+  IFeatureType,
+  IQueryFeatureTypeResponse,
+  IGisRequest,
+  IIdentifyRequest,
+} from '../IExtended';
 import Projection from 'ol/proj/Projection';
 import { HttpEngine } from '../../HttpEngine';
 import { AgsIdentifyRequest } from './model/AgsIdentifyRequest';
@@ -8,7 +15,11 @@ import { AgsQueryRequest } from './model/AgsQueryRequest';
 
 const format = new EsriJSON();
 
-export function executeAgsIdentify(source: IExtended, types: IFeatureType<number>[], request: IIdentifyRequest): Promise<IQueryFeatureTypeResponse[]> {
+export function executeAgsIdentify(
+  source: IExtended,
+  types: IFeatureType<number>[],
+  request: IIdentifyRequest
+): Promise<IQueryFeatureTypeResponse[]> {
   const { olMap } = request;
 
   const mapProjection = olMap.getView().getProjection();

@@ -136,7 +136,7 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
         break;
       case 'query':
         for (const type of targetTypes) {
-            promises.push(executeAgsQuery(this, type, request));
+          promises.push(executeAgsQuery(this, type, request));
         }
         featureTypeResponses = await Promise.all(promises);
         break;
@@ -211,7 +211,7 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
 
   private alterRequestFilterFromType(request: IGisRequest, type: IFeatureType<number>) {
     let filterBuilder = this.buildFilterBuilderFromType(type);
-    switch(request.queryType) {
+    switch (request.queryType) {
       case 'query':
         if (request.filters) {
           filterBuilder = filterBuilder ? filterBuilder.and(request.filters) : new FilterBuilder(request.filters);

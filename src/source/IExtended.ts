@@ -80,7 +80,7 @@ export interface IAbstractRequest<T extends string> {
 export interface IQueryRequest extends IAbstractRequest<'query'> {
   geometry?: Geometry;
   geometryProjection?: Projection;
-  filters?: IPredicate
+  filters?: IPredicate;
 }
 
 export interface IIdentifyRequest extends IAbstractRequest<'identify'> {
@@ -93,7 +93,7 @@ export interface IIdentifyRequest extends IAbstractRequest<'identify'> {
   returnFieldName?: boolean;
   returnGeometry?: boolean;
 
-  filters?: Record<number, IPredicate>
+  filters?: Record<number, IPredicate>;
   srId?: string;
 }
 
