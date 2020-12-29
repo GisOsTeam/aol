@@ -6,10 +6,9 @@ const states = new ImageArcGISRest({
   types: [{ id: 2, identifierAttribute: { key: 'objectid' } }],
 });
 
-test('fetchLegend ags', () => {
-  return states.fetchLegend().then((response: Record<string, ILayerLegend[]>) => {
-    expect<string>(response[2][0].srcImage).toEqual(
+test('fetchLegend ags', async () => {
+  const response = await states.fetchLegend();
+  expect<string>(response[2][0].srcImage).toEqual(
       'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAAXNSR0IB2cksfwAAAAlwSFlzAAAOxAAADsQBlSsOGwAAADZJREFUOI1jYaAyYKGlgf+pYB4jugsZKTDsPwMDjb08auCogaMGjhqI00BKykRGdAMpKQvhAABd0QNSDPGCHwAAAABJRU5ErkJggg=='
     );
-  });
 });

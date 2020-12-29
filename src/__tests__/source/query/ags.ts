@@ -104,7 +104,7 @@ describe('Ags', () => {
     const type: IFeatureType<number> = states.get('types')[0];
     return executeAgsQuery(states, type, request).then((response: IQueryFeatureTypeResponse) => {
       expect<number>(response.features.length).toEqual(1);
-      expect<string>(response.features[0].getProperties().state_name).toEqual('Colorado');
+      expect<string>(response.features[0].getProperties().STATE_NAME).toEqual('Colorado');
     });
   });
 });
