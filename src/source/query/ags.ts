@@ -121,10 +121,10 @@ function processAgsResponse(
     }
   }
   if (jsonQueryRes != null) {
-    const jsonResults = jsonQueryRes.results;
+    const jsonResults = jsonQueryRes.results || jsonQueryRes.features;
     if (jsonResults != null && jsonResults.length > 0) {
       jsonResults.forEach((jsonResult: any) => {
-        const type = types.find((type) => type.id === jsonResult.layerId);
+        const type = types.length === 1 ? types[0] : types.find((type) => type.id === jsonResult.layerId);
         if (type) {
           const feature = format.readFeature(jsonResult, {
             dataProjection: `EPSG:${srId}`,
