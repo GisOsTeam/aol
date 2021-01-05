@@ -1,4 +1,4 @@
-import { IExtended, IFeatureType, IIdentifyRequest, IGisRequest } from '../../IExtended';
+import { IExtended, IFeatureType, IIdentifyRequest, IGisRequest, IQueryRequest } from '../../IExtended';
 import { fromCircle } from 'ol/geom/Polygon';
 import Circle from 'ol/geom/Circle';
 import { FilterBuilder, FilterBuilderTypeEnum } from '../../../filter';
@@ -65,18 +65,18 @@ export class AgsQueryRequest implements AgsQueryRequestParameters {
 
   private format = new EsriJSON();
 
-  constructor(source: IExtended, type: IFeatureType<number>, request: IGisRequest) {
+  constructor(source: IExtended, type: IFeatureType<number>, request: IQueryRequest) {
     const { geometryProjection } = request;
     this.inSR = '3857';
     this.outSR = '3857';
 
-    if ((request as IIdentifyRequest).srId) {
-      this.inSR = (request as IIdentifyRequest).srId;
-      this.outSR = (request as IIdentifyRequest).srId;
+    if (request.srId) {
+      this.inSR = request.srId;
+      this.outSR = request.srId;
     }
 
     this.outFields = '*';
-    this.returnGeometry = (request as IIdentifyRequest).returnGeometry !== false ? 'true' : 'false';
+    this.returnGeometry = request.returnGeometry !== false ? 'true' : 'false';
 
     let geometry = request.geometry;
     if (geometry) {
@@ -114,9 +114,7 @@ export class AgsQueryRequest implements AgsQueryRequestParameters {
 
       this.geometry = geometryStr;
       this.geometryType = geometryType;
-      this.geometryPrecision = !!(request as IIdentifyRequest).geometryPrecision
-        ? `${(request as IIdentifyRequest).geometryPrecision}`
-        : '10';
+      this.geometryPrecision = !!request.geometryPrecision ? `${request.geometryPrecision}` : '10';
     }
 
     if (request.filters) {

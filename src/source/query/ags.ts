@@ -1,6 +1,14 @@
 import Feature from 'ol/Feature';
 import EsriJSON from 'ol/format/EsriJSON';
-import { IAttribute, IExtended, IFeatureType, IQueryFeatureTypeResponse, IGisRequest } from '../IExtended';
+import {
+  IAttribute,
+  IExtended,
+  IFeatureType,
+  IQueryFeatureTypeResponse,
+  IGisRequest,
+  IQueryRequest,
+  IIdentifyRequest,
+} from '../IExtended';
 import Projection from 'ol/proj/Projection';
 import { HttpEngine } from '../../HttpEngine';
 import { AgsIdentifyRequest } from './model/AgsIdentifyRequest';
@@ -28,10 +36,10 @@ export function executeAgsQuery(
   let body: AgsIdentifyRequest | AgsQueryRequest;
   switch (queryType) {
     case 'identify':
-      body = new AgsIdentifyRequest(source, type, request);
+      body = new AgsIdentifyRequest(source, type, request as IIdentifyRequest);
       break;
     case 'query':
-      body = new AgsQueryRequest(source, type, request);
+      body = new AgsQueryRequest(source, type, request as IQueryRequest);
       break;
   }
 
