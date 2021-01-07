@@ -8,7 +8,6 @@ import Point from 'ol/geom/Point';*/
 const geoJSONFormat = new GeoJSONFormat();
 
 export class BanSearchProvider implements ISearchProvider {
-  
   /*public constructor() {
     addProjection(
       'EPSG:2154',
