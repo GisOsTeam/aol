@@ -38,7 +38,7 @@ export class BanSearchProvider implements ISearchProvider {
             name: properties.label,
             score: properties.score,
             id: properties.id,
-            type: 'address',
+            type: properties.type != null ? properties.type : 'address',
             feature,
           });
         }
