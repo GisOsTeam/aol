@@ -40,11 +40,15 @@ export function addProjection(
   projectionInfo.lonLatValidity = lonLatValidity;
   projectionInfo.name = name;
   projectionInfo.remarks = remarks;
-  if (projectionInfo.wkt != null) {
-    proj4.defs(projectionInfo.code, projectionInfo.wkt);
+  if (proj4 == null) {
+    console.warn('Proj4 is undefined !!!');
+  } else {
+    if (projectionInfo.wkt != null) {
+      proj4.defs(projectionInfo.code, projectionInfo.wkt);
+    }
+    console.info('Register projection ' + projectionInfo.code + ' - ' + projectionInfo.name);
+    register(proj4);
   }
-  console.info('Register projection ' + projectionInfo.code + ' - ' + projectionInfo.name);
-  register(proj4);
   projectionInfo.projection = getProjection(projectionInfo.code);
   if (Array.isArray(projectionInfo.lonLatValidity)) {
     const extent = transformExtent(projectionInfo.lonLatValidity, 'EPSG:4326', projectionInfo.projection);

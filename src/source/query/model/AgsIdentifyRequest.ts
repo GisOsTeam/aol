@@ -43,16 +43,16 @@ export class AgsIdentifyRequest implements AgsIdentifyRequestParameters {
 
   private format = new EsriJSON();
 
-  constructor(source: IExtended, type: IFeatureType<number>, request: IGisRequest) {
+  constructor(source: IExtended, type: IFeatureType<number>, request: IIdentifyRequest) {
     const { olMap, geometryProjection, queryType } = request;
     this.sr = '3857';
 
-    if ((request as IIdentifyRequest).srId) {
-      this.sr = (request as IIdentifyRequest).srId;
+    if (request.srId) {
+      this.sr = request.srId;
     }
 
-    this.returnFieldName = (request as IIdentifyRequest).returnFieldName ? 'true' : 'false';
-    this.returnGeometry = (request as IIdentifyRequest).returnGeometry ? 'true' : 'false';
+    this.returnFieldName = request.returnFieldName ? 'true' : 'false';
+    this.returnGeometry = request.returnGeometry ? 'true' : 'false';
 
     let geometry = request.geometry;
     if (geometry) {
@@ -90,14 +90,12 @@ export class AgsIdentifyRequest implements AgsIdentifyRequestParameters {
 
       this.geometry = geometryStr;
       this.geometryType = geometryType;
-      this.geometryPrecision = !!(request as IIdentifyRequest).geometryPrecision
-        ? `${(request as IIdentifyRequest).geometryPrecision}`
-        : '10';
+      this.geometryPrecision = !!request.geometryPrecision ? `${request.geometryPrecision}` : '10';
     }
 
     const olView = olMap.getView();
 
-    const { identifyTolerance, layersPrefix = LayersPrefixEnum.ALL } = request as IIdentifyRequest;
+    const { identifyTolerance, layersPrefix = LayersPrefixEnum.ALL } = request;
     let extent = geometry.getExtent();
     if (geometryProjection.getCode() !== 'EPSG:' + this.sr) {
       extent = transformExtent(geometry.getExtent(), geometryProjection, 'EPSG:' + this.sr);

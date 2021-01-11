@@ -75,11 +75,14 @@ export interface IAbstractRequest<T extends string> {
   queryType: T;
   filters?: IPredicate;
   limit?: number;
+  returnGeometry?: boolean;
+  srId?: string;
 }
 
 export interface IQueryRequest extends IAbstractRequest<'query'> {
   geometry?: Geometry;
   geometryProjection?: Projection;
+  geometryPrecision?: number;
 }
 
 export interface IIdentifyRequest extends IAbstractRequest<'identify'> {
@@ -90,8 +93,6 @@ export interface IIdentifyRequest extends IAbstractRequest<'identify'> {
   layersPrefix?: LayersPrefix;
   outFields?: string;
   returnFieldName?: boolean;
-  returnGeometry?: boolean;
-  srId?: string;
 }
 
 export interface IQueryResponse {

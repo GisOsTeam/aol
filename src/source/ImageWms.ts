@@ -64,7 +64,7 @@ export class ImageWms extends OlImageWMS implements IExtended {
     this.options = { ...options };
     this.un('propertychange', this.handlePropertychange);
     this.set('types', options.types);
-    this.updateParams({ ...this.getParams(), LAYERS: getWmsLayersFromTypes(options.types) });
+    this.updateParams({ ...this.getParams(), TRANSPARENT: 'TRUE', LAYERS: getWmsLayersFromTypes(options.types) });
     this.on('propertychange', this.handlePropertychange);
   }
 
@@ -120,7 +120,7 @@ export class ImageWms extends OlImageWMS implements IExtended {
     const key = event.key;
     const value = event.target.get(key);
     if (key === 'types') {
-      this.updateParams({ ...this.getParams(), LAYERS: getWmsLayersFromTypes(value) });
+      this.updateParams({ ...this.getParams(), TRANSPARENT: 'TRUE', LAYERS: getWmsLayersFromTypes(value) });
       this.options.types = value;
     }
   };
