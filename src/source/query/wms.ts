@@ -194,7 +194,7 @@ export function executeWmsQuery(
     limit ? 2 * limit : 100000
   ).then((allFeatures) => {
     const features = [] as Feature[];
-    if(allFeatures && allFeatures.length > 0) {
+    if (allFeatures && allFeatures.length > 0) {
       allFeatures.forEach((feature: Feature) => {
         // Check intersection
         if (
