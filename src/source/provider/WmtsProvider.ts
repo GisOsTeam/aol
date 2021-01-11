@@ -1,7 +1,7 @@
 import { Wmts } from '../Wmts';
 import { WmtsFactory } from '../factory/WmtsFactory';
 import { IWmtsCapabilitiesOptions } from '../WmtsCapabilities';
-import { HttpEngine } from '../../HttpEngine';
+import { Engine } from 'bhreq';
 
 export class WmtsProvider {
   public static provideSync(
@@ -21,7 +21,7 @@ export class WmtsProvider {
       url: wmtsCapabilitiesOptions.capabilitiesUrl,
       method: 'GET',
     };
-    return HttpEngine.getInstance()
+    return Engine.getInstance()
       .send(request)
       .then((response) => {
         let capabilitiesTxt = response.text;

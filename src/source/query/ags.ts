@@ -10,7 +10,7 @@ import {
   IIdentifyRequest,
 } from '../IExtended';
 import Projection from 'ol/proj/Projection';
-import { HttpEngine } from '../../HttpEngine';
+import { Engine } from 'bhreq';
 import { AgsIdentifyRequest } from './model/AgsIdentifyRequest';
 import { AgsQueryRequest } from './model/AgsQueryRequest';
 
@@ -43,8 +43,7 @@ export function executeAgsQuery(
       break;
   }
 
-  const httpEngine = HttpEngine.getInstance();
-  return httpEngine
+  return Engine.getInstance()
     .send({
       url,
       body,
@@ -119,7 +118,7 @@ export function retrieveAgsFeature(
   body.returnFieldName = 'true';
   body.returnGeometry = 'true';
   body.f = 'json';
-  return HttpEngine.getInstance()
+  return Engine.getInstance()
     .send({
       url,
       body,
@@ -165,7 +164,7 @@ export function loadAgsFeatureDescription(source: IExtended, type: IFeatureType<
     url = (source as any).getUrls()[0];
   }
   url += `/${type.id}?f=json`;
-  return HttpEngine.getInstance()
+  return Engine.getInstance()
     .send({
       url,
       responseType: 'json',

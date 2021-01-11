@@ -14,7 +14,7 @@ import { getForViewAndSize } from 'ol/extent';
 import SimpleGeometry from 'ol/geom/SimpleGeometry';
 import Projection from 'ol/proj/Projection';
 import Geometry from 'ol/geom/Geometry';
-import { HttpEngine } from '../../HttpEngine';
+import { Engine } from 'bhreq';
 
 const format = new WMSGetFeatureInfo();
 
@@ -73,10 +73,9 @@ function getFeatureInfoOnBBOX(
     params.SLD_BODY = `<StyledLayerDescriptor version="1.0.0"><UserLayer><Name>${type.id}</Name><UserStyle><FeatureTypeStyle><Rule><PointSymbolizer><Graphic><Mark><WellKnownName>square</WellKnownName><Fill><CssParameter name="fill">#FFFFFF</CssParameter></Fill></Mark><Size>1</Size></Graphic></PointSymbolizer><LineSymbolizer><Stroke><CssParameter name="stroke">#000000</CssParameter><CssParameter name="stroke-width">1</CssParameter></Stroke></LineSymbolizer><PolygonSymbolizer><Stroke><CssParameter name="stroke">#000000</CssParameter><CssParameter name="stroke-width">1</CssParameter></Stroke></PolygonSymbolizer></Rule></FeatureTypeStyle></UserStyle></UserLayer></StyledLayerDescriptor>`;
   }
 
-  const httpEngine = HttpEngine.getInstance();
   let promise = null;
   if (method === 'POST') {
-    promise = httpEngine.send({
+    promise = Engine.getInstance().send({
       url,
       body: params,
       method: 'POST',
@@ -84,7 +83,7 @@ function getFeatureInfoOnBBOX(
       responseType: 'text',
     });
   } else {
-    promise = httpEngine.send({
+    promise = Engine.getInstance().send({
       url: url,
       params,
       responseType: 'text',

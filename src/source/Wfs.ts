@@ -3,7 +3,7 @@ import { ExternalVector } from './ExternalVector';
 import { LayerType, LayerTypeEnum, SourceType, SourceTypeEnum } from './types';
 import { IFeatureType, ISnapshotOptions } from './IExtended';
 import { Options } from 'ol/source/Vector';
-import { HttpEngine } from '../HttpEngine';
+import { Engine } from 'bhreq';
 
 export interface IWfsOptions extends ISnapshotOptions, Options {
   type: IFeatureType<string>;
@@ -35,12 +35,12 @@ export class Wfs extends ExternalVector {
           url += `&bbox=${extent[1]},${extent[0]},${extent[3]},${extent[2]},${proj}`;
         }
 
-        const httpEngine = HttpEngine.getInstance();
+        const engine = Engine.getInstance();
         const onError = () => {
           this.removeLoadedExtent(extent);
         };
 
-        httpEngine
+        engine
           .send({
             url,
             method: 'GET',

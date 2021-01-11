@@ -4,3 +4,4 @@
 
 export * from './BanSearchProvider';
 export * from './ISearchProvider';
+export * from './MultiSearchProvider';
