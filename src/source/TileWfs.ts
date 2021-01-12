@@ -1,4 +1,4 @@
-import { ExternalVector } from './ExternalVector';
+import { VectorTile } from './VectorTile';
 import { LayerType, LayerTypeEnum, SourceType, SourceTypeEnum } from './types';
 import {
   IGisRequest,
@@ -10,12 +10,14 @@ import {
   IQueryFeatureTypeResponse,
 } from './IExtended';
 import { transformExtent } from 'ol/proj';
-import { Options } from 'ol/source/Vector';
+import { Options } from 'ol/source/VectorTile';
+import VectorTileTile from 'ol/VectorTile';
 import { loadWfsFeaturesOnBBOX, loadWfsFeatureDescription, executeWfsQuery, retrieveWfsFeature } from './query/wfs';
 import Projection from 'ol/proj/Projection';
 import { Feature } from 'ol';
+import { TileCoord } from 'ol/tilecoord';
 
-export interface IWfsOptions extends ISnapshotOptions, Options {
+export interface ITileWfsOptions extends ISnapshotOptions, Options {
   url: string;
   type: IFeatureType<string>;
   outputFormat?: string;
@@ -24,37 +26,42 @@ export interface IWfsOptions extends ISnapshotOptions, Options {
   limit?: number;
 }
 
-export class Wfs extends ExternalVector implements IInitSource, IQuerySource {
-  protected options: IWfsOptions;
-  private readonly defaultOptions: Pick<IWfsOptions, 'outputFormat' | 'version' | 'swapX' | 'limit'> = {
+export class TileWfs extends VectorTile implements IInitSource, IQuerySource {
+  protected options: ITileWfsOptions;
+  private readonly defaultOptions: Pick<ITileWfsOptions, 'outputFormat' | 'version' | 'swapX' | 'limit'> = {
     outputFormat: 'text/xml; subtype=gml/3.1.1', // 'application/json',
     version: '1.1.0',
     swapX: false,
     limit: 10000,
   };
-  constructor(options: IWfsOptions) {
+  constructor(options: ITileWfsOptions) {
     super({
       ...options,
-      loader: (extent, resolution, projection) => {
-        const projectionCode = projection.getCode();
+      tileUrlFunction: (tileCoord: TileCoord) => {
+        return tileCoord == null ? undefined : `z${tileCoord[0]}|x${tileCoord[1]}|y${tileCoord[2]}`;
+      },
+      tileLoadFunction: (tile: VectorTileTile, url: string) => {
+        tile.setLoader((extent, resolution, projection) => {
+          const projectionCode = projection.getCode();
 
-        const requestProjectionCode = 'EPSG:3857';
-        const mapExtent = transformExtent(extent, projectionCode, requestProjectionCode);
+          const requestProjectionCode = 'EPSG:3857';
+          const mapExtent = transformExtent(extent, projectionCode, requestProjectionCode);
 
-        loadWfsFeaturesOnBBOX(
-          this.options.url,
-          this.options.type,
-          'query',
-          requestProjectionCode,
-          projectionCode,
-          mapExtent,
-          this.options.limit,
-          this.options.version,
-          this.options.outputFormat,
-          this.options.swapX
-        )
-          .then((features) => this.addFeatures(features))
-          .catch(() => this.removeLoadedExtent(extent));
+          loadWfsFeaturesOnBBOX(
+            this.options.url,
+            this.options.type,
+            'query',
+            requestProjectionCode,
+            projectionCode,
+            mapExtent,
+            this.options.limit,
+            this.options.version,
+            this.options.outputFormat,
+            this.options.swapX
+          )
+            .then(tile.onLoad.bind(tile))
+            .catch(tile.onError.bind(tile));
+        });
       },
     });
     this.options = { ...this.defaultOptions, ...options };
@@ -79,19 +86,19 @@ export class Wfs extends ExternalVector implements IInitSource, IQuerySource {
   }
 
   public getSourceType(): SourceType {
-    return SourceTypeEnum.Wfs;
+    return SourceTypeEnum.TileWfs;
   }
 
-  public getSourceOptions(): IWfsOptions {
+  public getSourceOptions(): ITileWfsOptions {
     return this.options;
   }
 
-  public setSourceOptions(options: IWfsOptions): void {
+  public setSourceOptions(options: ITileWfsOptions): void {
     this.options = { ...options };
   }
 
   public getLayerType(): LayerType {
-    return LayerTypeEnum.Vector;
+    return LayerTypeEnum.VectorTile;
   }
 
   public isSnapshotable(): boolean {
@@ -104,6 +111,10 @@ export class Wfs extends ExternalVector implements IInitSource, IQuerySource {
 
   public isRemovable(): boolean {
     return this.options.removable;
+  }
+
+  public setUrls(urls: string[]) {
+    this.urls = urls;
   }
 
   public query(request: IGisRequest, onlyVisible = false): Promise<IQueryResponse> {

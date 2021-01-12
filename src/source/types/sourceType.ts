@@ -7,6 +7,7 @@ export type SourceType =
   | SourceTypeEnum.Osm
   | SourceTypeEnum.QueryArcGISRest
   | SourceTypeEnum.TileArcGISRest
+  | SourceTypeEnum.TileWfs
   | SourceTypeEnum.TileWms
   | SourceTypeEnum.Vector
   | SourceTypeEnum.VectorTile
@@ -24,6 +25,7 @@ export enum SourceTypeEnum {
   Osm = 'Osm',
   QueryArcGISRest = 'QueryArcGISRest',
   TileArcGISRest = 'TileArcGISRest',
+  TileWfs = 'TileWfs',
   TileWms = 'TileWms',
   Vector = 'Vector',
   VectorTile = 'VectorTile',

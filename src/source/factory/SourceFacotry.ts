@@ -7,6 +7,7 @@ import { ImageWms } from '../ImageWms';
 import { LocalVector } from '../LocalVector';
 import { QueryArcGISRest } from '../QueryArcGISRest';
 import { TileArcGISRest } from '../TileArcGISRest';
+import { TileWfs } from '../TileWfs';
 import { TileWms } from '../TileWms';
 import { Wfs } from '../Wfs';
 import { Wmts } from '../Wmts';
@@ -41,6 +42,9 @@ export class SourceFactory {
         break;
       case SourceTypeEnum.TileArcGISRest:
         source = new TileArcGISRest(sourceOptions);
+        break;
+      case SourceTypeEnum.TileWfs:
+        source = new TileWfs(sourceOptions);
         break;
       case SourceTypeEnum.TileWms:
         source = new TileWms(sourceOptions);

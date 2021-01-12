@@ -11,6 +11,7 @@ export interface ISnapshotView {
   center: [number, number];
   zoom: number;
   projectionCode: string;
+  constrainResolution: boolean;
 }
 
 export interface ISnapshotProjection {

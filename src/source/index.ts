@@ -12,6 +12,7 @@ export * from './Osm';
 export * from './QueryArcGISRest';
 export * from './TileArcGISRest';
 export * from './TileImage';
+export * from './TileWfs';
 export * from './TileWms';
 export * from './Vector';
 export * from './VectorTile';
