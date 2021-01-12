@@ -13,6 +13,7 @@ import Projection from 'ol/proj/Projection';
 import { Engine } from 'bhreq';
 import { AgsIdentifyRequest } from './model/AgsIdentifyRequest';
 import { AgsQueryRequest } from './model/AgsQueryRequest';
+import { getQueryId } from '../../utils';
 
 const format = new EsriJSON();
 
@@ -31,7 +32,7 @@ export function executeAgsQuery(
   } else if ('getUrls' in source) {
     url = (source as any).getUrls()[0];
   }
-  url += queryType === 'identify' ? '/identify' : `/${type.id}/query`;
+  url += queryType === 'identify' ? '/identify' : `/${getQueryId<number>(type)}/query`;
 
   let body: AgsIdentifyRequest | AgsQueryRequest;
   switch (queryType) {
@@ -110,7 +111,7 @@ export function retrieveAgsFeature(
     url = (source as any).getUrls()[0];
   }
   const body: { [id: string]: string } = {};
-  url += `/${type.id}/query`;
+  url += `/${getQueryId<number>(type)}/query`;
   body.inSR = srId;
   body.outSR = srId;
   body.objectIds = `${id}`;
@@ -163,7 +164,7 @@ export function loadAgsFeatureDescription(source: IExtended, type: IFeatureType<
   } else if ('getUrls' in source) {
     url = (source as any).getUrls()[0];
   }
-  url += `/${type.id}?f=json`;
+  url += `/${getQueryId<number>(type)}?f=json`;
   return Engine.getInstance()
     .send({
       url,

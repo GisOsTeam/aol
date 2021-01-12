@@ -202,6 +202,14 @@ export function getAgsLayersFromTypes(types: IFeatureType<number>[], prefix = 's
 }
 
 /**
+ * Get query id from IFeatureType.
+ * @param {IFeatureType} type type
+ */
+export function getQueryId<IDT>(type: IFeatureType<any>): IDT {
+  return type.queryId != null ? type.queryId : type.id;
+}
+
+/**
  * Create MB layer styles
  */
 export function createLayerStyles(

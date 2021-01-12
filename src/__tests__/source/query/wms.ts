@@ -14,7 +14,7 @@ const states = new ImageWms({
 
 test('describe wms', () => {
   const type: IFeatureType<string> = states.get('types')[0];
-  return loadWmsFeatureDescription(states, type).then(() => {
+  return loadWmsFeatureDescription(states.getUrl(), type).then(() => {
     expect<number>(type.attributes.length).toEqual(23);
   });
 });
@@ -40,7 +40,7 @@ test('query wms', () => {
     queryType: 'query',
   };
   const type: IFeatureType<string> = states.get('types')[0];
-  return executeWmsQuery(states, type, request).then((response: IQueryFeatureTypeResponse) => {
+  return executeWmsQuery(states, states.getUrl(), type, request).then((response: IQueryFeatureTypeResponse) => {
     expect<number>(response.features.length).toEqual(1);
     expect<string>(response.features[0].getProperties().STATE_NAME).toEqual('Colorado');
   });
@@ -67,7 +67,7 @@ test('identify wms', () => {
     queryType: 'identify',
   };
   const type: IFeatureType<string> = states.get('types')[0];
-  return executeWmsQuery(states, type, request).then((response: IQueryFeatureTypeResponse) => {
+  return executeWmsQuery(states, states.getUrl(), type, request).then((response: IQueryFeatureTypeResponse) => {
     expect<number>(response.features.length).toEqual(1);
     expect<string>(response.features[0].getProperties().STATE_NAME).toEqual('Colorado');
   });

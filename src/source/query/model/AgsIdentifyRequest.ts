@@ -5,6 +5,7 @@ import { FilterBuilder, FilterBuilderTypeEnum } from '../../../filter';
 import EsriJSON from 'ol/format/EsriJSON';
 import { fromCircle } from 'ol/geom/Polygon';
 import Circle from 'ol/geom/Circle';
+import { getQueryId } from '../../../utils';
 
 export interface AgsIdentifyRequestParameters {
   f: string;
@@ -108,9 +109,11 @@ export class AgsIdentifyRequest implements AgsIdentifyRequestParameters {
     );
     this.mapExtent = mapExtent.join(',');
     this.imageDisplay = '1001,1001';
-    this.layers = `${layersPrefix}:${type.id}`;
+    this.layers = `${layersPrefix}:${getQueryId<number>(type)}`;
     if (request.filters) {
-      this.layerDefs = `{"${type.id}":"${new FilterBuilder(request.filters).build(FilterBuilderTypeEnum.SQL)}"}`;
+      this.layerDefs = `{"${getQueryId<number>(type)}":"${new FilterBuilder(request.filters).build(
+        FilterBuilderTypeEnum.SQL
+      )}"}`;
     }
     if (Math.round(identifyTolerance) > 0) {
       this.tolerance = `${Math.round(identifyTolerance)}`;

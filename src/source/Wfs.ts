@@ -42,7 +42,7 @@ export class Wfs extends ExternalVector implements IInitSource, IQuerySource {
         const mapExtent = transformExtent(extent, projectionCode, requestProjectionCode);
 
         loadWfsFeaturesOnBBOX(
-          this.options.url,
+          'getUrl' in this ? (this as any).getUrl() : (this as any).getUrls()[0],
           this.options.type,
           'query',
           requestProjectionCode,
@@ -71,7 +71,7 @@ export class Wfs extends ExternalVector implements IInitSource, IQuerySource {
 
   public init(): Promise<void> {
     return loadWfsFeatureDescription(
-      this.options.url,
+      'getUrl' in this ? (this as any).getUrl() : (this as any).getUrls()[0],
       this.options.type,
       this.options.version,
       this.options.outputFormat
@@ -109,7 +109,7 @@ export class Wfs extends ExternalVector implements IInitSource, IQuerySource {
   public query(request: IGisRequest, onlyVisible = false): Promise<IQueryResponse> {
     return executeWfsQuery(
       this,
-      this.options.url,
+      'getUrl' in this ? (this as any).getUrl() : (this as any).getUrls()[0],
       this.options.type,
       request,
       this.options.version,
@@ -125,7 +125,7 @@ export class Wfs extends ExternalVector implements IInitSource, IQuerySource {
 
   public retrieveFeature(id: number | string, projection: Projection): Promise<Feature> {
     return retrieveWfsFeature(
-      this.options.url,
+      'getUrl' in this ? (this as any).getUrl() : (this as any).getUrls()[0],
       this.options.type,
       id,
       projection,

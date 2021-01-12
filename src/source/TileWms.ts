@@ -16,9 +16,11 @@ import { Options } from 'ol/source/TileWMS';
 import Feature from 'ol/Feature';
 import Projection from 'ol/proj/Projection';
 import { loadLegendWms } from './legend/wms';
+import { executeWfsQuery, loadWfsFeatureDescription, retrieveWfsFeature } from './query';
 
 export interface ITileWmsOptions extends ISnapshotOptions, Options {
   types: IFeatureType<string>[];
+  queryWfsUrl?: string;
 }
 
 export class TileWms extends OlTileWMS implements IExtended {
@@ -43,7 +45,13 @@ export class TileWms extends OlTileWMS implements IExtended {
   public init(): Promise<void> {
     const promises: Promise<void>[] = [];
     for (const type of this.options.types) {
-      promises.push(loadWmsFeatureDescription(this, type));
+      if (this.options.queryWfsUrl != null) {
+        promises.push(loadWfsFeatureDescription(this.options.queryWfsUrl, type));
+      } else {
+        promises.push(
+          loadWmsFeatureDescription('getUrl' in this ? (this as any).getUrl() : (this as any).getUrls()[0], type)
+        );
+      }
     }
 
     return Promise.all(promises).then(() => {
@@ -89,7 +97,13 @@ export class TileWms extends OlTileWMS implements IExtended {
     for (const type of this.options.types) {
       const isVisible = type.hide !== true;
       if (!onlyVisible || isVisible) {
-        promises.push(executeWmsQuery(this, type, request));
+        if (this.options.queryWfsUrl != null) {
+          promises.push(executeWfsQuery(this, this.options.queryWfsUrl, type, request));
+        } else {
+          promises.push(
+            executeWmsQuery(this, 'getUrl' in this ? (this as any).getUrl() : (this as any).getUrls()[0], type, request)
+          );
+        }
       }
     }
     return Promise.all(promises).then((featureTypeResponses: IQueryFeatureTypeResponse[]) => {
@@ -103,7 +117,18 @@ export class TileWms extends OlTileWMS implements IExtended {
   public retrieveFeature(id: number | string, projection: Projection): Promise<Feature> {
     const promises: Promise<Feature>[] = [];
     for (const type of this.options.types) {
-      promises.push(retrieveWmsFeature(this, type, id, projection));
+      if (this.options.queryWfsUrl != null) {
+        promises.push(retrieveWfsFeature(this.options.queryWfsUrl, type, id, projection));
+      } else {
+        promises.push(
+          retrieveWmsFeature(
+            'getUrl' in this ? (this as any).getUrl() : (this as any).getUrls()[0],
+            type,
+            id,
+            projection
+          )
+        );
+      }
     }
     let feature: Feature = null;
     Promise.all(promises).then((features: Feature[]) => {

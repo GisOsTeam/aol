@@ -9,14 +9,14 @@ import {
   IIdentifyRequest,
   IQuerySource,
 } from '../IExtended';
-import { toGeoJSONGeometry, disjoint } from '../../utils';
+import { toGeoJSONGeometry, disjoint, getQueryId } from '../../utils';
 import { getForViewAndSize } from 'ol/extent';
 import Projection from 'ol/proj/Projection';
 import Geometry from 'ol/geom/Geometry';
 import { Engine } from 'bhreq';
 
 function loadWmsFeaturesOnBBOX(
-  source: IQuerySource,
+  url: string,
   type: IFeatureType<string>,
   queryType: 'query' | 'identify',
   requestProjectionCode: string,
@@ -30,18 +30,12 @@ function loadWmsFeaturesOnBBOX(
   id?: number | string,
   cql?: string
 ): Promise<Feature[]> {
-  let url = '';
-  if ('getUrl' in source) {
-    url = (source as any).getUrl();
-  } else if ('getUrls' in source) {
-    url = (source as any).getUrls()[0];
-  }
   const params: { [id: string]: string } = {};
   params.SERVICE = 'WMS';
   params.VERSION = '1.3.0';
   params.REQUEST = 'GetFeatureInfo';
-  params.QUERY_LAYERS = type.id;
-  params.LAYERS = type.id;
+  params.QUERY_LAYERS = getQueryId<string>(type);
+  params.LAYERS = getQueryId<string>(type);
   params.INFO_FORMAT = outputFormat;
   params.SRS = requestProjectionCode;
   params.I = `${Math.round(renderSize / 2)}`;
@@ -66,7 +60,9 @@ function loadWmsFeaturesOnBBOX(
     params.CQL_FILTER = cql;
   }
   if (queryType === 'query') {
-    params.SLD_BODY = `<StyledLayerDescriptor version="1.0.0"><UserLayer><Name>${type.id}</Name><UserStyle><FeatureTypeStyle><Rule><PointSymbolizer><Graphic><Mark><WellKnownName>square</WellKnownName><Fill><CssParameter name="fill">#FFFFFF</CssParameter></Fill></Mark><Size>1</Size></Graphic></PointSymbolizer><LineSymbolizer><Stroke><CssParameter name="stroke">#000000</CssParameter><CssParameter name="stroke-width">1</CssParameter></Stroke></LineSymbolizer><PolygonSymbolizer><Stroke><CssParameter name="stroke">#000000</CssParameter><CssParameter name="stroke-width">1</CssParameter></Stroke></PolygonSymbolizer></Rule></FeatureTypeStyle></UserStyle></UserLayer></StyledLayerDescriptor>`;
+    params.SLD_BODY = `<StyledLayerDescriptor version="1.0.0"><UserLayer><Name>${getQueryId<string>(
+      type
+    )}</Name><UserStyle><FeatureTypeStyle><Rule><PointSymbolizer><Graphic><Mark><WellKnownName>square</WellKnownName><Fill><CssParameter name="fill">#FFFFFF</CssParameter></Fill></Mark><Size>1</Size></Graphic></PointSymbolizer><LineSymbolizer><Stroke><CssParameter name="stroke">#000000</CssParameter><CssParameter name="stroke-width">1</CssParameter></Stroke></LineSymbolizer><PolygonSymbolizer><Stroke><CssParameter name="stroke">#000000</CssParameter><CssParameter name="stroke-width">1</CssParameter></Stroke></PolygonSymbolizer></Rule></FeatureTypeStyle></UserStyle></UserLayer></StyledLayerDescriptor>`;
   }
   params.FORMAT = 'image/png';
   params.STYLES = '';
@@ -108,9 +104,9 @@ function loadWmsFeaturesOnBBOX(
         console.error(err);
       }
       // Hack for GeoServer with space in name
-      if (/\s/.test(type.id)) {
-        const withoutSpace = type.id.replace(/\s/g, '_');
-        const withSpace = type.id.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, '\\$1');
+      if (/\s/.test(getQueryId<string>(type))) {
+        const withoutSpace = getQueryId<string>(type).replace(/\s/g, '_');
+        const withSpace = getQueryId<string>(type).replace(/([.*+?^=!:${}()|\[\]\/\\])/g, '\\$1');
         txt = txt.replace(new RegExp('<' + withSpace, 'g'), '<' + withoutSpace);
         txt = txt.replace(new RegExp('</' + withSpace, 'g'), '</' + withoutSpace);
       }
@@ -155,6 +151,7 @@ function loadWmsFeaturesOnBBOX(
 
 export function executeWmsQuery(
   source: IQuerySource,
+  url: string,
   type: IFeatureType<string>,
   request: IGisRequest,
   method: 'GET' | 'POST' = 'GET',
@@ -193,7 +190,7 @@ export function executeWmsQuery(
   }
 
   return loadWmsFeaturesOnBBOX(
-    source,
+    url,
     type,
     queryType,
     requestProjectionCode,
@@ -232,7 +229,7 @@ export function executeWmsQuery(
 }
 
 export function retrieveWmsFeature(
-  source: IQuerySource,
+  url: string,
   type: IFeatureType<string>,
   id: number | string,
   featureProjection: Projection,
@@ -242,7 +239,7 @@ export function retrieveWmsFeature(
   const requestProjectionCode = 'EPSG:3857';
   const mapExtent = [-20026376.39, -20048966.1, 20026376.39, 20048966.1];
   return loadWmsFeaturesOnBBOX(
-    source,
+    url,
     type,
     'query',
     requestProjectionCode,
@@ -264,7 +261,7 @@ export function retrieveWmsFeature(
 }
 
 export function loadWmsFeatureDescription(
-  source: IQuerySource,
+  url: string,
   type: IFeatureType<string>,
   method: 'GET' | 'POST' = 'GET',
   outputFormat = 'text/xml; subtype=gml/3.1.1'
@@ -272,7 +269,7 @@ export function loadWmsFeatureDescription(
   const requestProjectionCode = 'EPSG:3857';
   const mapExtent = [-20026376.39, -20048966.1, 20026376.39, 20048966.1];
   return loadWmsFeaturesOnBBOX(
-    source,
+    url,
     type,
     'query',
     requestProjectionCode,

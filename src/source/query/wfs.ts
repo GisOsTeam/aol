@@ -8,7 +8,7 @@ import {
   IQuerySource,
   IIdentifyRequest,
 } from '../IExtended';
-import { toGeoJSONGeometry, disjoint } from '../../utils';
+import { toGeoJSONGeometry, disjoint, getQueryId } from '../../utils';
 import { getForViewAndSize } from 'ol/extent';
 import Geometry from 'ol/geom/Geometry';
 import { Engine } from 'bhreq';
@@ -33,7 +33,7 @@ export function loadWfsFeaturesOnBBOX(
   params.SERVICE = 'WFS';
   params.VERSION = version;
   params.REQUEST = 'GetFeature';
-  params.TYPENAME = type.id;
+  params.TYPENAME = getQueryId<string>(type);
   params.MAXFEATURES = `${limit}`;
   params.OUTPUTFORMAT = outputFormat;
   if (bbox != null && bbox.length === 4) {
@@ -86,9 +86,9 @@ export function loadWfsFeaturesOnBBOX(
             console.error(err);
           }
           // Hack for GeoServer with space in name
-          if (/\s/.test(type.id)) {
-            const withoutSpace = type.id.replace(/\s/g, '_');
-            const withSpace = type.id.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, '\\$1');
+          if (/\s/.test(getQueryId<string>(type))) {
+            const withoutSpace = getQueryId<string>(type).replace(/\s/g, '_');
+            const withSpace = getQueryId<string>(type).replace(/([.*+?^=!:${}()|\[\]\/\\])/g, '\\$1');
             txt = txt.replace(new RegExp('<' + withSpace, 'g'), '<' + withoutSpace);
             txt = txt.replace(new RegExp('</' + withSpace, 'g'), '</' + withoutSpace);
           }

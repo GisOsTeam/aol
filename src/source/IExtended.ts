@@ -114,6 +114,7 @@ export interface IAttribute {
 
 export interface IFeatureType<IDT extends number | string> {
   id: IDT;
+  queryId?: IDT;
   hide?: boolean;
   name?: string;
   identifierAttribute?: IAttribute;
