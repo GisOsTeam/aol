@@ -12,7 +12,7 @@ import booleanDisjoint from '@turf/boolean-disjoint';
 import { applyStyle } from 'ol-mapbox-style';
 import { SourceType } from './source/types/sourceType';
 import { IFeatureType, ISnapshotSource, ILegendSource, ILayerLegend, ILegendRecord } from './source/IExtended';
-import { SourceFactory } from './source/factory/SourceFacotry';
+import { SourceFactory } from './source/factory/SourceFactory';
 import { getCenter, getWidth } from 'ol/extent';
 
 const geoJSONFormat = new GeoJSON();
