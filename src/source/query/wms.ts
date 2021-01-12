@@ -5,21 +5,18 @@ import {
   IGisRequest,
   IFeatureType,
   IQueryFeatureTypeResponse,
-  IExtended,
   IAttribute,
   IIdentifyRequest,
+  IQuerySource,
 } from '../IExtended';
 import { toGeoJSONGeometry, disjoint } from '../../utils';
 import { getForViewAndSize } from 'ol/extent';
-import SimpleGeometry from 'ol/geom/SimpleGeometry';
 import Projection from 'ol/proj/Projection';
 import Geometry from 'ol/geom/Geometry';
 import { Engine } from 'bhreq';
 
-const format = new WMSGetFeatureInfo();
-
-function getFeatureInfoOnBBOX(
-  source: IExtended,
+function loadWmsFeaturesOnBBOX(
+  source: IQuerySource,
   type: IFeatureType<string>,
   queryType: 'query' | 'identify',
   requestProjectionCode: string,
@@ -29,7 +26,7 @@ function getFeatureInfoOnBBOX(
   tolerance: number,
   limit: number,
   method: 'GET' | 'POST' = 'GET',
-  gmlMimeType = 'application/vnd.ogc.gml',
+  outputFormat = 'text/xml; subtype=gml/3.1.1',
   id?: number | string,
   cql?: string
 ): Promise<Feature[]> {
@@ -45,7 +42,7 @@ function getFeatureInfoOnBBOX(
   params.REQUEST = 'GetFeatureInfo';
   params.QUERY_LAYERS = type.id;
   params.LAYERS = type.id;
-  params.INFO_FORMAT = gmlMimeType;
+  params.INFO_FORMAT = outputFormat;
   params.SRS = requestProjectionCode;
   params.I = `${Math.round(renderSize / 2)}`;
   params.J = `${Math.round(renderSize / 2)}`;
@@ -54,8 +51,7 @@ function getFeatureInfoOnBBOX(
   params.BBOX = bbox.join(',');
   params.FEATURE_COUNT = `${limit}`;
   if (id != null) {
-    params.FEATUREID = `${id}`; // GeoServer
-    // ?? // QGis Server
+    params.FEATUREID = `${id}`; // GeoServer, BG, QGis Server
     // ?? // MapServer
     // ?? // ArcGIS WMS
   }
@@ -72,6 +68,8 @@ function getFeatureInfoOnBBOX(
   if (queryType === 'query') {
     params.SLD_BODY = `<StyledLayerDescriptor version="1.0.0"><UserLayer><Name>${type.id}</Name><UserStyle><FeatureTypeStyle><Rule><PointSymbolizer><Graphic><Mark><WellKnownName>square</WellKnownName><Fill><CssParameter name="fill">#FFFFFF</CssParameter></Fill></Mark><Size>1</Size></Graphic></PointSymbolizer><LineSymbolizer><Stroke><CssParameter name="stroke">#000000</CssParameter><CssParameter name="stroke-width">1</CssParameter></Stroke></LineSymbolizer><PolygonSymbolizer><Stroke><CssParameter name="stroke">#000000</CssParameter><CssParameter name="stroke-width">1</CssParameter></Stroke></PolygonSymbolizer></Rule></FeatureTypeStyle></UserStyle></UserLayer></StyledLayerDescriptor>`;
   }
+  params.FORMAT = 'image/png';
+  params.STYLES = '';
 
   let promise = null;
   if (method === 'POST') {
@@ -91,16 +89,17 @@ function getFeatureInfoOnBBOX(
   }
   return promise.then(
     (res) => {
-      // Read features
       const features = [] as Feature[];
+      let txt = res.text;
       // Search projection on results
       let dataProjection = getProjection(requestProjectionCode);
       let dataProjectionCode = requestProjectionCode;
-      const res1 = res.body.match(/\ssrsName=\"([^\"]+)\"/i);
+      const res1 = txt.match(/\ssrsName=\"([^\"]+)\"/i);
       if (res1 && res1.length >= 2) {
         const res2 = res1[1].match(/(\d+)(?!.*\d)/g);
         if (res2 && res2.length > 0) {
           dataProjectionCode = 'EPSG:' + res2[res2.length - 1];
+          txt = txt.replace(/\ssrsName=\"([^\"]+)\"/i, ` srsName="${dataProjectionCode}"`);
         }
       }
       try {
@@ -109,7 +108,6 @@ function getFeatureInfoOnBBOX(
         console.error(err);
       }
       // Hack for GeoServer with space in name
-      let txt = res.text;
       if (/\s/.test(type.id)) {
         const withoutSpace = type.id.replace(/\s/g, '_');
         const withSpace = type.id.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, '\\$1');
@@ -117,11 +115,12 @@ function getFeatureInfoOnBBOX(
         txt = txt.replace(new RegExp('</' + withSpace, 'g'), '</' + withoutSpace);
       }
       // Read features
-      const allFeatures = format.readFeatures(txt);
+      const allFeatures = new WMSGetFeatureInfo().readFeatures(txt);
       if (allFeatures != null && allFeatures.length > 0) {
         allFeatures.forEach((feature: Feature) => {
           if (limit == null || features.length < limit) {
-            if (dataProjection.getUnits() === 'degrees') {
+            // !!!! Need Reverse coordinates ???? IN GML3.1 ???
+            /*if (dataProjection.getUnits() === 'degrees') {
               if (feature.getGeometry()) {
                 // In degree: This formats the geographic coordinates in longitude/latitude (x/y) order.
                 // Reverse coordinates !
@@ -137,7 +136,7 @@ function getFeatureInfoOnBBOX(
                   }
                 );
               }
-            }
+            }*/
             if (feature.getGeometry()) {
               feature.getGeometry().transform(dataProjection, featureProjectionCode);
             }
@@ -155,11 +154,11 @@ function getFeatureInfoOnBBOX(
 }
 
 export function executeWmsQuery(
-  source: IExtended,
+  source: IQuerySource,
   type: IFeatureType<string>,
   request: IGisRequest,
   method: 'GET' | 'POST' = 'GET',
-  gmlMimeType = 'application/vnd.ogc.gml'
+  outputFormat = 'application/vnd.ogc.gml'
 ): Promise<IQueryFeatureTypeResponse> {
   const { olMap, geometry, geometryProjection, queryType, limit } = request;
   const requestProjectionCode = 'EPSG:3857';
@@ -193,7 +192,7 @@ export function executeWmsQuery(
       break;
   }
 
-  return getFeatureInfoOnBBOX(
+  return loadWmsFeaturesOnBBOX(
     source,
     type,
     queryType,
@@ -204,17 +203,22 @@ export function executeWmsQuery(
     tolerance,
     limit ? 2 * limit : 100000,
     method,
-    gmlMimeType
+    outputFormat
   ).then((allFeatures) => {
     const features = [] as Feature[];
     if (allFeatures && allFeatures.length > 0) {
       allFeatures.forEach((feature: Feature) => {
         // Check intersection
-        if (
-          feature.getGeometry() == null ||
-          (queryType === 'identify' && (geometry.getType() === 'Point' || geometry.getType() === 'MultiPoint')) ||
-          !disjoint(toGeoJSONGeometry(feature.getGeometry()), toGeoJSONGeometry(geometry))
-        ) {
+        if (feature.getGeometry() != null) {
+          const geom = feature.getGeometry().clone();
+          geom.transform(mapProjection, geometryProjection);
+          if (
+            (queryType === 'identify' && (geometry.getType() === 'Point' || geometry.getType() === 'MultiPoint')) ||
+            !disjoint(toGeoJSONGeometry(geom), toGeoJSONGeometry(geometry))
+          ) {
+            features.push(feature);
+          }
+        } else {
           features.push(feature);
         }
       });
@@ -228,16 +232,16 @@ export function executeWmsQuery(
 }
 
 export function retrieveWmsFeature(
-  source: IExtended,
+  source: IQuerySource,
   type: IFeatureType<string>,
   id: number | string,
   featureProjection: Projection,
   method: 'GET' | 'POST' = 'GET',
-  gmlMimeType = 'application/vnd.ogc.gml'
+  outputFormat = 'text/xml; subtype=gml/3.1.1'
 ): Promise<Feature> {
   const requestProjectionCode = 'EPSG:3857';
   const mapExtent = [-20026376.39, -20048966.1, 20026376.39, 20048966.1];
-  return getFeatureInfoOnBBOX(
+  return loadWmsFeaturesOnBBOX(
     source,
     type,
     'query',
@@ -248,7 +252,7 @@ export function retrieveWmsFeature(
     500,
     1,
     method,
-    gmlMimeType,
+    outputFormat,
     id
   ).then((allFeatures) => {
     let feature = null;
@@ -260,14 +264,14 @@ export function retrieveWmsFeature(
 }
 
 export function loadWmsFeatureDescription(
-  source: IExtended,
+  source: IQuerySource,
   type: IFeatureType<string>,
   method: 'GET' | 'POST' = 'GET',
-  gmlMimeType = 'application/vnd.ogc.gml'
+  outputFormat = 'text/xml; subtype=gml/3.1.1'
 ): Promise<void> {
   const requestProjectionCode = 'EPSG:3857';
   const mapExtent = [-20026376.39, -20048966.1, 20026376.39, 20048966.1];
-  return getFeatureInfoOnBBOX(
+  return loadWmsFeaturesOnBBOX(
     source,
     type,
     'query',
@@ -278,7 +282,7 @@ export function loadWmsFeatureDescription(
     3,
     1,
     method,
-    gmlMimeType
+    outputFormat
   ).then((allFeatures) => {
     let feature = null;
     if (allFeatures != null && allFeatures.length > 0) {
@@ -300,7 +304,6 @@ export function loadWmsFeatureDescription(
         }
         type.attributes.push(attribute);
       });
-      return;
     }
   });
 }

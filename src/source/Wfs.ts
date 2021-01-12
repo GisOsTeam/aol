@@ -1,58 +1,65 @@
-import OlGeoJSON from 'ol/format/GeoJSON';
 import { ExternalVector } from './ExternalVector';
 import { LayerType, LayerTypeEnum, SourceType, SourceTypeEnum } from './types';
-import { IFeatureType, ISnapshotOptions } from './IExtended';
+import {
+  IGisRequest,
+  IQueryResponse,
+  ISnapshotOptions,
+  IFeatureType,
+  IInitSource,
+  IQuerySource,
+  IQueryFeatureTypeResponse,
+} from './IExtended';
+import { transformExtent } from 'ol/proj';
 import { Options } from 'ol/source/Vector';
-import { Engine } from 'bhreq';
+import { loadWfsFeaturesOnBBOX, loadWfsFeatureDescription, executeWfsQuery, retrieveWfsFeature } from './query/wfs';
+import Projection from 'ol/proj/Projection';
+import { Feature } from 'ol';
 
 export interface IWfsOptions extends ISnapshotOptions, Options {
+  url: string;
   type: IFeatureType<string>;
   outputFormat?: string;
   version?: string;
   swapX?: boolean;
+  limit?: number;
 }
 
-export class Wfs extends ExternalVector {
+export class Wfs extends ExternalVector implements IInitSource, IQuerySource {
   protected options: IWfsOptions;
-  private readonly defaultOptions: Pick<IWfsOptions, 'outputFormat' | 'version' | 'swapX'> = {
-    outputFormat: 'application/json',
+  private readonly defaultOptions: Pick<IWfsOptions, 'outputFormat' | 'version' | 'swapX' | 'limit'> = {
+    outputFormat: 'text/xml; subtype=gml/3.1.1', // 'application/json',
     version: '1.1.0',
     swapX: false,
+    limit: 10000,
   };
 
   constructor(options: IWfsOptions) {
     super({
       ...options,
-      format: new OlGeoJSON(),
       loader: (extent, resolution, projection) => {
         const proj = projection.getCode();
 
-        let url = `${this.options.url}?service=WFS&version=${this.options.version}&request=GetFeature&TypeName=${this.options.type.id}&outputFormat=${this.options.outputFormat}&srsname=${proj}`;
-
-        if (!this.options.swapX) {
-          url += `&bbox=${extent.join(',')},${proj}`;
-        } else {
-          url += `&bbox=${extent[1]},${extent[0]},${extent[3]},${extent[2]},${proj}`;
-        }
-
-        const engine = Engine.getInstance();
-        const onError = () => {
+        const onError = (err: any) => {
+          console.log(err);
           this.removeLoadedExtent(extent);
         };
 
-        engine
-          .send({
-            url,
-            method: 'GET',
-            responseType: 'text',
-          })
-          .then((res) => {
-            if (res.status === 200) {
-              this.addFeatures(this.getFormat().readFeatures(res.text as any) as any);
-            } else {
-              onError();
-            }
-          })
+        const requestProjectionCode = 'EPSG:3857';
+        const mapExtent = transformExtent(extent, projection, requestProjectionCode);
+
+        loadWfsFeaturesOnBBOX(
+          this.options.url,
+          this.options.type,
+          'query',
+          requestProjectionCode,
+          proj,
+          mapExtent,
+          this.options.limit,
+          this.options.version,
+          this.options.outputFormat,
+          this.options.swapX
+        )
+          .then((features) => this.addFeatures(features))
           .catch(onError);
       },
     });
@@ -66,6 +73,15 @@ export class Wfs extends ExternalVector {
     if (this.options.removable != false) {
       this.options.removable = true;
     }
+  }
+
+  public init(): Promise<void> {
+    return loadWfsFeatureDescription(
+      this.options.url,
+      this.options.type,
+      this.options.version,
+      this.options.outputFormat
+    );
   }
 
   public getSourceType(): SourceType {
@@ -94,5 +110,34 @@ export class Wfs extends ExternalVector {
 
   public isRemovable(): boolean {
     return this.options.removable;
+  }
+
+  public query(request: IGisRequest, onlyVisible = false): Promise<IQueryResponse> {
+    return executeWfsQuery(
+      this,
+      this.options.url,
+      this.options.type,
+      request,
+      this.options.version,
+      this.options.outputFormat,
+      this.options.swapX
+    ).then((featureTypeResponse: IQueryFeatureTypeResponse) => {
+      return {
+        request,
+        featureTypeResponses: [featureTypeResponse],
+      };
+    });
+  }
+
+  public retrieveFeature(id: number | string, projection: Projection): Promise<Feature> {
+    return retrieveWfsFeature(
+      this.options.url,
+      this.options.type,
+      id,
+      projection,
+      this.options.version,
+      this.options.outputFormat,
+      this.options.swapX
+    );
   }
 }
