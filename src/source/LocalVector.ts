@@ -4,7 +4,7 @@ import Wkt from 'ol/format/WKT';
 import { SourceType, SourceTypeEnum } from './types/sourceType';
 import { LayerType, LayerTypeEnum } from './types/layerType';
 
-export interface ILocalVectordOptions extends IVectorOptions {
+export interface ILocalVectorOptions extends IVectorOptions {
   initialFeatures?: any[];
 }
 
@@ -15,7 +15,7 @@ export class LocalVector extends Vector {
 
   private wktFormat = new Wkt();
 
-  constructor(options: ILocalVectordOptions) {
+  constructor(options: ILocalVectorOptions) {
     super({ ...options, useSpatialIndex: true });
     const initialFeatures = options.initialFeatures;
     options.initialFeatures = undefined;
@@ -57,8 +57,8 @@ export class LocalVector extends Vector {
     return SourceTypeEnum.LocalVector;
   }
 
-  public getSourceOptions(): ILocalVectordOptions {
-    const options = this.options as ILocalVectordOptions;
+  public getSourceOptions(): ILocalVectorOptions {
+    const options = this.options as ILocalVectorOptions;
     const initialFeatures: any[] = [];
     this.forEachFeature((feature: OlFeature) => {
       const originalProjectionCode = (feature as any).originalProjectionCode;
@@ -77,7 +77,7 @@ export class LocalVector extends Vector {
     return options;
   }
 
-  public setSourceOptions(options: ILocalVectordOptions): void {
+  public setSourceOptions(options: ILocalVectorOptions): void {
     this.options = { ...options };
   }
 
