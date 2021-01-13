@@ -26,7 +26,7 @@ export function loadWfsFeaturesOnBBOX(
   limit: number,
   version = '1.1.0',
   outputFormat = 'text/xml; subtype=gml/3.1.1',
-  swapX = false,
+  swapXY = false,
   id?: number | string
 ): Promise<Feature[]> {
   const params: { [id: string]: string } = {};
@@ -37,7 +37,7 @@ export function loadWfsFeaturesOnBBOX(
   params.MAXFEATURES = `${limit}`;
   params.OUTPUTFORMAT = outputFormat;
   if (bbox != null && bbox.length === 4) {
-    if (!swapX) {
+    if (!swapXY) {
       params.BBOX = `${bbox.join(',')},${requestProjectionCode}`;
     } else {
       params.BBOX += `${bbox[1]},${bbox[0]},${bbox[3]},${bbox[2]},${requestProjectionCode}`;
@@ -141,7 +141,7 @@ export function executeWfsQuery(
   request: IGisRequest,
   version = '1.1.0',
   outputFormat = 'text/xml; subtype=gml/3.1.1',
-  swapX = false
+  swapXY = false
 ): Promise<IQueryFeatureTypeResponse> {
   const { olMap, geometry, geometryProjection, queryType, limit } = request;
   const requestProjectionCode = 'EPSG:3857';
@@ -173,7 +173,7 @@ export function executeWfsQuery(
     limit,
     version,
     outputFormat,
-    swapX
+    swapXY
   ).then((allFeatures) => {
     const features = [] as Feature[];
     if (allFeatures && allFeatures.length > 0) {
@@ -208,7 +208,7 @@ export function retrieveWfsFeature(
   featureProjection: Projection,
   version = '1.1.0',
   outputFormat = 'text/xml; subtype=gml/3.1.1',
-  swapX = false
+  swapXY = false
 ): Promise<Feature> {
   const requestProjectionCode = 'EPSG:3857';
   const mapExtent: number[] = [];
@@ -222,7 +222,7 @@ export function retrieveWfsFeature(
     1,
     version,
     outputFormat,
-    swapX,
+    swapXY,
     id
   ).then((allFeatures) => {
     let feature = null;

@@ -20,16 +20,16 @@ export interface IWfsOptions extends ISnapshotOptions, Options {
   type: IFeatureType<string>;
   outputFormat?: string;
   version?: string;
-  swapX?: boolean;
+  swapXY?: boolean;
   limit?: number;
 }
 
 export class Wfs extends ExternalVector implements IInitSource, IQuerySource {
   protected options: IWfsOptions;
-  private readonly defaultOptions: Pick<IWfsOptions, 'outputFormat' | 'version' | 'swapX' | 'limit'> = {
+  private readonly defaultOptions: Pick<IWfsOptions, 'outputFormat' | 'version' | 'swapXY' | 'limit'> = {
     outputFormat: 'text/xml; subtype=gml/3.1.1', // 'application/json',
     version: '1.1.0',
-    swapX: false,
+    swapXY: false,
     limit: 10000,
   };
   constructor(options: IWfsOptions) {
@@ -51,7 +51,7 @@ export class Wfs extends ExternalVector implements IInitSource, IQuerySource {
           this.options.limit,
           this.options.version,
           this.options.outputFormat,
-          this.options.swapX
+          this.options.swapXY
         )
           .then((features) => this.addFeatures(features))
           .catch(() => this.removeLoadedExtent(extent));
@@ -114,7 +114,7 @@ export class Wfs extends ExternalVector implements IInitSource, IQuerySource {
       request,
       this.options.version,
       this.options.outputFormat,
-      this.options.swapX
+      this.options.swapXY
     ).then((featureTypeResponse: IQueryFeatureTypeResponse) => {
       return {
         request,
@@ -131,7 +131,7 @@ export class Wfs extends ExternalVector implements IInitSource, IQuerySource {
       projection,
       this.options.version,
       this.options.outputFormat,
-      this.options.swapX
+      this.options.swapXY
     );
   }
 }

@@ -22,16 +22,16 @@ export interface ITileWfsOptions extends ISnapshotOptions, Options {
   type: IFeatureType<string>;
   outputFormat?: string;
   version?: string;
-  swapX?: boolean;
+  swapXY?: boolean;
   limit?: number;
 }
 
 export class TileWfs extends VectorTile implements IInitSource, IQuerySource {
   protected options: ITileWfsOptions;
-  private readonly defaultOptions: Pick<ITileWfsOptions, 'outputFormat' | 'version' | 'swapX' | 'limit'> = {
+  private readonly defaultOptions: Pick<ITileWfsOptions, 'outputFormat' | 'version' | 'swapXY' | 'limit'> = {
     outputFormat: 'text/xml; subtype=gml/3.1.1', // 'application/json',
     version: '1.1.0',
-    swapX: false,
+    swapXY: false,
     limit: 10000,
   };
   constructor(options: ITileWfsOptions) {
@@ -57,7 +57,7 @@ export class TileWfs extends VectorTile implements IInitSource, IQuerySource {
             this.options.limit,
             this.options.version,
             this.options.outputFormat,
-            this.options.swapX
+            this.options.swapXY
           )
             .then(tile.onLoad.bind(tile))
             .catch(tile.onError.bind(tile));
@@ -125,7 +125,7 @@ export class TileWfs extends VectorTile implements IInitSource, IQuerySource {
       request,
       this.options.version,
       this.options.outputFormat,
-      this.options.swapX
+      this.options.swapXY
     ).then((featureTypeResponse: IQueryFeatureTypeResponse) => {
       return {
         request,
@@ -142,7 +142,7 @@ export class TileWfs extends VectorTile implements IInitSource, IQuerySource {
       projection,
       this.options.version,
       this.options.outputFormat,
-      this.options.swapX
+      this.options.swapXY
     );
   }
 }
