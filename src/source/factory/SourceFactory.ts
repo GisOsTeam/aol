@@ -16,7 +16,6 @@ import { WmtsCapabilities } from '../WmtsCapabilities';
 import { Osm } from '../Osm';
 import { VectorTile } from '../VectorTile';
 
-
 export class SourceFactory {
   public static create(sourceTypeName: SourceType, sourceOptions: any): ISnapshotSource {
     let source: ISnapshotSource;
