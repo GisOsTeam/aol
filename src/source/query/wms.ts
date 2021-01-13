@@ -37,7 +37,7 @@ function loadWmsFeaturesOnBBOX(
   params.QUERY_LAYERS = getQueryId<string>(type);
   params.LAYERS = getQueryId<string>(type);
   params.INFO_FORMAT = outputFormat;
-  params.SRS = requestProjectionCode;
+  params.CRS = requestProjectionCode;
   params.I = `${Math.round(renderSize / 2)}`;
   params.J = `${Math.round(renderSize / 2)}`;
   params.WIDTH = `${renderSize}`;
