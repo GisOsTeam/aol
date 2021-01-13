@@ -6,7 +6,7 @@ import { Options } from 'ol/source/VectorTile';
 
 export interface IVectorTileOptions extends ISnapshotOptions, Options {}
 
-export abstract class VectorTile extends OlVectorTile implements ISnapshotSource {
+export class VectorTile extends OlVectorTile implements ISnapshotSource {
   protected options: IVectorTileOptions;
 
   constructor(options: IVectorTileOptions) {

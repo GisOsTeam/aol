@@ -1,5 +1,5 @@
 import { SourceType, SourceTypeEnum } from '../types/sourceType';
-import { IFeatureType, ISnapshotSource } from '../IExtended';
+import { ISnapshotSource } from '../IExtended';
 import { ExternalVector } from '../ExternalVector';
 import { ImageArcGISRest } from '../ImageArcGISRest';
 import { ImageStatic } from '../ImageStatic';
@@ -14,6 +14,8 @@ import { Wmts } from '../Wmts';
 import { Xyz } from '../Xyz';
 import { WmtsCapabilities } from '../WmtsCapabilities';
 import { Osm } from '../Osm';
+import { VectorTile } from '../VectorTile';
+
 
 export class SourceFactory {
   public static create(sourceTypeName: SourceType, sourceOptions: any): ISnapshotSource {
@@ -48,6 +50,9 @@ export class SourceFactory {
         break;
       case SourceTypeEnum.TileWms:
         source = new TileWms(sourceOptions);
+        break;
+      case SourceTypeEnum.VectorTile:
+        source = new VectorTile(sourceOptions);
         break;
       case SourceTypeEnum.Wfs:
         source = new Wfs(sourceOptions);
