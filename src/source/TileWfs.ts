@@ -21,6 +21,7 @@ export interface ITileWfsOptions extends ISnapshotOptions, Options {
   url: string;
   type: IFeatureType<string>;
   outputFormat?: string;
+  requestProjectionCode?: string;
   version?: string;
   swapXY?: boolean;
   limit?: number;
@@ -28,9 +29,13 @@ export interface ITileWfsOptions extends ISnapshotOptions, Options {
 
 export class TileWfs extends VectorTile implements IInitSource, IQuerySource {
   protected options: ITileWfsOptions;
-  private readonly defaultOptions: Pick<ITileWfsOptions, 'outputFormat' | 'version' | 'swapXY' | 'limit'> = {
+  private readonly defaultOptions: Pick<
+    ITileWfsOptions,
+    'outputFormat' | 'version' | 'requestProjectionCode' | 'swapXY' | 'limit'
+  > = {
     outputFormat: 'text/xml; subtype=gml/3.1.1', // 'application/json',
     version: '1.1.0',
+    requestProjectionCode: 'EPSG:3857',
     swapXY: false,
     limit: 10000,
   };
@@ -44,14 +49,13 @@ export class TileWfs extends VectorTile implements IInitSource, IQuerySource {
         tile.setLoader((extent, resolution, projection) => {
           const projectionCode = projection.getCode();
 
-          const requestProjectionCode = 'EPSG:3857';
-          const mapExtent = transformExtent(extent, projectionCode, requestProjectionCode);
+          const mapExtent = transformExtent(extent, projectionCode, this.options.requestProjectionCode);
 
           loadWfsFeaturesOnBBOX(
             'getUrl' in this ? (this as any).getUrl() : (this as any).getUrls()[0],
             this.options.type,
             'query',
-            requestProjectionCode,
+            this.options.requestProjectionCode,
             projectionCode,
             mapExtent,
             this.options.limit,
@@ -125,6 +129,7 @@ export class TileWfs extends VectorTile implements IInitSource, IQuerySource {
       request,
       this.options.version,
       this.options.outputFormat,
+      this.options.requestProjectionCode,
       this.options.swapXY
     ).then((featureTypeResponse: IQueryFeatureTypeResponse) => {
       return {
@@ -142,6 +147,7 @@ export class TileWfs extends VectorTile implements IInitSource, IQuerySource {
       projection,
       this.options.version,
       this.options.outputFormat,
+      this.options.requestProjectionCode,
       this.options.swapXY
     );
   }

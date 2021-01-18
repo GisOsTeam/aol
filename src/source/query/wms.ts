@@ -155,10 +155,10 @@ export function executeWmsQuery(
   type: IFeatureType<string>,
   request: IGisRequest,
   method: 'GET' | 'POST' = 'GET',
-  outputFormat = 'application/vnd.ogc.gml'
+  outputFormat = 'application/vnd.ogc.gml',
+  requestProjectionCode = 'EPSG:3857'
 ): Promise<IQueryFeatureTypeResponse> {
   const { olMap, geometry, geometryProjection, queryType, limit } = request;
-  const requestProjectionCode = 'EPSG:3857';
   const olView = olMap.getView();
   const mapProjection = olView.getProjection();
   const extent = transformExtent(geometry.getExtent(), geometryProjection, requestProjectionCode);
@@ -234,9 +234,9 @@ export function retrieveWmsFeature(
   id: number | string,
   featureProjection: Projection,
   method: 'GET' | 'POST' = 'GET',
-  outputFormat = 'text/xml; subtype=gml/3.1.1'
+  outputFormat = 'text/xml; subtype=gml/3.1.1',
+  requestProjectionCode = 'EPSG:3857'
 ): Promise<Feature> {
-  const requestProjectionCode = 'EPSG:3857';
   const mapExtent = [-20026376.39, -20048966.1, 20026376.39, 20048966.1];
   return loadWmsFeaturesOnBBOX(
     url,
@@ -264,9 +264,9 @@ export function loadWmsFeatureDescription(
   url: string,
   type: IFeatureType<string>,
   method: 'GET' | 'POST' = 'GET',
-  outputFormat = 'text/xml; subtype=gml/3.1.1'
+  outputFormat = 'text/xml; subtype=gml/3.1.1',
+  requestProjectionCode = 'EPSG:3857'
 ): Promise<void> {
-  const requestProjectionCode = 'EPSG:3857';
   const mapExtent = [-20026376.39, -20048966.1, 20026376.39, 20048966.1];
   return loadWmsFeaturesOnBBOX(
     url,

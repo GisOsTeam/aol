@@ -213,8 +213,9 @@ export function getQueryId<IDT>(type: IFeatureType<any>): IDT {
  * Create MB layer styles
  */
 export function createLayerStyles(
-  props = { strokeColor: 'rgba(0, 0, 255, 0.9)', fillColor: 'rgba(127, 127, 127, 0.2)', width: 3, radius: 3 }
+  props: { strokeColor?: string; fillColor?: string; width?: number; radius?: number } = {}
 ): LayerStyles {
+  props = { strokeColor: 'rgba(0, 0, 255, 0.9)', fillColor: 'rgba(127, 127, 255, 0.4)', width: 3, radius: 3, ...props };
   return [
     {
       type: 'circle',

@@ -141,10 +141,10 @@ export function executeWfsQuery(
   request: IGisRequest,
   version = '1.1.0',
   outputFormat = 'text/xml; subtype=gml/3.1.1',
+  requestProjectionCode = 'EPSG:3857',
   swapXY = false
 ): Promise<IQueryFeatureTypeResponse> {
   const { olMap, geometry, geometryProjection, queryType, limit } = request;
-  const requestProjectionCode = 'EPSG:3857';
   const olView = olMap.getView();
   const mapProjection = olView.getProjection();
   let extent = transformExtent(geometry.getExtent(), geometryProjection, requestProjectionCode);
@@ -208,9 +208,9 @@ export function retrieveWfsFeature(
   featureProjection: Projection,
   version = '1.1.0',
   outputFormat = 'text/xml; subtype=gml/3.1.1',
+  requestProjectionCode = 'EPSG:3857',
   swapXY = false
 ): Promise<Feature> {
-  const requestProjectionCode = 'EPSG:3857';
   const mapExtent: number[] = [];
   return loadWfsFeaturesOnBBOX(
     url,
@@ -237,9 +237,9 @@ export function loadWfsFeatureDescription(
   url: string,
   type: IFeatureType<string>,
   version = '1.1.0',
-  outputFormat = 'text/xml; subtype=gml/3.1.1'
+  outputFormat = 'text/xml; subtype=gml/3.1.1',
+  requestProjectionCode = 'EPSG:3857'
 ): Promise<void> {
-  const requestProjectionCode = 'EPSG:3857';
   const mapExtent: number[] = [];
   return loadWfsFeaturesOnBBOX(
     url,
