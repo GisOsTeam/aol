@@ -14,7 +14,14 @@ const states = new ImageWms({
 
 test('describe wms', () => {
   const type: IFeatureType<string> = states.get('types')[0];
-  return loadWmsFeatureDescription(states.getUrl(), type).then(() => {
+  return loadWmsFeatureDescription({
+    url: states.getUrl(),
+    type,
+    method: 'GET',
+    outputFormat: 'text/xml; subtype=gml/3.1.1',
+    version: '1.3.0',
+    requestProjectionCode: 'EPSG:3857',
+  }).then(() => {
     expect<number>(type.attributes.length).toEqual(23);
   });
 });
@@ -40,7 +47,18 @@ test('query wms', () => {
     queryType: 'query',
   };
   const type: IFeatureType<string> = states.get('types')[0];
-  return executeWmsQuery(states, states.getUrl(), type, request).then((response: IQueryFeatureTypeResponse) => {
+  return executeWmsQuery({
+    source: states,
+    url: states.getUrl(),
+    type,
+    request,
+    method: 'GET',
+    outputFormat: 'text/xml; subtype=gml/3.1.1', // 'application/json',
+    version: '1.3.0',
+    requestProjectionCode: 'EPSG:3857',
+    swapXYBBOXRequest: false,
+    swapLonLatGeometryResult: false,
+  }).then((response: IQueryFeatureTypeResponse) => {
     expect<number>(response.features.length).toEqual(1);
     expect<string>(response.features[0].getProperties().STATE_NAME).toEqual('Colorado');
   });
@@ -67,7 +85,18 @@ test('identify wms', () => {
     queryType: 'identify',
   };
   const type: IFeatureType<string> = states.get('types')[0];
-  return executeWmsQuery(states, states.getUrl(), type, request).then((response: IQueryFeatureTypeResponse) => {
+  return executeWmsQuery({
+    source: states,
+    url: states.getUrl(),
+    type,
+    request,
+    method: 'GET',
+    outputFormat: 'text/xml; subtype=gml/3.1.1', // 'application/json',
+    version: '1.3.0',
+    requestProjectionCode: 'EPSG:3857',
+    swapXYBBOXRequest: false,
+    swapLonLatGeometryResult: false,
+  }).then((response: IQueryFeatureTypeResponse) => {
     expect<number>(response.features.length).toEqual(1);
     expect<string>(response.features[0].getProperties().STATE_NAME).toEqual('Colorado');
   });

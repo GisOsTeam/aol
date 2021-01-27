@@ -15,43 +15,45 @@ import { Engine } from 'bhreq';
 import WFSFormat from 'ol/format/WFS';
 import JSONFormat from 'ol/format/GeoJSON';
 import Projection from 'ol/proj/Projection';
+import SimpleGeometry from 'ol/geom/SimpleGeometry';
 
-export function loadWfsFeaturesOnBBOX(
-  url: string,
-  type: IFeatureType<string>,
-  queryType: 'query' | 'identify',
-  requestProjectionCode: string,
-  featureProjectionCode: string,
-  bbox: number[],
-  limit: number,
-  version = '1.1.0',
-  outputFormat = 'text/xml; subtype=gml/3.1.1',
-  swapXY = false,
-  id?: number | string
-): Promise<Feature[]> {
+export function loadWfsFeaturesOnBBOX(options: {
+  url: string;
+  type: IFeatureType<string>;
+  queryType: 'query' | 'identify';
+  requestProjectionCode: string;
+  featureProjectionCode: string;
+  bbox: number[];
+  limit: number;
+  version: '1.0.0' | '1.1.0' | '2.0.0';
+  outputFormat: string;
+  swapXYBBOXRequest?: boolean;
+  swapLonLatGeometryResult?: boolean;
+  id?: number | string;
+}): Promise<Feature[]> {
   const params: { [id: string]: string } = {};
   params.SERVICE = 'WFS';
-  params.VERSION = version;
+  params.VERSION = options.version;
   params.REQUEST = 'GetFeature';
-  params.TYPENAME = getQueryId<string>(type);
-  params.MAXFEATURES = `${limit}`;
-  params.OUTPUTFORMAT = outputFormat;
-  if (bbox != null && bbox.length === 4) {
-    if (!swapXY) {
-      params.BBOX = `${bbox.join(',')},${requestProjectionCode}`;
+  params.TYPENAME = getQueryId<string>(options.type);
+  params.MAXFEATURES = `${options.limit}`;
+  params.OUTPUTFORMAT = options.outputFormat;
+  if (options.bbox != null && options.bbox.length === 4) {
+    if (options.swapXYBBOXRequest !== true) {
+      params.BBOX = `${options.bbox.join(',')},${options.requestProjectionCode}`;
     } else {
-      params.BBOX += `${bbox[1]},${bbox[0]},${bbox[3]},${bbox[2]},${requestProjectionCode}`;
+      params.BBOX += `${options.bbox[1]},${options.bbox[0]},${options.bbox[3]},${options.bbox[2]},${options.requestProjectionCode}`;
     }
   }
-  if (id != null) {
-    params.FEATUREID = `${id}`; // GeoServer, BG, QGis Server
+  if (options.id != null) {
+    params.FEATUREID = `${options.id}`; // GeoServer, BG, QGis Server
     // ?? // MapServer
     // ?? // ArcGIS WFS
   }
 
   return Engine.getInstance()
     .send({
-      url,
+      url: options.url,
       params,
       responseType: 'text',
     })
@@ -61,17 +63,17 @@ export function loadWfsFeaturesOnBBOX(
           throw new Error('WFS request error ' + res.status);
         }
         let txt = res.text;
-        let dataProjection = getProjection(requestProjectionCode);
+        let dataProjection = getProjection(options.requestProjectionCode);
         const features = [] as Feature[];
         let allFeatures = [] as Feature[];
-        if (outputFormat === 'application/json') {
+        if (options.outputFormat === 'application/json') {
           // JSON
           // Read features
           allFeatures = new JSONFormat().readFeatures(txt);
         } else {
           // GML
           // Search projection on results
-          let dataProjectionCode = requestProjectionCode;
+          let dataProjectionCode = options.requestProjectionCode;
           const res1 = txt.match(/\ssrsName=\"([^\"]+)\"/i);
           if (res1 && res1.length >= 2) {
             const res2 = res1[1].match(/(\d+)(?!.*\d)/g);
@@ -86,9 +88,9 @@ export function loadWfsFeaturesOnBBOX(
             console.error(err);
           }
           // Hack for GeoServer with space in name
-          if (/\s/.test(getQueryId<string>(type))) {
-            const withoutSpace = getQueryId<string>(type).replace(/\s/g, '_');
-            const withSpace = getQueryId<string>(type).replace(/([.*+?^=!:${}()|\[\]\/\\])/g, '\\$1');
+          if (/\s/.test(getQueryId<string>(options.type))) {
+            const withoutSpace = getQueryId<string>(options.type).replace(/\s/g, '_');
+            const withSpace = getQueryId<string>(options.type).replace(/([.*+?^=!:${}()|\[\]\/\\])/g, '\\$1');
             txt = txt.replace(new RegExp('<' + withSpace, 'g'), '<' + withoutSpace);
             txt = txt.replace(new RegExp('</' + withSpace, 'g'), '</' + withoutSpace);
           }
@@ -99,9 +101,8 @@ export function loadWfsFeaturesOnBBOX(
         }
         if (allFeatures != null && allFeatures.length > 0) {
           allFeatures.forEach((feature: Feature) => {
-            if (limit == null || features.length < limit) {
-              // !!!! Need Reverse coordinates ???? IN GML3.1 ???
-              /*if (dataProjection.getUnits() === 'degrees') {
+            if (options.limit == null || features.length < options.limit) {
+              if (options.swapLonLatGeometryResult === true && dataProjection.getUnits() === 'degrees') {
                 if (feature.getGeometry()) {
                   // In degree: This formats the geographic coordinates in longitude/latitude (x/y) order.
                   // Reverse coordinates !
@@ -117,9 +118,9 @@ export function loadWfsFeaturesOnBBOX(
                     }
                   );
                 }
-              }*/
+              }
               if (feature.getGeometry()) {
-                feature.getGeometry().transform(dataProjection, featureProjectionCode);
+                feature.getGeometry().transform(dataProjection, options.featureProjectionCode);
               }
               features.push(feature);
             }
@@ -134,22 +135,23 @@ export function loadWfsFeaturesOnBBOX(
     );
 }
 
-export function executeWfsQuery(
-  source: IQuerySource,
-  url: string,
-  type: IFeatureType<string>,
-  request: IGisRequest,
-  version = '1.1.0',
-  outputFormat = 'text/xml; subtype=gml/3.1.1',
-  requestProjectionCode = 'EPSG:3857',
-  swapXY = false
-): Promise<IQueryFeatureTypeResponse> {
-  const { olMap, geometry, geometryProjection, queryType, limit } = request;
+export function executeWfsQuery(options: {
+  source: IQuerySource;
+  url: string;
+  type: IFeatureType<string>;
+  request: IGisRequest;
+  requestProjectionCode: string;
+  version: '1.0.0' | '1.1.0' | '2.0.0';
+  outputFormat: string;
+  swapXYBBOXRequest: boolean;
+  swapLonLatGeometryResult: boolean;
+}): Promise<IQueryFeatureTypeResponse> {
+  const { olMap, geometry, geometryProjection, queryType, limit } = options.request;
   const olView = olMap.getView();
   const mapProjection = olView.getProjection();
-  let extent = transformExtent(geometry.getExtent(), geometryProjection, requestProjectionCode);
+  let extent = transformExtent(geometry.getExtent(), geometryProjection, options.requestProjectionCode);
   if (queryType === 'identify') {
-    const { identifyTolerance } = request as IIdentifyRequest;
+    const { identifyTolerance } = options.request as IIdentifyRequest;
     let tolerance;
     if (Math.round(identifyTolerance) > 0) {
       tolerance = Math.round(identifyTolerance);
@@ -163,18 +165,19 @@ export function executeWfsQuery(
       [tolerance, tolerance]
     );
   }
-  return loadWfsFeaturesOnBBOX(
-    url,
-    type,
-    'query',
-    requestProjectionCode,
-    mapProjection.getCode(),
-    extent,
+  return loadWfsFeaturesOnBBOX({
+    url: options.url,
+    type: options.type,
+    queryType: 'query',
+    requestProjectionCode: options.requestProjectionCode,
+    featureProjectionCode: mapProjection.getCode(),
+    bbox: extent,
     limit,
-    version,
-    outputFormat,
-    swapXY
-  ).then((allFeatures) => {
+    version: options.version,
+    outputFormat: options.outputFormat,
+    swapXYBBOXRequest: options.swapXYBBOXRequest,
+    swapLonLatGeometryResult: options.swapLonLatGeometryResult,
+  }).then((allFeatures) => {
     const features = [] as Feature[];
     if (allFeatures && allFeatures.length > 0) {
       allFeatures.forEach((feature: Feature) => {
@@ -194,37 +197,37 @@ export function executeWfsQuery(
       });
     }
     return {
-      type,
+      type: options.type,
       features,
-      source,
+      source: options.source,
     };
   });
 }
 
-export function retrieveWfsFeature(
-  url: string,
-  type: IFeatureType<string>,
-  id: number | string,
-  featureProjection: Projection,
-  version = '1.1.0',
-  outputFormat = 'text/xml; subtype=gml/3.1.1',
-  requestProjectionCode = 'EPSG:3857',
-  swapXY = false
-): Promise<Feature> {
-  const mapExtent: number[] = [];
-  return loadWfsFeaturesOnBBOX(
-    url,
-    type,
-    'query',
-    requestProjectionCode,
-    featureProjection.getCode(),
-    mapExtent,
-    1,
-    version,
-    outputFormat,
-    swapXY,
-    id
-  ).then((allFeatures) => {
+export function retrieveWfsFeature(options: {
+  url: string;
+  type: IFeatureType<string>;
+  id: number | string;
+  requestProjectionCode: string;
+  featureProjection: Projection;
+  version: '1.0.0' | '1.1.0' | '2.0.0';
+  outputFormat: string;
+  swapXYBBOXRequest: boolean;
+  swapLonLatGeometryResult: boolean;
+}): Promise<Feature> {
+  return loadWfsFeaturesOnBBOX({
+    url: options.url,
+    type: options.type,
+    queryType: 'query',
+    requestProjectionCode: options.requestProjectionCode,
+    featureProjectionCode: options.featureProjection.getCode(),
+    bbox: [],
+    limit: 1,
+    version: options.version,
+    outputFormat: options.outputFormat,
+    swapLonLatGeometryResult: options.swapLonLatGeometryResult,
+    id: options.id,
+  }).then((allFeatures) => {
     let feature = null;
     if (allFeatures != null && allFeatures.length > 0) {
       feature = allFeatures[0];
@@ -233,28 +236,27 @@ export function retrieveWfsFeature(
   });
 }
 
-export function loadWfsFeatureDescription(
-  url: string,
-  type: IFeatureType<string>,
-  version = '1.1.0',
-  outputFormat = 'text/xml; subtype=gml/3.1.1',
-  requestProjectionCode = 'EPSG:3857'
-): Promise<void> {
-  const mapExtent: number[] = [];
-  return loadWfsFeaturesOnBBOX(
-    url,
-    type,
-    'query',
-    requestProjectionCode,
-    requestProjectionCode,
-    mapExtent,
-    1,
-    version,
-    outputFormat
-  ).then((allFeatures) => {
+export function loadWfsFeatureDescription(options: {
+  url: string;
+  type: IFeatureType<string>;
+  version: '1.0.0' | '1.1.0' | '2.0.0';
+  outputFormat: string;
+  requestProjectionCode: string;
+}): Promise<void> {
+  return loadWfsFeaturesOnBBOX({
+    url: options.url,
+    type: options.type,
+    queryType: 'query',
+    requestProjectionCode: options.requestProjectionCode,
+    featureProjectionCode: options.requestProjectionCode,
+    bbox: [],
+    limit: 1,
+    version: options.version,
+    outputFormat: options.outputFormat,
+  }).then((allFeatures) => {
     let feature = null;
     if (allFeatures != null && allFeatures.length > 0) {
-      type.attributes = [];
+      options.type.attributes = [];
       feature = allFeatures[0];
       const properties = feature.getProperties();
       Object.keys(properties).forEach((key) => {
@@ -270,7 +272,7 @@ export function loadWfsFeatureDescription(
             attribute.type = 'Geometry';
           }
         }
-        type.attributes.push(attribute);
+        options.type.attributes.push(attribute);
       });
     }
   });

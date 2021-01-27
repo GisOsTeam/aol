@@ -20,16 +20,41 @@ import { executeWfsQuery, loadWfsFeatureDescription, retrieveWfsFeature } from '
 
 export interface ITileWmsOptions extends ISnapshotOptions, Options {
   types: IFeatureType<string>[];
-  queryWfsUrl?: string;
+  queryWfsUrl?: string; // For Wfs query instead of Wms query
+  queryMethod?: 'GET' | 'POST';
+  queryFormat?: string;
+  requestProjectionCode?: string;
+  version?: '1.0.0' | '1.1.0' | '1.3.0';
+  swapXYBBOXRequest?: boolean;
+  swapLonLatGeometryResult?: boolean;
+  limit?: number;
 }
 
 export class TileWms extends OlTileWMS implements IExtended {
   protected options: ITileWmsOptions;
+  private readonly defaultOptions: Pick<
+    ITileWmsOptions,
+    | 'queryMethod'
+    | 'queryFormat'
+    | 'version'
+    | 'requestProjectionCode'
+    | 'swapXYBBOXRequest'
+    | 'swapLonLatGeometryResult'
+    | 'limit'
+  > = {
+    queryMethod: 'GET',
+    queryFormat: 'text/xml; subtype=gml/3.1.1', // 'application/json',
+    version: '1.3.0',
+    requestProjectionCode: 'EPSG:3857',
+    swapXYBBOXRequest: false,
+    swapLonLatGeometryResult: false,
+    limit: 10000,
+  };
   protected legendByLayer: Record<string, ILayerLegend[]>;
 
   constructor(options: ITileWmsOptions) {
     super({ crossOrigin: 'anonymous', ...options });
-    this.options = { ...options };
+    this.options = { ...this.defaultOptions, ...options };
     if (this.options.snapshotable != false) {
       this.options.snapshotable = true;
     }
@@ -46,10 +71,25 @@ export class TileWms extends OlTileWMS implements IExtended {
     const promises: Promise<void>[] = [];
     for (const type of this.options.types) {
       if (this.options.queryWfsUrl != null) {
-        promises.push(loadWfsFeatureDescription(this.options.queryWfsUrl, type));
+        promises.push(
+          loadWfsFeatureDescription({
+            url: this.options.queryWfsUrl,
+            type,
+            version: '1.1.0', // Do not use version option !
+            outputFormat: this.options.queryFormat,
+            requestProjectionCode: this.options.requestProjectionCode,
+          })
+        );
       } else {
         promises.push(
-          loadWmsFeatureDescription('getUrl' in this ? (this as any).getUrl() : (this as any).getUrls()[0], type)
+          loadWmsFeatureDescription({
+            url: 'getUrl' in this ? (this as any).getUrl() : (this as any).getUrls()[0],
+            type,
+            method: this.options.queryMethod,
+            version: this.options.version,
+            outputFormat: this.options.queryFormat,
+            requestProjectionCode: this.options.requestProjectionCode,
+          })
         );
       }
     }
@@ -98,10 +138,33 @@ export class TileWms extends OlTileWMS implements IExtended {
       const isVisible = type.hide !== true;
       if (!onlyVisible || isVisible) {
         if (this.options.queryWfsUrl != null) {
-          promises.push(executeWfsQuery(this, this.options.queryWfsUrl, type, request));
+          promises.push(
+            executeWfsQuery({
+              source: this,
+              url: this.options.queryWfsUrl,
+              type,
+              request,
+              requestProjectionCode: this.options.requestProjectionCode,
+              version: '1.1.0', // Do not use version option !
+              outputFormat: this.options.queryFormat,
+              swapXYBBOXRequest: this.options.swapXYBBOXRequest,
+              swapLonLatGeometryResult: this.options.swapLonLatGeometryResult,
+            })
+          );
         } else {
           promises.push(
-            executeWmsQuery(this, 'getUrl' in this ? (this as any).getUrl() : (this as any).getUrls()[0], type, request)
+            executeWmsQuery({
+              source: this,
+              url: 'getUrl' in this ? (this as any).getUrl() : (this as any).getUrls()[0],
+              type,
+              request,
+              method: this.options.queryMethod,
+              requestProjectionCode: this.options.requestProjectionCode,
+              version: this.options.version,
+              outputFormat: this.options.queryFormat,
+              swapXYBBOXRequest: this.options.swapXYBBOXRequest,
+              swapLonLatGeometryResult: this.options.swapLonLatGeometryResult,
+            })
           );
         }
       }
@@ -118,15 +181,32 @@ export class TileWms extends OlTileWMS implements IExtended {
     const promises: Promise<Feature>[] = [];
     for (const type of this.options.types) {
       if (this.options.queryWfsUrl != null) {
-        promises.push(retrieveWfsFeature(this.options.queryWfsUrl, type, id, projection));
-      } else {
         promises.push(
-          retrieveWmsFeature(
-            'getUrl' in this ? (this as any).getUrl() : (this as any).getUrls()[0],
+          retrieveWfsFeature({
+            url: this.options.queryWfsUrl,
             type,
             id,
-            projection
-          )
+            requestProjectionCode: this.options.requestProjectionCode,
+            featureProjection: projection,
+            version: '1.1.0', // Do not use version option !
+            outputFormat: this.options.queryFormat,
+            swapXYBBOXRequest: this.options.swapXYBBOXRequest,
+            swapLonLatGeometryResult: this.options.swapLonLatGeometryResult,
+          })
+        );
+      } else {
+        promises.push(
+          retrieveWmsFeature({
+            url: 'getUrl' in this ? (this as any).getUrl() : (this as any).getUrls()[0],
+            type,
+            id,
+            requestProjectionCode: this.options.requestProjectionCode,
+            featureProjection: projection,
+            method: this.options.queryMethod,
+            version: this.options.version,
+            outputFormat: this.options.queryFormat,
+            swapLonLatGeometryResult: this.options.swapLonLatGeometryResult,
+          })
         );
       }
     }

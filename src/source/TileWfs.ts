@@ -22,8 +22,9 @@ export interface ITileWfsOptions extends ISnapshotOptions, Options {
   type: IFeatureType<string>;
   outputFormat?: string;
   requestProjectionCode?: string;
-  version?: string;
-  swapXY?: boolean;
+  version?: '1.0.0' | '1.1.0' | '2.0.0';
+  swapXYBBOXRequest?: boolean;
+  swapLonLatGeometryResult?: boolean;
   limit?: number;
 }
 
@@ -31,12 +32,13 @@ export class TileWfs extends VectorTile implements IInitSource, IQuerySource {
   protected options: ITileWfsOptions;
   private readonly defaultOptions: Pick<
     ITileWfsOptions,
-    'outputFormat' | 'version' | 'requestProjectionCode' | 'swapXY' | 'limit'
+    'outputFormat' | 'version' | 'requestProjectionCode' | 'swapXYBBOXRequest' | 'swapLonLatGeometryResult' | 'limit'
   > = {
     outputFormat: 'text/xml; subtype=gml/3.1.1', // 'application/json',
     version: '1.1.0',
     requestProjectionCode: 'EPSG:3857',
-    swapXY: false,
+    swapXYBBOXRequest: false,
+    swapLonLatGeometryResult: false,
     limit: 10000,
   };
   constructor(options: ITileWfsOptions) {
@@ -51,18 +53,19 @@ export class TileWfs extends VectorTile implements IInitSource, IQuerySource {
 
           const mapExtent = transformExtent(extent, projectionCode, this.options.requestProjectionCode);
 
-          loadWfsFeaturesOnBBOX(
-            'getUrl' in this ? (this as any).getUrl() : (this as any).getUrls()[0],
-            this.options.type,
-            'query',
-            this.options.requestProjectionCode,
-            projectionCode,
-            mapExtent,
-            this.options.limit,
-            this.options.version,
-            this.options.outputFormat,
-            this.options.swapXY
-          )
+          loadWfsFeaturesOnBBOX({
+            url: 'getUrl' in this ? (this as any).getUrl() : (this as any).getUrls()[0],
+            type: this.options.type,
+            queryType: 'query',
+            requestProjectionCode: this.options.requestProjectionCode,
+            featureProjectionCode: projectionCode,
+            bbox: mapExtent,
+            limit: this.options.limit,
+            version: this.options.version,
+            outputFormat: this.options.outputFormat,
+            swapXYBBOXRequest: this.options.swapXYBBOXRequest,
+            swapLonLatGeometryResult: this.options.swapLonLatGeometryResult,
+          })
             .then(tile.onLoad.bind(tile))
             .catch(tile.onError.bind(tile));
         });
@@ -81,12 +84,13 @@ export class TileWfs extends VectorTile implements IInitSource, IQuerySource {
   }
 
   public init(): Promise<void> {
-    return loadWfsFeatureDescription(
-      'getUrl' in this ? (this as any).getUrl() : (this as any).getUrls()[0],
-      this.options.type,
-      this.options.version,
-      this.options.outputFormat
-    );
+    return loadWfsFeatureDescription({
+      url: 'getUrl' in this ? (this as any).getUrl() : (this as any).getUrls()[0],
+      type: this.options.type,
+      version: this.options.version,
+      outputFormat: this.options.outputFormat,
+      requestProjectionCode: this.options.requestProjectionCode,
+    });
   }
 
   public getSourceType(): SourceType {
@@ -122,16 +126,17 @@ export class TileWfs extends VectorTile implements IInitSource, IQuerySource {
   }
 
   public query(request: IGisRequest, onlyVisible = false): Promise<IQueryResponse> {
-    return executeWfsQuery(
-      this,
-      'getUrl' in this ? (this as any).getUrl() : (this as any).getUrls()[0],
-      this.options.type,
+    return executeWfsQuery({
+      source: this,
+      url: 'getUrl' in this ? (this as any).getUrl() : (this as any).getUrls()[0],
+      type: this.options.type,
       request,
-      this.options.version,
-      this.options.outputFormat,
-      this.options.requestProjectionCode,
-      this.options.swapXY
-    ).then((featureTypeResponse: IQueryFeatureTypeResponse) => {
+      version: this.options.version,
+      outputFormat: this.options.outputFormat,
+      requestProjectionCode: this.options.requestProjectionCode,
+      swapXYBBOXRequest: this.options.swapXYBBOXRequest,
+      swapLonLatGeometryResult: this.options.swapLonLatGeometryResult,
+    }).then((featureTypeResponse: IQueryFeatureTypeResponse) => {
       return {
         request,
         featureTypeResponses: [featureTypeResponse],
@@ -140,15 +145,16 @@ export class TileWfs extends VectorTile implements IInitSource, IQuerySource {
   }
 
   public retrieveFeature(id: number | string, projection: Projection): Promise<Feature> {
-    return retrieveWfsFeature(
-      'getUrl' in this ? (this as any).getUrl() : (this as any).getUrls()[0],
-      this.options.type,
+    return retrieveWfsFeature({
+      url: 'getUrl' in this ? (this as any).getUrl() : (this as any).getUrls()[0],
+      type: this.options.type,
       id,
-      projection,
-      this.options.version,
-      this.options.outputFormat,
-      this.options.requestProjectionCode,
-      this.options.swapXY
-    );
+      requestProjectionCode: this.options.requestProjectionCode,
+      featureProjection: projection,
+      version: this.options.version,
+      outputFormat: this.options.outputFormat,
+      swapXYBBOXRequest: this.options.swapXYBBOXRequest,
+      swapLonLatGeometryResult: this.options.swapLonLatGeometryResult,
+    });
   }
 }
