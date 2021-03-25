@@ -364,6 +364,11 @@ export function exportToImage(
         reject(new Error('Canvas context null'));
         return;
       }
+
+      // On force un background blanc pour avoir un rendu iso OL
+      mapContext.fillStyle = 'white';
+      mapContext.fillRect(0, 0, mapCanvas.width, mapCanvas.height);
+
       const elems = map.getTargetElement().querySelectorAll('.ol-layer canvas');
       if (elems != null) {
         elems.forEach(function (canvas: any) {
