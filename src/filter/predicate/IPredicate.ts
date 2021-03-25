@@ -11,4 +11,6 @@ export interface IPredicate<
   rightHand: RH;
 
   toString(filterBuilderType?: FilterBuilderType): string;
+
+  hashCode(): string;
 }
