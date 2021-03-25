@@ -534,14 +534,14 @@ function hash32(s: string, asString = true, seed = 0x811c9dc5): number | string 
     hval += (hval << 1) + (hval << 4) + (hval << 7) + (hval << 8) + (hval << 24);
   }
   // Convert to 8 digit hex string
-  if(asString) {
-    return ("0000000" + (hval >>> 0).toString(16)).substr(-8);
+  if (asString) {
+    return ('0000000' + (hval >>> 0).toString(16)).substr(-8);
   }
 
   return hval >>> 0;
 }
 
 export function hash64(s: string): string {
-  const h1 = hash32(s, false) as number;  // returns 32 bit (as 8 byte hex string)
-  return hash32(s) as string  + hash32(s, true, h1);  // 64 bit (as 16 byte hex string)
+  const h1 = hash32(s, false) as number; // returns 32 bit (as 8 byte hex string)
+  return (hash32(s) as string) + hash32(s, true, h1); // 64 bit (as 16 byte hex string)
 }

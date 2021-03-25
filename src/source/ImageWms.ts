@@ -125,7 +125,7 @@ export class ImageWms extends OlImageWMS implements IExtended {
       TRANSPARENT: 'TRUE',
       LAYERS: getWmsLayersFromTypes(options.types),
       VERSION: this.options.version,
-      NOW: Date.now()
+      NOW: Date.now(),
     };
     const cqlFilter = this.buildFilters();
     if (cqlFilter) {
