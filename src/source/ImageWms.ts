@@ -17,6 +17,8 @@ import Feature from 'ol/Feature';
 import Projection from 'ol/proj/Projection';
 import { loadLegendWms } from './legend/wms';
 import { executeWfsQuery, loadWfsFeatureDescription, retrieveWfsFeature } from './query';
+import { FilterBuilder, FilterBuilderTypeEnum } from '../filter';
+import { IPredicate } from '../filter/predicate';
 
 export interface IImageWMSOptions extends ISnapshotOptions, Options {
   types: IFeatureType<string>[];
@@ -52,6 +54,8 @@ export class ImageWms extends OlImageWMS implements IExtended {
   };
   protected legendByLayer: Record<string, ILayerLegend[]>;
 
+  protected defaultTypePredicateAsMap: Map<string, IPredicate>;
+
   constructor(options: IImageWMSOptions) {
     super({ crossOrigin: 'anonymous', ...options });
     this.options = { ...this.defaultOptions, ...options };
@@ -64,6 +68,9 @@ export class ImageWms extends OlImageWMS implements IExtended {
     if (this.options.removable != false) {
       this.options.removable = true;
     }
+
+    this.defaultTypePredicateAsMap = new Map<string, IPredicate>();
+
     this.setSourceOptions(this.options);
   }
 
@@ -108,16 +115,24 @@ export class ImageWms extends OlImageWMS implements IExtended {
     return this.options;
   }
 
-  public setSourceOptions(options: IImageWMSOptions): void {
-    this.options = { ...options };
+  public setSourceOptions(options: IImageWMSOptions, forceRefresh = true): void {
+    this.options = { ...this.defaultOptions, ...options };
     this.un('propertychange', this.handlePropertychange);
     this.set('types', options.types);
-    this.updateParams({
+
+    const params = {
       ...this.getParams(),
       TRANSPARENT: 'TRUE',
       LAYERS: getWmsLayersFromTypes(options.types),
       VERSION: this.options.version,
-    });
+      NOW: Date.now()
+    };
+    const cqlFilter = this.buildFilters();
+    if (cqlFilter) {
+      params.CQL_FILTER = cqlFilter;
+    }
+
+    this.updateParams(params);
     this.on('propertychange', this.handlePropertychange);
   }
 
@@ -248,5 +263,35 @@ export class ImageWms extends OlImageWMS implements IExtended {
       this.legendByLayer = res;
       return res;
     });
+  }
+
+  private buildFilters(): string {
+    let filters: string;
+    for (const type of this.options.types) {
+      let filterBuilder = this.buildFilterBuilderFromType(type);
+      if (filterBuilder) {
+        if (!filters) {
+          filters = '';
+        } else {
+          filters += ';';
+        }
+        filters += filterBuilder.build(FilterBuilderTypeEnum.CQL);
+        filterBuilder = undefined;
+      }
+    }
+    return filters;
+  }
+
+  private buildFilterBuilderFromType(type: IFeatureType<string>): FilterBuilder | undefined {
+    let filterBuilder;
+    if (this.defaultTypePredicateAsMap.has(type.id)) {
+      filterBuilder = new FilterBuilder(this.defaultTypePredicateAsMap.get(type.id));
+    } else if (type.predicate) {
+      this.defaultTypePredicateAsMap.set(type.id, type.predicate);
+    }
+    if (type.predicate && filterBuilder?.predicate.hashCode() !== type.predicate.hashCode()) {
+      filterBuilder = filterBuilder ? filterBuilder.and(type.predicate) : new FilterBuilder(type.predicate);
+    }
+    return filterBuilder;
   }
 }
