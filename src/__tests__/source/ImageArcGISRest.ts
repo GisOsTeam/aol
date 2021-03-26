@@ -22,8 +22,6 @@ describe('aol.source.imageArcGISRest', () => {
       params: { TRANSPARENT: false },
     };
 
-
-
     describe('refresh', () => {
       test('NOW should change when refrehsh call', () => {
         const imageArcGISRest = new ImageArcGISRest({ ...sourceOptions });

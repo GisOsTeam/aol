@@ -20,7 +20,6 @@ describe('aol.source.imageWms', () => {
         params: { TRANSPARENT: true },
       };
 
-
       describe('refresh', () => {
         test('NOW should change when refrehsh call', () => {
           const imageWms = new ImageWms({ ...sourceOptions });

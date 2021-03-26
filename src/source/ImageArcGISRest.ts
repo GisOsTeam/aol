@@ -85,7 +85,7 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
     const params = {
       ...this.getParams(),
       LAYERS: getAgsLayersFromTypes(options.types, options.layersPrefix),
-      NOW: Date.now()
+      NOW: Date.now(),
     };
 
     let layerDefsAsObject: any;
@@ -102,7 +102,6 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
     if (layerDefsAsObject) {
       params.LAYERDEFS = JSON.stringify(layerDefsAsObject);
     }
-
 
     this.updateParams(params);
     this.on('propertychange', this.handlePropertychange);
