@@ -197,6 +197,11 @@ export class ImageWms extends OlImageWMS implements IExtended {
     });
   }
 
+  public refresh(): void {
+    this.updateParams({ ...this.getParams(), NOW: Date.now() });
+    super.refresh();
+  }
+
   public retrieveFeature(id: number | string, projection: Projection): Promise<Feature> {
     const promises: Promise<Feature>[] = [];
     for (const type of this.options.types) {

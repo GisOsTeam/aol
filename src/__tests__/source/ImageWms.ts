@@ -20,6 +20,19 @@ describe('aol.source.imageWms', () => {
         params: { TRANSPARENT: true },
       };
 
+
+      describe('refresh', () => {
+        test('NOW should change when refrehsh call', () => {
+          const imageWms = new ImageWms({ ...sourceOptions });
+          expect(imageWms.getParams().NOW).toBe(1487076708000);
+          Date.now = jest.fn(() => 1487077708000);
+          imageWms.refresh();
+          expect(imageWms.getParams().NOW).toBe(1487077708000);
+
+          Date.now = jest.fn(() => 1487076708000);
+        });
+      });
+
       const imageLoadFunction = (image: ImageWrapper, src: string) => {
         expect(src).toMatchSnapshot();
       };
