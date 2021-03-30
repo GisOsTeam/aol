@@ -115,7 +115,7 @@ export class AgsIdentifyRequest implements AgsIdentifyRequestParameters {
         FilterBuilderTypeEnum.SQL
       )}"}`;
     }
-    if (Math.round(identifyTolerance) > 0) {
+    if (!isNaN(Math.round(identifyTolerance))) {
       this.tolerance = `${Math.round(identifyTolerance)}`;
     } else {
       this.tolerance = '4';
