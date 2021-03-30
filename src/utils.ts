@@ -11,7 +11,7 @@ import Circle from 'ol/geom/Circle';
 import booleanDisjoint from '@turf/boolean-disjoint';
 import { applyStyle } from 'ol-mapbox-style';
 import { SourceType } from './source/types/sourceType';
-import { IFeatureType, ISnapshotSource, ILegendSource, ILayerLegend, ILegendRecord } from './source/IExtended';
+import { IFeatureType, ILegendRecord, ILegendSource, ISnapshotSource } from './source/IExtended';
 import { SourceFactory } from './source/factory/SourceFactory';
 import { getCenter, getWidth } from 'ol/extent';
 
@@ -513,3 +513,35 @@ export const exportLegendToImage = (
     return Promise.resolve(dataUrl);
   });
 };
+
+/**
+ * Calculate a 32 bit FNV-1a hash
+ * Found here: https://gist.github.com/vaiorabbit/5657561
+ * Ref.: http://isthe.com/chongo/tech/comp/fnv/
+ * Ref.: https://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function#FNV-1_hash
+ *
+ * @param {string} s the input value
+ * @param {boolean} [asString=false] set to true to return the hash value as
+ *     8-digit hex string instead of an integer
+ * @param {number} [seed] optionally pass the hash of the previous chunk
+ * @returns {number | string}
+ */
+function hash32(s: string, asString = true, seed = 0x811c9dc5): number | string {
+  let hval: number = seed;
+
+  for (let i = 0, l = s.length; i < l; i++) {
+    hval ^= s.charCodeAt(i);
+    hval += (hval << 1) + (hval << 4) + (hval << 7) + (hval << 8) + (hval << 24);
+  }
+  // Convert to 8 digit hex string
+  if (asString) {
+    return ('0000000' + (hval >>> 0).toString(16)).substr(-8);
+  }
+
+  return hval >>> 0;
+}
+
+export function hash64(s: string): string {
+  const h1 = hash32(s, false) as number; // returns 32 bit (as 8 byte hex string)
+  return (hash32(s) as string) + hash32(s, true, h1); // 64 bit (as 16 byte hex string)
+}

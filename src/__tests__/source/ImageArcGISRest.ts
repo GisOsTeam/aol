@@ -1,4 +1,4 @@
-import { ImageArcGISRest } from '../../source';
+import { ImageArcGISRest, ImageWms } from '../../source';
 import { Equal, IPredicate, Like } from '../../filter/predicate';
 import { Equal as EqualOp, Like as LikeOp } from '../../filter/operator';
 import { FieldTypeEnum, FilterBuilder, IField } from '../../filter';
@@ -22,6 +22,17 @@ describe('aol.source.imageArcGISRest', () => {
       params: { TRANSPARENT: false },
     };
 
+    describe('refresh', () => {
+      test('NOW should change when refrehsh call', () => {
+        const imageArcGISRest = new ImageArcGISRest({ ...sourceOptions });
+        expect(imageArcGISRest.getParams().NOW).toBe(1487076708000);
+        Date.now = jest.fn(() => 1487077708000);
+        imageArcGISRest.refresh();
+        expect(imageArcGISRest.getParams().NOW).toBe(1487077708000);
+
+        Date.now = jest.fn(() => 1487076708000);
+      });
+    });
     const imageLoadFunction = (image: ImageWrapper, src: string) => {
       expect(src).toMatchSnapshot();
     };
