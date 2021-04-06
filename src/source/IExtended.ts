@@ -89,7 +89,7 @@ export interface IIdentifyRequest extends IAbstractRequest<'identify'> {
   geometry: Geometry;
   geometryPrecision?: number;
   geometryProjection: Projection;
-  identifyTolerance?: number;
+  identifyTolerance?: number; // in pixel
   layersPrefix?: LayersPrefix;
   outFields?: string;
   returnFieldName?: boolean;
