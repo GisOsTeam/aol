@@ -152,17 +152,14 @@ export function executeWfsQuery(options: {
   let extent = transformExtent(geometry.getExtent(), geometryProjection, options.requestProjectionCode);
   if (queryType === 'identify') {
     const { identifyTolerance } = options.request as IIdentifyRequest;
-    let tolerance;
-    if (Math.round(identifyTolerance) > 0) {
-      tolerance = Math.round(identifyTolerance);
-    } else {
-      tolerance = 4;
-    }
+    const geoTolerance = ((Math.round(identifyTolerance) > 0) ? identifyTolerance : 4) * olView.getResolution();
+    let geoWidth = Math.abs(extent[2] - extent[0]) + 2 * geoTolerance;
+    let geoHeight = Math.abs(extent[3] -extent[1]) + 2 * geoTolerance;
     extent = getForViewAndSize(
       [0.5 * extent[0] + 0.5 * extent[2], 0.5 * extent[1] + 0.5 * extent[3]],
-      olView.getResolution(),
-      0,
-      [tolerance, tolerance]
+      1, // 1 car déja en géo !
+      0, // 0 car déja en géo !
+      [geoWidth, geoHeight]
     );
   }
   return loadWfsFeaturesOnBBOX({
