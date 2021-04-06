@@ -8,7 +8,7 @@ import {
   IQuerySource,
   IIdentifyRequest,
 } from '../IExtended';
-import { toGeoJSONGeometry, disjoint, getQueryId } from '../../utils';
+import { toGeoJSONGeometry, disjoint, getQueryId, buffer, toGeoJSONFeature, toOpenLayersGeometry } from '../../utils';
 import { Extent, getForViewAndSize } from 'ol/extent';
 import Geometry from 'ol/geom/Geometry';
 import { Engine } from 'bhreq';
@@ -153,7 +153,9 @@ export function executeWfsQuery(options: {
   const olView = olMap.getView();
   const mapProjection = olView.getProjection();
   const originalExtent = geometry.getExtent();
-  let extentUsed = [...originalExtent];
+  let extentUsed: Extent = [...originalExtent];
+  // Géométrie utilisée pour vérifier que les features resultant de la requête ne sont pas disjoint
+  let geometryUsedForDisjoint = geometry.clone();
   if (queryType === 'identify') {
     const { identifyTolerance } = options.request as IIdentifyRequest;
     // Assignation de la résolution
@@ -178,20 +180,14 @@ export function executeWfsQuery(options: {
     );
     // Utilisation de l'étendue intégrant la tolérance comme étendue par défaut
     extentUsed = [...extentBuffered];
+
+    geometryUsedForDisjoint = toOpenLayersGeometry(
+      buffer(toGeoJSONFeature(new Feature<Geometry>(geometry.clone())), geoTolerance, geometryProjection).geometry
+    );
   }
 
-  // Polygone créé à partir de l'étendue utilisée avant une potentielle reprojection
-  const extentUsedAsPolygon = new Polygon([
-    [
-      [extentUsed[0], extentUsed[1]],
-      [extentUsed[0], extentUsed[3]],
-      [extentUsed[2], extentUsed[3]],
-      [extentUsed[2], extentUsed[1]],
-      [extentUsed[0], extentUsed[1]],
-    ],
-  ]);
   // Utilisation de l'étendue re-projetée comme étendue par défaut
-  extentUsed = transformExtent(geometry.getExtent(), geometryProjection, options.requestProjectionCode);
+  extentUsed = transformExtent(extentUsed, geometryProjection, options.requestProjectionCode);
   return loadWfsFeaturesOnBBOX({
     url: options.url,
     type: options.type,
@@ -214,11 +210,11 @@ export function executeWfsQuery(options: {
           // source
           const geom = feature.getGeometry().clone().transform(mapProjection, geometryProjection);
           // Si en mode identify et la géométrie source et de type point (ou multi point)
-          // Ou si les géométries s'intersectent
+          // Ou si la géométrie de la feature intersecte la géométrie de la requête
           // Alors on ajoute la feature aux features à retourner
           if (
             (queryType === 'identify' && (geometry.getType() === 'Point' || geometry.getType() === 'MultiPoint')) ||
-            !disjoint(toGeoJSONGeometry(geom), toGeoJSONGeometry(extentUsedAsPolygon))
+            !disjoint(toGeoJSONGeometry(geom), toGeoJSONGeometry(geometryUsedForDisjoint))
           ) {
             features.push(feature);
           }
