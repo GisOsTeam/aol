@@ -4,16 +4,19 @@ import BaseLayer from 'ol/layer/Base';
 import View from 'ol/View';
 import Geometry from 'ol/geom/Geometry';
 import SimpleGeometry from 'ol/geom/SimpleGeometry';
-import GeoJSON, { GeoJSONGeometry } from 'ol/format/GeoJSON';
+import GeoJSON, { GeoJSONFeature, GeoJSONGeometry } from 'ol/format/GeoJSON';
 import { LayerStyles } from './LayerStyles';
 import { fromCircle } from 'ol/geom/Polygon';
 import Circle from 'ol/geom/Circle';
 import booleanDisjoint from '@turf/boolean-disjoint';
+import * as turf from '@turf/turf';
 import { applyStyle } from 'ol-mapbox-style';
-import { SourceType } from './source/types/sourceType';
+import { SourceType } from './source/types';
 import { IFeatureType, ILegendRecord, ILegendSource, ISnapshotSource } from './source/IExtended';
-import { SourceFactory } from './source/factory/SourceFactory';
+import { SourceFactory } from './source/factory';
 import { getCenter, getWidth } from 'ol/extent';
+import { ProjectionLike } from 'ol/proj';
+import Feature from 'ol/Feature';
 
 const geoJSONFormat = new GeoJSON();
 
@@ -75,14 +78,45 @@ export function revertCoordinate(geometry: SimpleGeometry): void {
 }
 
 /**
+ * Transform GeoJSON geometry to OpenLayers geometry
+ * @param {GeoJSONGeometry} geoJSONGeometry
+ * @return  {Geometry} geometry
+ */
+export function toOpenLayersGeometry(geoJSONGeometry: GeoJSONGeometry): Geometry {
+  return geoJSONFormat.readGeometry(geoJSONGeometry);
+}
+
+/**
  * Transform OpenLayers geometry to GeoJSON geometry
  * @param {Geometry} geometry
+ * @return  {GeoJSONGeometry} geoJSONGeometry
  */
 export function toGeoJSONGeometry(geometry: Geometry): GeoJSONGeometry {
   if (geometry.getType() === 'Circle') {
     geometry = fromCircle(geometry as Circle);
   }
-  return (geoJSONFormat.writeGeometryObject(geometry) as any) as GeoJSONGeometry;
+  return geoJSONFormat.writeGeometryObject(geometry);
+}
+
+/**
+ * Transform GeoJSON geometry to OpenLayers geometry
+ * @param {GeoJSONFeature} geoJSONFeature
+ * @return  {Feature} feature
+ */
+export function toOpenLayersFeature(geoJSONFeature: GeoJSONFeature): Feature {
+  return geoJSONFormat.readFeature(geoJSONFeature);
+}
+
+/**
+ * Transform OpenLayers feature to GeoJSON feature
+ * @param {Feature} feature
+ * @return {GeoJSONFeature} geoJSONFeature
+ */
+export function toGeoJSONFeature(feature: Feature): GeoJSONFeature {
+  if (feature.getGeometry()?.getType() === 'Circle') {
+    feature?.setGeometry(fromCircle(feature.getGeometry() as Circle));
+  }
+  return geoJSONFormat.writeFeatureObject(feature);
 }
 
 /**
@@ -92,6 +126,38 @@ export function toGeoJSONGeometry(geometry: Geometry): GeoJSONGeometry {
  */
 export function disjoint(g1: GeoJSONGeometry, g2: GeoJSONGeometry) {
   return booleanDisjoint(g1 as any, g2 as any);
+}
+
+/**
+ * Apply buffer to geometry
+ * @param {GeoJSONFeature} geoJsonFeatureSource
+ * @param {number} tolerance
+ * @param {ProjectionLike} projectionSource
+ * @return {GeoJSONFeature} Buffured feature
+ */
+export function buffer(
+  geoJsonFeatureSource: GeoJSONFeature,
+  tolerance: number,
+  projectionSource?: ProjectionLike
+): GeoJSONFeature {
+  // Si projectionSource non définit alors pas besoin de re-projeter donc on retourne la feature
+  if (!projectionSource) {
+    return turf.buffer(geoJsonFeatureSource as any, tolerance);
+  }
+  // Création d'une feature OpenLayers depuis la feature source GeoJSON
+  let tmpFeature: Feature = geoJSONFormat.readFeature(geoJsonFeatureSource);
+  // Projection de la géométrie de la feature depuis projectionSource vers 'EPSG:4326'
+  tmpFeature.setGeometry(tmpFeature.getGeometry().transform(projectionSource, 'EPSG:4326'));
+  // Création d'une feature GeoJSON depuis la feature OpenLayers
+  const geoJsonFeature = geoJSONFormat.writeFeatureObject(tmpFeature);
+  // Application de la tolerance à la géométrie
+  const wgs84BufferedFeature: GeoJSONFeature = turf.buffer(geoJsonFeature as any, tolerance);
+  // Création d'une feature OpenLayers depuis la feature GeoJSON intégrant la tolérance
+  tmpFeature = geoJSONFormat.readFeature(wgs84BufferedFeature);
+  // Projection de la géométrie de la feature depuis 'EPSG:4326' vers projectionSource
+  tmpFeature.setGeometry(tmpFeature.getGeometry().transform('EPSG:4326', projectionSource));
+  // Retour d'une feature GeoJSON
+  return geoJSONFormat.writeFeatureObject(tmpFeature);
 }
 
 /**
