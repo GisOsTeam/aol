@@ -9,13 +9,16 @@ import {
   IIdentifyRequest,
 } from '../IExtended';
 import { toGeoJSONGeometry, disjoint, getQueryId } from '../../utils';
-import { getForViewAndSize } from 'ol/extent';
+import { Extent, getForViewAndSize } from 'ol/extent';
 import Geometry from 'ol/geom/Geometry';
 import { Engine } from 'bhreq';
 import WFSFormat from 'ol/format/WFS';
 import JSONFormat from 'ol/format/GeoJSON';
 import Projection from 'ol/proj/Projection';
 import SimpleGeometry from 'ol/geom/SimpleGeometry';
+import Polygon from 'ol/geom/Polygon';
+
+export const DEFAULT_TOLERANCE = 4;
 
 export function loadWfsFeaturesOnBBOX(options: {
   url: string;
@@ -149,26 +152,50 @@ export function executeWfsQuery(options: {
   const { olMap, geometry, geometryProjection, queryType, limit } = options.request;
   const olView = olMap.getView();
   const mapProjection = olView.getProjection();
-  let extent = transformExtent(geometry.getExtent(), geometryProjection, options.requestProjectionCode);
+  const originalExtent = geometry.getExtent();
+  let extentUsed = [...originalExtent];
   if (queryType === 'identify') {
     const { identifyTolerance } = options.request as IIdentifyRequest;
-    const geoTolerance = (Math.round(identifyTolerance) > 0 ? identifyTolerance : 4) * olView.getResolution();
-    const geoWidth = Math.abs(extent[2] - extent[0]) + 2 * geoTolerance;
-    const geoHeight = Math.abs(extent[3] - extent[1]) + 2 * geoTolerance;
-    extent = getForViewAndSize(
-      [0.5 * extent[0] + 0.5 * extent[2], 0.5 * extent[1] + 0.5 * extent[3]],
-      1, // 1 car déja en géo !
-      0, // 0 car déja en géo !
+    // Assignation de la résolution
+    const resolution = olView.getResolution() == null ? 1 : olView.getResolution();
+    // Assignation de la tolérance à appliquer
+    const geoTolerance = (Math.round(identifyTolerance) > 0 ? identifyTolerance : DEFAULT_TOLERANCE) * resolution;
+    // Calcul de la largeur géo référencée comprenant la largeur de l'étendue originale et 2 * la tolérance (gauche et droite)
+    const geoWidth = Math.abs(originalExtent[2] - originalExtent[0]) + 2 * geoTolerance;
+    // Calcul de la hauteur géo référencée comprenant la hauteur de l'étendue originale et 2 * la tolérance (haut et bas)
+    const geoHeight = Math.abs(originalExtent[3] - originalExtent[1]) + 2 * geoTolerance;
+    // Calcul du centre de l'étendue originale
+    const originalExtentCenter = [0.5 * originalExtent[0] + 0.5 * originalExtent[2], 0.5 * originalExtent[1] + 0.5 * originalExtent[3]];
+    // Calcule de l'étendue intégrant la tolérance
+    const extentBuffered = getForViewAndSize(
+      originalExtentCenter,
+      1, // 1 car déjà en géo !
+      0, // 0 car déjà en géo !
       [geoWidth, geoHeight]
     );
+    // Utilisation de l'étendue intégrant la tolérance comme étendue par défaut
+    extentUsed = [...extentBuffered];
   }
+
+  // Polygone créé à partir de l'étendue utilisée avant une potentielle reprojection
+  const extentUsedAsPolygon = new Polygon([
+    [
+      [extentUsed[0], extentUsed[1]],
+      [extentUsed[0], extentUsed[3]],
+      [extentUsed[2], extentUsed[3]],
+      [extentUsed[2], extentUsed[1]],
+      [extentUsed[0], extentUsed[1]],
+    ],
+  ]);
+  // Utilisation de l'étendue re-projetée comme étendue par défaut
+  extentUsed = transformExtent(geometry.getExtent(), geometryProjection, options.requestProjectionCode);
   return loadWfsFeaturesOnBBOX({
     url: options.url,
     type: options.type,
     queryType: 'query',
     requestProjectionCode: options.requestProjectionCode,
     featureProjectionCode: mapProjection.getCode(),
-    bbox: extent,
+    bbox: extentUsed,
     limit,
     version: options.version,
     outputFormat: options.outputFormat,
@@ -180,11 +207,15 @@ export function executeWfsQuery(options: {
       allFeatures.forEach((feature: Feature) => {
         // Check intersection
         if (feature.getGeometry() != null) {
-          const geom = feature.getGeometry().clone();
-          geom.transform(mapProjection, geometryProjection);
+          // Duplication de la géométrie de la feature courante et transformation vers la projection de la géométrie
+          // source
+          const geom = feature.getGeometry().clone().transform(mapProjection, geometryProjection);
+          // Si en mode identify et la géométrie source et de type point (ou multi point)
+          // Ou si les géométries s'intersectent
+          // Alors on ajoute la feature aux features à retourner
           if (
             (queryType === 'identify' && (geometry.getType() === 'Point' || geometry.getType() === 'MultiPoint')) ||
-            !disjoint(toGeoJSONGeometry(geom), toGeoJSONGeometry(geometry))
+            !disjoint(toGeoJSONGeometry(geom), toGeoJSONGeometry(extentUsedAsPolygon))
           ) {
             features.push(feature);
           }
