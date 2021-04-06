@@ -1,8 +1,10 @@
 import {
-  buffer, disjoint,
+  buffer,
+  disjoint,
   hash64,
   revertCoordinate,
-  toGeoJSONFeature, toGeoJSONGeometry,
+  toGeoJSONFeature,
+  toGeoJSONGeometry,
   toOpenLayersFeature,
 } from '../utils';
 import Point from 'ol/geom/Point';
@@ -44,7 +46,16 @@ describe('utils', () => {
   describe('buffer', () => {
     test('EPSG:4326', () => {
       const featureSource = new Feature();
-      featureSource.setGeometry(new Polygon([[[-1, 0], [0, 1], [1, 0], [-1, 0]]]));
+      featureSource.setGeometry(
+        new Polygon([
+          [
+            [-1, 0],
+            [0, 1],
+            [1, 0],
+            [-1, 0],
+          ],
+        ])
+      );
       const geoJSONFeatureSource = toGeoJSONFeature(featureSource);
       const geoJSONFeatureBuffered = buffer(geoJSONFeatureSource, 1);
       expect(toOpenLayersFeature(geoJSONFeatureBuffered).getGeometry().getType()).toEqual(GeometryType.POLYGON);
