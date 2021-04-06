@@ -152,9 +152,9 @@ export function executeWfsQuery(options: {
   let extent = transformExtent(geometry.getExtent(), geometryProjection, options.requestProjectionCode);
   if (queryType === 'identify') {
     const { identifyTolerance } = options.request as IIdentifyRequest;
-    const geoTolerance = ((Math.round(identifyTolerance) > 0) ? identifyTolerance : 4) * olView.getResolution();
-    let geoWidth = Math.abs(extent[2] - extent[0]) + 2 * geoTolerance;
-    let geoHeight = Math.abs(extent[3] -extent[1]) + 2 * geoTolerance;
+    const geoTolerance = (Math.round(identifyTolerance) > 0 ? identifyTolerance : 4) * olView.getResolution();
+    const geoWidth = Math.abs(extent[2] - extent[0]) + 2 * geoTolerance;
+    const geoHeight = Math.abs(extent[3] - extent[1]) + 2 * geoTolerance;
     extent = getForViewAndSize(
       [0.5 * extent[0] + 0.5 * extent[2], 0.5 * extent[1] + 0.5 * extent[3]],
       1, // 1 car déja en géo !
