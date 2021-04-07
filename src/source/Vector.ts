@@ -3,7 +3,7 @@ import Feature from 'ol/Feature';
 import Projection from 'ol/proj/Projection';
 import { IGisRequest, IIdentifyRequest, IQueryResponse, IQuerySource, ISnapshotOptions } from './IExtended';
 import { LayerType, LayerTypeEnum, SourceType, SourceTypeEnum } from './types';
-import { buffer, disjoint, toGeoJSONFeature } from '../utils';
+import { buffer, disjoint, toGeoJSONFeature, toOpenLayersGeometry } from '../utils';
 import Geometry from 'ol/geom/Geometry';
 import { DEFAULT_TOLERANCE } from './query';
 import { fromCircle } from 'ol/geom/Polygon';
@@ -90,15 +90,15 @@ export abstract class Vector extends OlVector implements IQuerySource {
       if (destGeometry.getType() === 'Circle') {
         destGeometry = fromCircle(geometry as Circle);
       }
-      const extent = destGeometry.getExtent();
+      const geoJSONGemetryBuffered = buffer(
+        toGeoJSONFeature(new Feature<Geometry>(destGeometry.clone())),
+        geoTolerance,
+        projected ? mapProjection : null
+      ).geometry;
+      const extent = toOpenLayersGeometry(geoJSONGemetryBuffered).getExtent();
       this.forEachFeatureIntersectingExtent(extent, (feature: Feature) => {
         if (limit == null || features.length < limit) {
           const geoJSONFeature = toGeoJSONFeature(feature);
-          const geoJSONGemetryBuffered = buffer(
-            toGeoJSONFeature(new Feature<Geometry>(destGeometry.clone())),
-            geoTolerance,
-            projected ? mapProjection : null
-          ).geometry;
           if (!disjoint(geoJSONFeature.geometry, geoJSONGemetryBuffered)) {
             features.push(feature);
           }
