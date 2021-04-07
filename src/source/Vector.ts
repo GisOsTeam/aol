@@ -1,14 +1,13 @@
-import OlVector from 'ol/source/Vector';
+import OlVector, { Options } from 'ol/source/Vector';
 import Feature from 'ol/Feature';
 import Projection from 'ol/proj/Projection';
+import { IGisRequest, IIdentifyRequest, IQueryResponse, IQuerySource, ISnapshotOptions } from './IExtended';
+import { LayerType, LayerTypeEnum, SourceType, SourceTypeEnum } from './types';
+import { buffer, disjoint, toGeoJSONFeature } from '../utils';
+import Geometry from 'ol/geom/Geometry';
+import { DEFAULT_TOLERANCE } from './query';
 import { fromCircle } from 'ol/geom/Polygon';
 import Circle from 'ol/geom/Circle';
-import OlGeoJSON from 'ol/format/GeoJSON';
-import booleanDisjoint from '@turf/boolean-disjoint';
-import { IGisRequest, IQueryResponse, ISnapshotOptions, IQuerySource } from './IExtended';
-import { LayerType, LayerTypeEnum } from './types/layerType';
-import { SourceType, SourceTypeEnum } from './types/sourceType';
-import { Options } from 'ol/source/Vector';
 
 export interface IVectorOptions extends ISnapshotOptions, Options {}
 
@@ -18,8 +17,6 @@ export abstract class Vector extends OlVector implements IQuerySource {
   protected oldProjectionCode: string;
 
   protected actualProjectionCode: string;
-
-  private queryGeoJSONFormat = new OlGeoJSON();
 
   constructor(options: IVectorOptions) {
     super({ ...options });
@@ -74,23 +71,35 @@ export abstract class Vector extends OlVector implements IQuerySource {
   public query(request: IGisRequest): Promise<IQueryResponse> {
     const { olMap, geometry, geometryProjection, limit } = request;
     const features = [] as Feature[];
-    let destGeometry = null;
+    const olView = olMap.getView();
+    const { identifyTolerance } = request as IIdentifyRequest;
+    // Assignation de la résolution
+    const resolution = olView.getResolution() == null ? 1 : olView.getResolution();
+    // Assignation de la tolérance à appliquer
+    const geoTolerance = (Math.round(identifyTolerance) > 0 ? identifyTolerance : DEFAULT_TOLERANCE) * resolution;
+    let destGeometry: Geometry;
     const mapProjection = olMap.getView().getProjection();
+    let projected = false;
     if (geometry != null) {
       if (mapProjection != null && geometryProjection != null) {
-        destGeometry = geometry.transform(geometryProjection, mapProjection);
+        destGeometry = geometry.clone().transform(geometryProjection, mapProjection);
+        projected = true;
       } else {
-        destGeometry = geometry;
+        destGeometry = geometry.clone();
       }
       if (destGeometry.getType() === 'Circle') {
         destGeometry = fromCircle(geometry as Circle);
       }
       const extent = destGeometry.getExtent();
-      const jsonGeom = this.queryGeoJSONFormat.writeGeometryObject(destGeometry);
       this.forEachFeatureIntersectingExtent(extent, (feature: Feature) => {
         if (limit == null || features.length < limit) {
-          const jsonResGeom = this.queryGeoJSONFormat.writeGeometryObject(feature.getGeometry());
-          if (!booleanDisjoint(jsonResGeom as any, jsonGeom as any)) {
+          const geoJSONFeature = toGeoJSONFeature(feature);
+          const geoJSONGemetryBuffered = buffer(
+            toGeoJSONFeature(new Feature<Geometry>(destGeometry.clone())),
+            geoTolerance,
+            projected ? mapProjection : null
+          ).geometry;
+          if (!disjoint(geoJSONFeature.geometry, geoJSONGemetryBuffered)) {
             features.push(feature);
           }
         }
