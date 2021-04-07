@@ -13,7 +13,6 @@ import * as turf from '@turf/turf';
 import { applyStyle } from 'ol-mapbox-style';
 import { SourceType } from './source/types';
 import { IFeatureType, ILegendRecord, ILegendSource, ISnapshotSource } from './source/IExtended';
-import { SourceFactory } from './source/factory';
 import { getCenter, getWidth } from 'ol/extent';
 import { ProjectionLike } from 'ol/proj';
 import Feature from 'ol/Feature';
@@ -308,13 +307,6 @@ export function createLayerStyles(
       },
     },
   ];
-}
-
-/**
- * Create source from options.
- */
-export function createSource(sourceTypeName: SourceType, sourceOptions: any): ISnapshotSource {
-  return SourceFactory.create(sourceTypeName, sourceOptions);
 }
 
 /**
