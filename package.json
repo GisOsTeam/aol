@@ -10,8 +10,7 @@
     "genindex": "barrelsby -d ./src -D -L -l all -q -e sample -e __tests__ -e .d.ts",
     "build": "rimraf lib && npm run genindex && npm run lint && tsc -p tsconfig.json && cp ./package.json lib",
     "prepublishOnly": "[[ \"$PWD\" =~ /lib ]]",
-    "pub": "pushd ./ && npm run build && cd lib && npm publish --access public && popd",
-    "prepare": "husky install"
+    "pub": "pushd ./ && npm run build && cd lib && npm publish --access public && popd"
   },
   "repository": {
     "type": "git",
