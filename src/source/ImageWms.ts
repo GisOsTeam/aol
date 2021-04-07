@@ -4,9 +4,10 @@ import {
   IGisRequest,
   IQueryResponse,
   ISnapshotOptions,
-  FeatureType,
+  IFeatureType,
   IExtended,
   ILayerLegend,
+  FeatureTypePredicateWrapper,
 } from './IExtended';
 import { getWmsLayersFromTypes } from '../utils';
 import { executeWmsQuery, retrieveWmsFeature, loadWmsFeatureDescription } from './query/wms';
@@ -21,7 +22,7 @@ import { FilterBuilder, FilterBuilderTypeEnum } from '../filter';
 import { IPredicate } from '../filter/predicate';
 
 export interface IImageWMSOptions extends ISnapshotOptions, Options {
-  types: FeatureType<string>[];
+  types: IFeatureType<string>[];
   queryWfsUrl?: string; // For Wfs query instead of Wms query
   queryMethod?: 'GET' | 'POST';
   queryFormat?: string;
@@ -54,8 +55,6 @@ export class ImageWms extends OlImageWMS implements IExtended {
   };
   protected legendByLayer: Record<string, ILayerLegend[]>;
 
-  protected defaultTypePredicateAsMap: Map<string, IPredicate>;
-
   constructor(options: IImageWMSOptions) {
     super({ crossOrigin: 'anonymous', ...options });
     this.options = { ...this.defaultOptions, ...options };
@@ -69,7 +68,11 @@ export class ImageWms extends OlImageWMS implements IExtended {
       this.options.removable = true;
     }
 
-    this.defaultTypePredicateAsMap = new Map<string, IPredicate>();
+    if (this.options.types) {
+      for (const type of this.options.types) {
+        type.predicateWrapper = new FeatureTypePredicateWrapper(type.initialPredicate, type.joinWithOr);
+      }
+    }
 
     this.setSourceOptions(this.options);
   }
@@ -287,16 +290,7 @@ export class ImageWms extends OlImageWMS implements IExtended {
     return filters;
   }
 
-  private buildFilterBuilderFromType(type: FeatureType<string>): FilterBuilder | undefined {
-    let filterBuilder;
-    if (this.defaultTypePredicateAsMap.has(type.id)) {
-      filterBuilder = new FilterBuilder(this.defaultTypePredicateAsMap.get(type.id));
-    } else if (type.predicate) {
-      this.defaultTypePredicateAsMap.set(type.id, type.predicate);
-    }
-    if (type.predicate && filterBuilder?.predicate.hashCode() !== type.predicate.hashCode()) {
-      filterBuilder = filterBuilder ? filterBuilder.and(type.predicate) : new FilterBuilder(type.predicate);
-    }
-    return filterBuilder;
+  private buildFilterBuilderFromType(type: IFeatureType<string>): FilterBuilder | undefined {
+    return type.predicateWrapper ? type.predicateWrapper.filterBuilder : undefined;
   }
 }

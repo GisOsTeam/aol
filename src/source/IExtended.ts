@@ -6,6 +6,7 @@ import Projection from 'ol/proj/Projection';
 import { SourceType } from './types/sourceType';
 import { LayerType } from './types/layerType';
 import { AndPre, IPredicate, Or } from '../filter/predicate';
+import { FilterBuilder } from '../filter/FilterBuilder';
 
 export interface ISnapshotOptions extends Options {
   snapshotable?: boolean;
@@ -101,7 +102,7 @@ export interface IQueryResponse {
 }
 
 export interface IQueryFeatureTypeResponse {
-  type: FeatureType<any>;
+  type: IFeatureType<any>;
   features: Feature[];
   source: IQuerySource;
 }
@@ -112,47 +113,29 @@ export interface IAttribute {
   name?: string;
 }
 
-export interface IFeatureTypeOptions<IDT extends number | string> {
+export interface IFeatureType<IDT extends number | string> {
   id: IDT;
   queryId?: IDT;
   hide?: boolean;
   name?: string;
   identifierAttribute?: IAttribute;
   attributes?: IAttribute[];
-  predicate?: IPredicate;
+  readonly initialPredicate?: IPredicate;
+
   joinWithOr?: boolean;
+
+  predicateWrapper?: FeatureTypePredicateWrapper;
 }
 
-export class FeatureType<IDT extends number | string> {
-  public id: IDT;
-  public queryId: IDT;
-  public hide = false;
-  public name: string;
-  public identifierAttribute: IAttribute;
-  public attributes: IAttribute[];
+export class FeatureTypePredicateWrapper {
   public joinWithOr: boolean;
+
   private _initialPredicate: IPredicate;
   private _additionalPredicates: Record<string, IPredicate> = {};
 
-  public constructor(options: IFeatureTypeOptions<IDT>) {
-    const { id,
-      queryId,
-      hide = false,
-      name,
-      identifierAttribute,
-      attributes,
-      predicate,
-      joinWithOr = true } = options;
-
-    this.id = id;
-    this.queryId = queryId;
-    this.hide = hide;
-    this.name = name;
-    this.identifierAttribute = identifierAttribute;
-    this.attributes = attributes;
-    this._initialPredicate = predicate;
+  public constructor(initialPredicate?: IPredicate, joinWithOr = true) {
+    this._initialPredicate = initialPredicate;
     this.joinWithOr = joinWithOr;
-
   }
 
   public addPredicate(predicate: IPredicate): void {
@@ -164,24 +147,29 @@ export class FeatureType<IDT extends number | string> {
   }
 
   get predicate(): IPredicate {
+    return this.filterBuilder.predicate;
+  }
+
+  get filterBuilder(): FilterBuilder {
     const predicates: IPredicate[] = Object.values(this._additionalPredicates);
     if (predicates.length > 0) {
-      let aditionalPredicate: IPredicate;
+      let filterBuilder: FilterBuilder;
       for (const predicate of predicates) {
-        if (!aditionalPredicate) {
-          aditionalPredicate = predicate;
+        if(!filterBuilder) {
+          filterBuilder = new FilterBuilder(predicate);
         } else {
           if (this.joinWithOr) {
-            aditionalPredicate = new Or(aditionalPredicate, predicate);
+            filterBuilder.or(predicate);
           } else {
-            aditionalPredicate = new AndPre(aditionalPredicate, predicate);
+            filterBuilder.and(predicate);
           }
         }
-        return new AndPre(this._initialPredicate, aditionalPredicate);
       }
+      return filterBuilder.and(this._initialPredicate);
     }
-    return this._initialPredicate;
+    return new FilterBuilder(this._initialPredicate);
   }
+
 }
 export type LayersPrefix = LayersPrefixEnum.ALL | LayersPrefixEnum.TOP | LayersPrefixEnum.VISIBLE;
 export enum LayersPrefixEnum {

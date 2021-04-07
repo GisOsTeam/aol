@@ -1,12 +1,13 @@
 import OlImageArcGISRest, { Options } from 'ol/source/ImageArcGISRest';
 import {
   IExtended,
-  FeatureType,
+  IFeatureType,
   ILayerLegend,
   IQueryFeatureTypeResponse,
   IGisRequest,
   IQueryResponse,
   ISnapshotOptions,
+  FeatureTypePredicateWrapper,
 } from './IExtended';
 import { getAgsLayersFromTypes } from '../utils';
 import { LayerType, LayerTypeEnum, SourceType, SourceTypeEnum } from './types';
@@ -14,11 +15,11 @@ import { executeAgsQuery, loadAgsFeatureDescription, retrieveAgsFeature } from '
 import Feature from 'ol/Feature';
 import Projection from 'ol/proj/Projection';
 import { FilterBuilder, FilterBuilderTypeEnum } from '../filter';
-import { IPredicate } from '../filter/predicate';
 import { loadLegendAgs } from './legend/ags';
+import { IPredicate } from '../filter/predicate/IPredicate';
 
 export interface IImageArcGISRestOptions extends ISnapshotOptions, Options {
-  types: FeatureType<number>[];
+  types: IFeatureType<number>[];
 
   layersPrefix?: 'all' | 'top' | 'visible';
 }
@@ -26,7 +27,7 @@ export interface IImageArcGISRestOptions extends ISnapshotOptions, Options {
 export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
   protected options: IImageArcGISRestOptions;
   protected legendByLayer: Record<string, ILayerLegend[]>;
-  protected defaultTypePredicateAsMap: Map<number, IPredicate>;
+  // protected defaultTypePredicateAsMap: Map<number, IPredicate>;
 
   constructor(options: IImageArcGISRestOptions) {
     super({ crossOrigin: 'anonymous', ...options });
@@ -41,17 +42,18 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
       this.options.removable = true;
     }
 
-    this.defaultTypePredicateAsMap = new Map<number, IPredicate>();
+    // this.defaultTypePredicateAsMap = new Map<number, IPredicate>();
+    if (this.options.types) {
+      for (const type of this.options.types) {
+        // if (!this.defaultTypePredicateAsMap.has(type.id) && type.initialPredicate) {
+        //   this.defaultTypePredicateAsMap.set(type.id, type.initialPredicate);
+        // }
+        type.predicateWrapper = new FeatureTypePredicateWrapper(type.initialPredicate, type.joinWithOr);
+      }
+    }
 
     this.setSourceOptions(this.options);
 
-    if (this.options.types) {
-      for (const type of this.options.types) {
-        if (!this.defaultTypePredicateAsMap.has(type.id) && type.predicate) {
-          this.defaultTypePredicateAsMap.set(type.id, type.predicate);
-        }
-      }
-    }
   }
 
   public init(): Promise<void> {
@@ -128,7 +130,7 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
     for (const type of this.options.types) {
       const isVisible = type.hide !== true;
       if (!onlyVisible || isVisible) {
-        this.alterRequestFilterFromType(request, type);
+        request.filters = this.getAlteredRequestFilterFromType(request, type);
         promises.push(executeAgsQuery(this, type, request));
       }
     }
@@ -143,7 +145,7 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
   public async queryLayer(request: IGisRequest, layerId: number): Promise<IQueryResponse> {
     const layer = this.options.types.find((subLayer) => subLayer.id === layerId);
     if (layer) {
-      this.alterRequestFilterFromType(request, layer);
+      request.filters = this.getAlteredRequestFilterFromType(request, layer);
 
       const featureTypeResponse = await executeAgsQuery(this, layer, request);
       return {
@@ -190,18 +192,18 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
     }
   };
 
-  private buildFilterBuilderFromType(type: FeatureType<number>): FilterBuilder | undefined {
-    let filterBuilder;
-    if (this.defaultTypePredicateAsMap.has(type.id)) {
-      filterBuilder = new FilterBuilder(this.defaultTypePredicateAsMap.get(type.id));
-    }
-    if (type.predicate) {
-      filterBuilder = filterBuilder ? filterBuilder.and(type.predicate) : new FilterBuilder(type.predicate);
-    }
-    return filterBuilder;
+  private buildFilterBuilderFromType(type: IFeatureType<number>): FilterBuilder | undefined {
+    // let filterBuilder;
+    // if (this.defaultTypePredicateAsMap.has(type.id)) {
+    //   filterBuilder = new FilterBuilder(this.defaultTypePredicateAsMap.get(type.id));
+    // }
+    // if (type.initialPredicate) {
+    //   filterBuilder = filterBuilder ? filterBuilder.and(type.initialPredicate) : new FilterBuilder(type.initialPredicate);
+    // }
+    return type.predicateWrapper ? type.predicateWrapper.filterBuilder : undefined;
   }
 
-  private alterRequestFilterFromType(request: IGisRequest, type: FeatureType<number>) {
+  private getAlteredRequestFilterFromType(request: IGisRequest, type: IFeatureType<number>): IPredicate | undefined {
     let filterBuilder = this.buildFilterBuilderFromType(type);
     if (request.filters) {
       filterBuilder = filterBuilder ? filterBuilder.and(request.filters) : new FilterBuilder(request.filters);
