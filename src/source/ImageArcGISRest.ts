@@ -1,7 +1,7 @@
 import OlImageArcGISRest, { Options } from 'ol/source/ImageArcGISRest';
 import {
   IExtended,
-  IFeatureType,
+  FeatureType,
   ILayerLegend,
   IQueryFeatureTypeResponse,
   IGisRequest,
@@ -18,7 +18,7 @@ import { IPredicate } from '../filter/predicate';
 import { loadLegendAgs } from './legend/ags';
 
 export interface IImageArcGISRestOptions extends ISnapshotOptions, Options {
-  types: IFeatureType<number>[];
+  types: FeatureType<number>[];
 
   layersPrefix?: 'all' | 'top' | 'visible';
 }
@@ -190,7 +190,7 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
     }
   };
 
-  private buildFilterBuilderFromType(type: IFeatureType<number>): FilterBuilder | undefined {
+  private buildFilterBuilderFromType(type: FeatureType<number>): FilterBuilder | undefined {
     let filterBuilder;
     if (this.defaultTypePredicateAsMap.has(type.id)) {
       filterBuilder = new FilterBuilder(this.defaultTypePredicateAsMap.get(type.id));
@@ -201,7 +201,7 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
     return filterBuilder;
   }
 
-  private alterRequestFilterFromType(request: IGisRequest, type: IFeatureType<number>) {
+  private alterRequestFilterFromType(request: IGisRequest, type: FeatureType<number>) {
     let filterBuilder = this.buildFilterBuilderFromType(type);
     if (request.filters) {
       filterBuilder = filterBuilder ? filterBuilder.and(request.filters) : new FilterBuilder(request.filters);

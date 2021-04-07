@@ -4,7 +4,7 @@ import {
   IGisRequest,
   IQueryResponse,
   ISnapshotOptions,
-  IFeatureType,
+  FeatureType,
   IExtended,
   ILayerLegend,
 } from './IExtended';
@@ -21,7 +21,7 @@ import { FilterBuilder, FilterBuilderTypeEnum } from '../filter';
 import { IPredicate } from '../filter/predicate';
 
 export interface IImageWMSOptions extends ISnapshotOptions, Options {
-  types: IFeatureType<string>[];
+  types: FeatureType<string>[];
   queryWfsUrl?: string; // For Wfs query instead of Wms query
   queryMethod?: 'GET' | 'POST';
   queryFormat?: string;
@@ -287,7 +287,7 @@ export class ImageWms extends OlImageWMS implements IExtended {
     return filters;
   }
 
-  private buildFilterBuilderFromType(type: IFeatureType<string>): FilterBuilder | undefined {
+  private buildFilterBuilderFromType(type: FeatureType<string>): FilterBuilder | undefined {
     let filterBuilder;
     if (this.defaultTypePredicateAsMap.has(type.id)) {
       filterBuilder = new FilterBuilder(this.defaultTypePredicateAsMap.get(type.id));

@@ -4,7 +4,7 @@ import { Equal as EqualOp, Like as LikeOp } from '../../filter/operator';
 import { FieldTypeEnum, FilterBuilder, IField } from '../../filter';
 import Projection from 'ol/proj/Projection';
 import ImageWrapper from 'ol/Image';
-import { IFeatureType } from '../../source/IExtended';
+import { FeatureType } from '../../source/IExtended';
 
 // Mock la date pour les fonctions gérant le cache
 Date.now = jest.fn(() => 1487076708000); //14.02.2017
@@ -45,27 +45,27 @@ describe('aol.source.imageArcGISRest', () => {
     describe('filter', () => {
       describe('1 - constructor', () => {
         test('equal', async () => {
-          const types: IFeatureType<number>[] = [
-            { id: 1, identifierAttribute: { key: 'objectid' } },
-            { id: 2, identifierAttribute: { key: 'objectid' }, predicate: equal },
+          const types: FeatureType<number>[] = [
+            new FeatureType({ id: 1, identifierAttribute: { key: 'objectid' } }),
+            new FeatureType({ id: 2, identifierAttribute: { key: 'objectid' }, predicate: equal },
           ];
           const imageArcGISRest = new ImageArcGISRest({ ...sourceOptions, ...{ types } });
           imageArcGISRest.setImageLoadFunction(imageLoadFunction);
           loadImageFromImageArcGISRest(imageArcGISRest);
         });
         test('like', async () => {
-          const types: IFeatureType<number>[] = [
-            { id: 1, identifierAttribute: { key: 'objectid' } },
-            { id: 2, identifierAttribute: { key: 'objectid' }, predicate: like },
+          const types: FeatureType<number>[] = [
+            new FeatureType({ id: 1, identifierAttribute: { key: 'objectid' } }),
+            new FeatureType({ id: 2, identifierAttribute: { key: 'objectid' }, predicate: like }),
           ];
           const imageArcGISRest = new ImageArcGISRest({ ...sourceOptions, ...{ types } });
           imageArcGISRest.setImageLoadFunction(imageLoadFunction);
           loadImageFromImageArcGISRest(imageArcGISRest);
         });
         test('or', async () => {
-          const types: IFeatureType<number>[] = [
-            { id: 1, identifierAttribute: { key: 'objectid' } },
-            { id: 2, identifierAttribute: { key: 'objectid' }, predicate: or },
+          const types: FeatureType<number>[] = [
+            new FeatureType({ id: 1, identifierAttribute: { key: 'objectid' } }),
+            new FeatureType({ id: 2, identifierAttribute: { key: 'objectid' }, predicate: or }),
           ];
           const imageArcGISRest = new ImageArcGISRest({ ...sourceOptions, ...{ types } });
           imageArcGISRest.setImageLoadFunction(imageLoadFunction);
@@ -76,48 +76,48 @@ describe('aol.source.imageArcGISRest', () => {
         const imageArcGISRest = new ImageArcGISRest({ ...sourceOptions });
         imageArcGISRest.setImageLoadFunction(imageLoadFunction);
         test('equal', async () => {
-          const types: IFeatureType<number>[] = [
-            { id: 1, identifierAttribute: { key: 'objectid' } },
-            { id: 2, identifierAttribute: { key: 'objectid' }, predicate: equal },
+          const types: FeatureType<number>[] = [
+            new FeatureType({ id: 1, identifierAttribute: { key: 'objectid' } }),
+            new FeatureType({ id: 2, identifierAttribute: { key: 'objectid' }, predicate: equal }),
           ];
           imageArcGISRest.setSourceOptions({ ...sourceOptions, ...{ types } });
           loadImageFromImageArcGISRest(imageArcGISRest);
         });
         test('like', async () => {
-          const types: IFeatureType<number>[] = [
-            { id: 1, identifierAttribute: { key: 'objectid' } },
-            { id: 2, identifierAttribute: { key: 'objectid' }, predicate: like },
+          const types: FeatureType<number>[] = [
+            new FeatureType({ id: 1, identifierAttribute: { key: 'objectid' } }),
+            new FeatureType({ id: 2, identifierAttribute: { key: 'objectid' }, predicate: like }),
           ];
           imageArcGISRest.setSourceOptions({ ...sourceOptions, ...{ types } });
           loadImageFromImageArcGISRest(imageArcGISRest);
         });
         test('or', async () => {
-          const types: IFeatureType<number>[] = [
-            { id: 1, identifierAttribute: { key: 'objectid' } },
-            { id: 2, identifierAttribute: { key: 'objectid' }, predicate: or },
+          const types: FeatureType<number>[] = [
+            new FeatureType({ id: 1, identifierAttribute: { key: 'objectid' } }),
+            new FeatureType({ id: 2, identifierAttribute: { key: 'objectid' }, predicate: or }),
           ];
           imageArcGISRest.setSourceOptions({ ...sourceOptions, ...{ types } });
           loadImageFromImageArcGISRest(imageArcGISRest);
         });
       });
       describe('3 - both', () => {
-        const types: IFeatureType<number>[] = [
-          { id: 1, identifierAttribute: { key: 'objectid' } },
-          { id: 2, identifierAttribute: { key: 'objectid' }, predicate: like },
+        const types: FeatureType<number>[] = [
+          new FeatureType({ id: 1, identifierAttribute: { key: 'objectid' } }),
+          new FeatureType({ id: 2, identifierAttribute: { key: 'objectid' }, predicate: like }),
         ];
         const imageArcGISRest = new ImageArcGISRest({ ...sourceOptions, ...{ types } });
         imageArcGISRest.setImageLoadFunction(imageLoadFunction);
 
         test('', async () => {
           const like2: IPredicate = new Like(field, new LikeOp(), 'North%');
-          const types: IFeatureType<number>[] = [{ id: 2, identifierAttribute: { key: 'objectid' }, predicate: like2 }];
-          imageArcGISRest.setSourceOptions({ ...sourceOptions, ...{ types } });
+          const types: FeatureType<number>[] = [new FeatureType({ id: 2, identifierAttribute: { key: 'objectid' }, predicate: like2 }];
+          imageArcGISRest.setSourceOptions({ )...sourceOptions, ...{ types } });
           loadImageFromImageArcGISRest(imageArcGISRest);
         });
 
         test('', async () => {
-          const types: IFeatureType<number>[] = [{ id: 2, identifierAttribute: { key: 'objectid' }, predicate: equal }];
-          imageArcGISRest.setSourceOptions({ ...sourceOptions, ...{ types } });
+          const types: FeatureType<number>[] = [new FeatureType({ id: 2, identifierAttribute: { key: 'objectid' }, predicate: equal }];
+          imageArcGISRest.setSourceOptions({ )...sourceOptions, ...{ types } });
           loadImageFromImageArcGISRest(imageArcGISRest);
         });
       });

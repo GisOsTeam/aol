@@ -5,7 +5,7 @@ import Geometry from 'ol/geom/Geometry';
 import Projection from 'ol/proj/Projection';
 import { SourceType } from './types/sourceType';
 import { LayerType } from './types/layerType';
-import { IPredicate } from '../filter/predicate';
+import { AndPre, IPredicate, Or } from '../filter/predicate';
 
 export interface ISnapshotOptions extends Options {
   snapshotable?: boolean;
@@ -66,7 +66,7 @@ export interface ILegendSource {
   fetchLegend(): Promise<ILegendRecord>;
 }
 
-export interface IExtended extends IInitSource, IQuerySource, ILegendSource {}
+export interface IExtended extends IInitSource, IQuerySource, ILegendSource { }
 
 export type IGisRequest = IQueryRequest | IIdentifyRequest;
 
@@ -101,7 +101,7 @@ export interface IQueryResponse {
 }
 
 export interface IQueryFeatureTypeResponse {
-  type: IFeatureType<any>;
+  type: FeatureType<any>;
   features: Feature[];
   source: IQuerySource;
 }
@@ -112,7 +112,7 @@ export interface IAttribute {
   name?: string;
 }
 
-export interface IFeatureType<IDT extends number | string> {
+export interface IFeatureTypeOptions<IDT extends number | string> {
   id: IDT;
   queryId?: IDT;
   hide?: boolean;
@@ -120,6 +120,68 @@ export interface IFeatureType<IDT extends number | string> {
   identifierAttribute?: IAttribute;
   attributes?: IAttribute[];
   predicate?: IPredicate;
+  joinWithOr?: boolean;
+}
+
+export class FeatureType<IDT extends number | string> {
+  public id: IDT;
+  public queryId: IDT;
+  public hide = false;
+  public name: string;
+  public identifierAttribute: IAttribute;
+  public attributes: IAttribute[];
+  public joinWithOr: boolean;
+  private _initialPredicate: IPredicate;
+  private _additionalPredicates: Record<string, IPredicate> = {};
+
+  public constructor(options: IFeatureTypeOptions<IDT>) {
+    const { id,
+      queryId,
+      hide = false,
+      name,
+      identifierAttribute,
+      attributes,
+      predicate,
+      joinWithOr = true } = options;
+
+    this.id = id;
+    this.queryId = queryId;
+    this.hide = hide;
+    this.name = name;
+    this.identifierAttribute = identifierAttribute;
+    this.attributes = attributes;
+    this._initialPredicate = predicate;
+    this.joinWithOr = joinWithOr;
+
+  }
+
+  public addPredicate(predicate: IPredicate): void {
+    this._additionalPredicates[predicate.hashCode()] = predicate;
+  }
+
+  public removePredicate(hash: string) {
+    delete this._additionalPredicates[hash];
+  }
+
+  get predicate(): IPredicate {
+    const predicates: IPredicate[] = Object.values(this._additionalPredicates);
+    if (predicates.length > 0) {
+      let aditionalPredicate: IPredicate;
+      for (const predicate of predicates) {
+        if (!aditionalPredicate) {
+          aditionalPredicate = predicate;
+        } else {
+          if (this.joinWithOr) {
+            aditionalPredicate = new Or(aditionalPredicate, predicate);
+          } else {
+            aditionalPredicate = new AndPre(aditionalPredicate, predicate);
+          }
+        }
+        return new AndPre(this._initialPredicate, aditionalPredicate);
+      }
+    }
+    return this._initialPredicate;
+  }
 }
 export type LayersPrefix = LayersPrefixEnum.ALL | LayersPrefixEnum.TOP | LayersPrefixEnum.VISIBLE;
 export enum LayersPrefixEnum {
