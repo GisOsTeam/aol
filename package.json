@@ -48,7 +48,8 @@
     "bhreq": "^0.1.1",
     "jszip": "^3.6.0",
     "ol-mapbox-style": "^6.3.2",
-    "shapefile2geojson": "^1.0.7"
+    "shapefile2geojson": "^1.0.7",
+    "simplepolygon": "1.2.3"
   },
   "peerDependencies": {
     "ol": "^6.5.0",
