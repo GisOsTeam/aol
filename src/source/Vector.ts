@@ -76,6 +76,7 @@ export abstract class Vector extends OlVector implements IQuerySource {
     const { identifyTolerance } = request as IIdentifyRequest;
     // Assignation de la tolérance à appliquer
     const tolerance = Math.round(identifyTolerance) > 0 ? identifyTolerance : DEFAULT_TOLERANCE;
+    const geoTolerance = tolerance * olMap.getView().getResolution();
     let destGeometry: Geometry;
     const mapProjection = olMap.getView().getProjection();
     if (geometry != null) {
@@ -89,7 +90,7 @@ export abstract class Vector extends OlVector implements IQuerySource {
       }
       const geoJSONGeometryBuffered = (geodesicBuffer(
         toGeoJSONFeature(new Feature<Geometry>(destGeometry.clone())) as any,
-        tolerance
+        geoTolerance
       ) as GeoJSONFeature).geometry;
       const extent = toOpenLayersGeometry(geoJSONGeometryBuffered).getExtent();
       this.forEachFeatureIntersectingExtent(extent, (feature: Feature) => {
