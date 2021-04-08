@@ -3,7 +3,7 @@ import * as turf from '@turf/turf';
 import { AllGeoJSON, Feature, FeatureCollection, Geometry, Units } from '@turf/helpers';
 
 export function geodesicBuffer(feature: AllGeoJSON, radius: any, units: Units = 'meters', resolution = 64): AllGeoJSON {
-  if (radius < 0) throw new Error("The buffer radius must be positive");
+  if (radius < 0) throw new Error('The buffer radius must be positive');
   if (radius == 0) return feature as Feature;
   if (feature.type === 'FeatureCollection') {
     const buffers: any[] = [];
@@ -16,7 +16,7 @@ export function geodesicBuffer(feature: AllGeoJSON, radius: any, units: Units = 
         ft.geometry.coordinates.forEach(function (coords: any) {
           buffers.push(pointBuffer(turf.point(coords), radius, units, resolution));
         });
-        featureBuffer = turf.featureCollection(buffers)
+        featureBuffer = turf.featureCollection(buffers);
       } else if (ft.geometry.type === 'LineString') {
         featureBuffer = lineBuffer(ft, radius, units, resolution);
       } else if (ft.geometry.type === 'MultiLineString') {
@@ -24,7 +24,7 @@ export function geodesicBuffer(feature: AllGeoJSON, radius: any, units: Units = 
         ft.geometry.coordinates.forEach(function (coords: any) {
           buffers.push(lineBuffer(turf.lineString(coords), radius, units, resolution));
         });
-        featureBuffer = turf.featureCollection(buffers)
+        featureBuffer = turf.featureCollection(buffers);
       } else if (ft.geometry.type === 'Polygon') {
         return polygonBuffer(ft, radius, units, resolution);
       } else if (ft.geometry.type === 'MultiPolygon') {
@@ -36,12 +36,13 @@ export function geodesicBuffer(feature: AllGeoJSON, radius: any, units: Units = 
       }
       if (featureBuffer.type === 'feature') {
         buffers.push(featureBuffer);
-      } else { // featureBuffer.type === 'FeatureCollection'
+      } else {
+        // featureBuffer.type === 'FeatureCollection'
         // eslint-disable-next-line prefer-spread
         buffers.push.apply(buffers, featureBuffer.features);
       }
     });
-    return turf.featureCollection(buffers)
+    return turf.featureCollection(buffers);
   }
   if ((feature as Feature).geometry === null) return feature;
   if (['LineString', 'MultiLineString', 'Polygon', 'MultiPolygon'].indexOf((feature as Feature).geometry.type) > -1) {
@@ -54,7 +55,7 @@ export function geodesicBuffer(feature: AllGeoJSON, radius: any, units: Units = 
     ((feature as Feature).geometry as Geometry).coordinates.forEach(function (coords: any) {
       buffers.push(pointBuffer(turf.point(coords), radius, units, resolution));
     });
-    return turf.featureCollection(buffers)
+    return turf.featureCollection(buffers);
   } else if ((feature as Feature).geometry.type === 'LineString') {
     return lineBuffer(feature, radius, units, resolution);
   } else if ((feature as Feature).geometry.type === 'MultiLineString') {
@@ -62,7 +63,7 @@ export function geodesicBuffer(feature: AllGeoJSON, radius: any, units: Units = 
     ((feature as Feature).geometry as Geometry).coordinates.forEach(function (coords: any) {
       buffers.push(lineBuffer(turf.lineString(coords), radius, units, resolution));
     });
-    return turf.featureCollection(buffers)
+    return turf.featureCollection(buffers);
   } else if ((feature as Feature).geometry.type === 'Polygon') {
     return polygonBuffer(feature, radius, units, resolution);
   } else if ((feature as Feature).geometry.type === 'MultiPolygon') {
@@ -81,10 +82,10 @@ function pointBuffer(pt: any, radius: any, units: any, resolution: any) {
     const spoke = turf.destination(pt, radius, i * resMultiple, { units: units });
     pointOffset[0].push(spoke.geometry.coordinates);
   }
-  if (!(equalArrays(pointOffset[0][0], pointOffset[0][pointOffset[0].length - 1]))) {
+  if (!equalArrays(pointOffset[0][0], pointOffset[0][pointOffset[0].length - 1])) {
     pointOffset[0].push(pointOffset[0][0]);
   }
-  return turf.polygon(pointOffset)
+  return turf.polygon(pointOffset);
 }
 
 function lineBuffer(line: any, radius: any, units: any, resolution: any) {
@@ -93,11 +94,15 @@ function lineBuffer(line: any, radius: any, units: any, resolution: any) {
   line.geometry.coordinates = removeDuplicates(line.geometry.coordinates);
 
   if (line.geometry.coordinates == 2) {
-    line.geometry.coordinates.splice(1, 0, turf.midpoint(turf.point(line.geometry.coordinates[0]), turf.point(line.geometry.coordinates[1])).geometry.coordinates);
+    line.geometry.coordinates.splice(
+      1,
+      0,
+      turf.midpoint(turf.point(line.geometry.coordinates[0]), turf.point(line.geometry.coordinates[1])).geometry
+        .coordinates
+    );
   }
 
-  if (!(equalArrays(line.geometry.coordinates[0], line.geometry.coordinates[line.geometry.coordinates.length - 1]))) {
-
+  if (!equalArrays(line.geometry.coordinates[0], line.geometry.coordinates[line.geometry.coordinates.length - 1])) {
     // situation at first point
     const firstLinePoint = turf.point(line.geometry.coordinates[0]);
     const secondLinePoint = turf.point(line.geometry.coordinates[1]);
@@ -133,9 +138,7 @@ function lineBuffer(line: any, radius: any, units: any, resolution: any) {
     }
 
     return offsetToBuffer(turf.polygon(lineOffset));
-
   } else {
-
     lineOffset.push(ringOffsetOneSide(line, radius, units, resolution, false, true).geometry.coordinates);
     lineOffset.push(ringOffsetOneSide(line, radius, units, resolution, true, true).geometry.coordinates);
 
@@ -153,9 +156,15 @@ function polygonBuffer(poly: any, radius: any, units: any, resolution: any) {
     poly.geometry.coordinates[i] = removeDuplicates(poly.geometry.coordinates[i]);
   }
 
-  polygonOffset.push(ringOffsetOneSide(turf.lineString(poly.geometry.coordinates[0]), radius, units, resolution, false, true).geometry.coordinates);
+  polygonOffset.push(
+    ringOffsetOneSide(turf.lineString(poly.geometry.coordinates[0]), radius, units, resolution, false, true).geometry
+      .coordinates
+  );
   for (let i = 1; i < poly.geometry.coordinates.length; i++) {
-    polygonOffset.push(ringOffsetOneSide(turf.lineString(poly.geometry.coordinates[i]), radius, units, resolution, false, true).geometry.coordinates);
+    polygonOffset.push(
+      ringOffsetOneSide(turf.lineString(poly.geometry.coordinates[i]), radius, units, resolution, false, true).geometry
+        .coordinates
+    );
   }
 
   return offsetToBuffer(turf.polygon(polygonOffset));
@@ -180,7 +189,8 @@ function lineOffsetOneSide(line: any, radius: any, units: any, resolution: any, 
       units,
       resolution,
       right,
-      true);
+      true
+    );
     if (arcGeom != null) {
       // eslint-disable-next-line prefer-spread
       lineOffset.push.apply(lineOffset, arcGeom.geometry.coordinates);
@@ -221,7 +231,8 @@ function ringOffsetOneSide(ring: any, radius: any, units: any, resolution: any, 
     units,
     resolution,
     right,
-    true);
+    true
+  );
   if (arcGeom != null) {
     // eslint-disable-next-line prefer-spread
     ringOffset.push.apply(ringOffset, arcGeom.geometry.coordinates);
@@ -230,7 +241,16 @@ function ringOffsetOneSide(ring: any, radius: any, units: any, resolution: any, 
   return turf.lineString(ringOffset);
 }
 
-function arc(pt: any, radius: any, bearing1: any, bearing2: any, units: any, resolution: any, right = true, shortcut = false) {
+function arc(
+  pt: any,
+  radius: any,
+  bearing1: any,
+  bearing2: any,
+  units: any,
+  resolution: any,
+  right = true,
+  shortcut = false
+) {
   const arc = [];
   const resMultiple = 360 / resolution;
   const angle = modulo(Math.pow(-1, right ? 2 : 1) * (bearing1 - bearing2), 360);
@@ -268,7 +288,7 @@ function filterNetWinding(fc: any, filterFn: any) {
   let i = fc.features.length;
   while (i--) {
     if (filterFn(fc.features[i].properties.netWinding)) {
-      output.features.push({ type: "Feature", geometry: fc.features[i].geometry, properties: {} });
+      output.features.push({ type: 'Feature', geometry: fc.features[i].geometry, properties: {} });
     }
   }
   return output;
@@ -276,7 +296,7 @@ function filterNetWinding(fc: any, filterFn: any) {
 
 function unionFeatureCollection(fc: any) {
   // Note: union takes a polygon, but return a polygon or multipolygon (which it can not take in). In case of buffes, however, it will always return a polygon
-  if (fc.features.length == 0) return { type: "Feature", geometry: null, properties: {} };
+  if (fc.features.length == 0) return { type: 'Feature', geometry: null, properties: {} };
   let incrementalUnion = fc.features[0];
   if (fc.features.length == 1) return incrementalUnion;
   for (let i = 1; i < fc.features.length; i++) {
@@ -287,15 +307,19 @@ function unionFeatureCollection(fc: any) {
 
 function offsetToBuffer(polygonOffset: any) {
   const sp = simplepolygon(polygonOffset);
-  const unionWithWindingOne = unionFeatureCollection(filterNetWinding(sp, function (netWinding: any) {
-    return netWinding == 1
-  }));
-  const unionWithWindingZero = unionFeatureCollection(filterNetWinding(sp, function (netWinding: any) {
-    return netWinding == 0
-  }));
+  const unionWithWindingOne = unionFeatureCollection(
+    filterNetWinding(sp, function (netWinding: any) {
+      return netWinding == 1;
+    })
+  );
+  const unionWithWindingZero = unionFeatureCollection(
+    filterNetWinding(sp, function (netWinding: any) {
+      return netWinding == 0;
+    })
+  );
   // This last one might have winding -1, so we might have to rewind it if the difference algorithm requires so
 
-  if (unionWithWindingOne.geometry == null) return { type: "Feature", geometry: null, properties: {} };
+  if (unionWithWindingOne.geometry == null) return { type: 'Feature', geometry: null, properties: {} };
   if (unionWithWindingZero.geometry == null) return unionWithWindingOne;
   return turf.difference(unionWithWindingOne, unionWithWindingZero);
 }
@@ -312,14 +336,16 @@ function winding(poly: any) {
   const nxtVtx = coords[modulo(leftVtxIndex + 1, coords.length - 1)];
   const atan1 = Math.atan((prevVtx[1] - leftVtx[1]) / (prevVtx[0] - leftVtx[0]));
   const atan2 = Math.atan((nxtVtx[1] - leftVtx[1]) / (nxtVtx[0] - leftVtx[0]));
-  return (atan1 > atan2) ? 1 : -1;
+  return atan1 > atan2 ? 1 : -1;
 }
 
 function rewind(poly: any) {
   // outer ring to winding +1, inner rings to winding -1
-  if (winding(turf.polygon([poly.geometry.coordinates[0]])) == -1) poly.geometry.coordinates[0] = poly.geometry.coordinates[0].reverse();
+  if (winding(turf.polygon([poly.geometry.coordinates[0]])) == -1)
+    poly.geometry.coordinates[0] = poly.geometry.coordinates[0].reverse();
   for (let i = 1; i < poly.geometry.coordinates.length; i++) {
-    if (winding(turf.polygon([poly.geometry.coordinates[i]])) == 1) poly.geometry.coordinates[i] = poly.geometry.coordinates[i].reverse();
+    if (winding(turf.polygon([poly.geometry.coordinates[i]])) == 1)
+      poly.geometry.coordinates[i] = poly.geometry.coordinates[i].reverse();
   }
   return poly;
 }
@@ -333,23 +359,19 @@ function removeDuplicates(arr: any) {
   return arr;
 }
 
-
 // Function to compare Arrays of numbers. From http://stackoverflow.com/questions/7837456/how-to-compare-arrays-in-javascript
 function equalArrays(array1: any, array2: any) {
   // if the other array is a falsy value, return
-  if (!array1 || !array2)
-    return false;
+  if (!array1 || !array2) return false;
 
   // compare lengths - can save a lot of time
-  if (array1.length != array2.length)
-    return false;
+  if (array1.length != array2.length) return false;
 
   for (let i = 0, l = array1.length; i < l; i++) {
     // Check if we have nested arrays
     if (array1[i] instanceof Array && array2[i] instanceof Array) {
       // recurse into the nested arrays
-      if (!equalArrays(array1[i], array2[i]))
-        return false;
+      if (!equalArrays(array1[i], array2[i])) return false;
     } else if (array1[i] != array2[i]) {
       // Warning - two different object instances will never be equal: {x:20} != {x:20}
       return false;

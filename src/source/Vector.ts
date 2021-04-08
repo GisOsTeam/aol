@@ -8,6 +8,8 @@ import Geometry from 'ol/geom/Geometry';
 import { DEFAULT_TOLERANCE } from './query';
 import { fromCircle } from 'ol/geom/Polygon';
 import Circle from 'ol/geom/Circle';
+import { geodesicBuffer } from '../utils/geodesicBuffer';
+import { GeoJSONFeature } from 'ol/format/GeoJSON';
 
 export interface IVectorOptions extends ISnapshotOptions, Options {}
 
@@ -71,35 +73,29 @@ export abstract class Vector extends OlVector implements IQuerySource {
   public query(request: IGisRequest): Promise<IQueryResponse> {
     const { olMap, geometry, geometryProjection, limit } = request;
     const features = [] as Feature[];
-    const olView = olMap.getView();
     const { identifyTolerance } = request as IIdentifyRequest;
-    // Assignation de la résolution
-    const resolution = olView.getResolution() == null ? 1 : olView.getResolution();
     // Assignation de la tolérance à appliquer
-    const geoTolerance = (Math.round(identifyTolerance) > 0 ? identifyTolerance : DEFAULT_TOLERANCE) * resolution;
+    const tolerance = Math.round(identifyTolerance) > 0 ? identifyTolerance : DEFAULT_TOLERANCE;
     let destGeometry: Geometry;
     const mapProjection = olMap.getView().getProjection();
-    let projected = false;
     if (geometry != null) {
       if (mapProjection != null && geometryProjection != null) {
         destGeometry = geometry.clone().transform(geometryProjection, mapProjection);
-        projected = true;
       } else {
         destGeometry = geometry.clone();
       }
       if (destGeometry.getType() === 'Circle') {
         destGeometry = fromCircle(geometry as Circle);
       }
-      const geoJSONGemetryBuffered = buffer(
-        toGeoJSONFeature(new Feature<Geometry>(destGeometry.clone())),
-        geoTolerance,
-        projected ? mapProjection : null
-      ).geometry;
-      const extent = toOpenLayersGeometry(geoJSONGemetryBuffered).getExtent();
+      const geoJSONGeometryBuffered = (geodesicBuffer(
+        toGeoJSONFeature(new Feature<Geometry>(destGeometry.clone())) as any,
+        tolerance
+      ) as GeoJSONFeature).geometry;
+      const extent = toOpenLayersGeometry(geoJSONGeometryBuffered).getExtent();
       this.forEachFeatureIntersectingExtent(extent, (feature: Feature) => {
         if (limit == null || features.length < limit) {
           const geoJSONFeature = toGeoJSONFeature(feature);
-          if (!disjoint(geoJSONFeature.geometry, geoJSONGemetryBuffered)) {
+          if (!disjoint(geoJSONFeature.geometry, geoJSONGeometryBuffered)) {
             features.push(feature);
           }
         }
