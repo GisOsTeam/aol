@@ -100,15 +100,25 @@ export abstract class Vector extends OlVector implements IQuerySource {
       if (destGeometry.getType() === 'Circle') {
         destGeometry = fromCircle(geometry as Circle);
       }
-      const geoJSONGeometryBuffered = (geodesicBuffer(
+      // Géométrie GeoJSON bufferisée en EPSG:4326
+      const wgs84GeoJSONBuffured = (geodesicBuffer(
         toGeoJSONFeature(new Feature<Geometry>(destGeometry.clone())) as any,
         geoTolerance
       ) as GeoJSONFeature).geometry;
-      const extent = toOpenLayersGeometry(geoJSONGeometryBuffered).transform('EPSG:4326', projectionUsed).getExtent();
+      // Géométrie OpenLayers bufferisée en EPSG:4326
+      const wgs84GeoOlBuffered = toOpenLayersGeometry(wgs84GeoJSONBuffured);
+      // Géométrie OpenLayers bufferisée en projectionUsed
+      const originalProjGeoOlBuffered = wgs84GeoOlBuffered.clone().transform('EPSG:4326', projectionUsed);
+      // Géométrie GeoJSON bufferisée en projectionUsed
+      const originalProjFeatureJSONBuffered = toGeoJSONFeature(
+        new Feature<Geometry>(originalProjGeoOlBuffered.clone())
+      );
+
+      const extent = originalProjGeoOlBuffered.clone().getExtent();
       this.forEachFeatureIntersectingExtent(extent, (feature: Feature) => {
         if (limit == null || features.length < limit) {
           const geoJSONFeature = toGeoJSONFeature(feature);
-          if (!disjoint(geoJSONFeature.geometry, geoJSONGeometryBuffered)) {
+          if (!disjoint(geoJSONFeature.geometry, originalProjFeatureJSONBuffered.geometry)) {
             features.push(feature);
           }
         }
