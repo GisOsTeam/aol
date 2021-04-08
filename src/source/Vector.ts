@@ -3,13 +3,14 @@ import Feature from 'ol/Feature';
 import Projection from 'ol/proj/Projection';
 import { IGisRequest, IIdentifyRequest, IQueryResponse, IQuerySource, ISnapshotOptions } from './IExtended';
 import { LayerType, LayerTypeEnum, SourceType, SourceTypeEnum } from './types';
-import { buffer, disjoint, toGeoJSONFeature, toOpenLayersGeometry } from '../utils';
+import { disjoint, toGeoJSONFeature, toOpenLayersGeometry } from '../utils';
 import Geometry from 'ol/geom/Geometry';
 import { DEFAULT_TOLERANCE } from './query';
 import { fromCircle } from 'ol/geom/Polygon';
 import Circle from 'ol/geom/Circle';
 import { geodesicBuffer } from '../utils/geodesicBuffer';
 import { GeoJSONFeature } from 'ol/format/GeoJSON';
+import { ProjectionLike } from 'ol/proj';
 
 export interface IVectorOptions extends ISnapshotOptions, Options {}
 
@@ -80,10 +81,21 @@ export abstract class Vector extends OlVector implements IQuerySource {
     let destGeometry: Geometry;
     const mapProjection = olMap.getView().getProjection();
     if (geometry != null) {
-      if (mapProjection != null && geometryProjection != null) {
-        destGeometry = geometry.clone().transform(geometryProjection, mapProjection);
-      } else {
+      let projectionUsed: ProjectionLike;
+      // On a définit une projection spécifique à la géométrie alors elle est présumée prioritaire
+      if (geometryProjection != null) {
+        destGeometry = geometry.clone().transform(geometryProjection, 'EPSG:4326');
+        projectionUsed = geometryProjection;
+      }
+      // On a définit une map projection spécifique à la géométrie alors on l'utilise
+      else if (mapProjection != null) {
+        destGeometry = geometry.clone().transform(mapProjection, 'EPSG:4326');
+        projectionUsed = mapProjection;
+      }
+      // La géométrie est présumée être en EPSG:4326
+      else {
         destGeometry = geometry.clone();
+        projectionUsed = 'EPSG:4326';
       }
       if (destGeometry.getType() === 'Circle') {
         destGeometry = fromCircle(geometry as Circle);
@@ -92,7 +104,7 @@ export abstract class Vector extends OlVector implements IQuerySource {
         toGeoJSONFeature(new Feature<Geometry>(destGeometry.clone())) as any,
         geoTolerance
       ) as GeoJSONFeature).geometry;
-      const extent = toOpenLayersGeometry(geoJSONGeometryBuffered).getExtent();
+      const extent = toOpenLayersGeometry(geoJSONGeometryBuffered).transform('EPSG:4326', projectionUsed).getExtent();
       this.forEachFeatureIntersectingExtent(extent, (feature: Feature) => {
         if (limit == null || features.length < limit) {
           const geoJSONFeature = toGeoJSONFeature(feature);
