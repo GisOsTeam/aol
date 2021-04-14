@@ -5,6 +5,10 @@ import { LayerType, LayerTypeEnum } from './types/layerType';
 export interface IExternalVectorOptions extends IVectorOptions {}
 
 export class ExternalVector extends Vector {
+  /**
+   *
+   * @param param0, default useSpatialIndex is false for performance issue
+   */
   constructor({ useSpatialIndex = false, ...options }: IExternalVectorOptions) {
     super({ ...options, useSpatialIndex });
     this.options = options;
