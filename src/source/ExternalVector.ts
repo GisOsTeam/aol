@@ -5,8 +5,8 @@ import { LayerType, LayerTypeEnum } from './types/layerType';
 export interface IExternalVectorOptions extends IVectorOptions {}
 
 export class ExternalVector extends Vector {
-  constructor(options: IExternalVectorOptions) {
-    super({ ...options, useSpatialIndex: false });
+  constructor({ useSpatialIndex = false, ...options }: IExternalVectorOptions) {
+    super({ ...options, useSpatialIndex });
     this.options = options;
     if (this.options.snapshotable != false) {
       this.options.snapshotable = true;
