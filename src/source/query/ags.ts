@@ -35,7 +35,7 @@ export function executeAgsIdentify(
   url += '/identify';
 
   const body = new AgsIdentifyRequest(source, types, request);
-  const httpEngine = HttpEngine.getInstance();
+  const httpEngine = Engine.getInstance();
   return httpEngine
     .send({
       url,

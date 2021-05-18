@@ -73,7 +73,6 @@ export type IGisRequest = IQueryRequest | IIdentifyRequest;
 export interface IAbstractRequest<T extends string> {
   olMap: OlMap;
   queryType: T;
-  filters?: IPredicate;
   limit?: number;
   returnGeometry?: boolean;
   srId?: string;

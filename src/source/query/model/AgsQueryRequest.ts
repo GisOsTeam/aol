@@ -119,9 +119,6 @@ export class AgsQueryRequest implements AgsQueryRequestParameters {
 
     let filters;
     switch (request.queryType) {
-      case 'identify':
-        filters = request.filters[type.id];
-        break;
       case 'query':
         filters = request.filters;
         break;
