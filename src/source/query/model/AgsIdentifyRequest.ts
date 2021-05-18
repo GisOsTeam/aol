@@ -44,9 +44,10 @@ export class AgsIdentifyRequest implements AgsIdentifyRequestParameters {
 
   private format = new EsriJSON();
 
-  constructor(source: IExtended, types: IFeatureType<number>[], request: IIdentifyRequest) {
+  constructor(source: IExtended, sourceTypes: IFeatureType<number>[], request: IIdentifyRequest) {
     const { olMap, geometryProjection, queryType } = request;
     this.sr = '3857';
+    const types = request.types || sourceTypes;
 
     if (request.srId) {
       this.sr = request.srId;

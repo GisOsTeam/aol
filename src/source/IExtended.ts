@@ -96,6 +96,8 @@ export interface IIdentifyRequest extends IAbstractRequest<'identify'> {
   returnGeometry?: boolean;
   srId?: string;
   filters?: Record<number, IPredicate>;
+
+  types?: IFeatureType<any>[];
 }
 
 export interface IQueryResponse {
