@@ -4,4 +4,5 @@
 
 export * from './ags';
 export * from './identify';
+export * from './wfs';
 export * from './wms';

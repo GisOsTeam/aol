@@ -44,7 +44,11 @@ export class AgsIdentifyRequest implements AgsIdentifyRequestParameters {
 
   private format = new EsriJSON();
 
+<<<<<<< HEAD
   constructor(source: IExtended, types: IFeatureType<number>[], request: IIdentifyRequest) {
+=======
+  constructor(source: IExtended, type: IFeatureType<number>, request: IIdentifyRequest) {
+>>>>>>> master
     const { olMap, geometryProjection, queryType } = request;
     this.sr = '3857';
 
@@ -109,6 +113,7 @@ export class AgsIdentifyRequest implements AgsIdentifyRequestParameters {
     );
     this.mapExtent = mapExtent.join(',');
     this.imageDisplay = '1001,1001';
+<<<<<<< HEAD
     const ids = types.map((type) => type.id).join(',');
     this.layers = `${layersPrefix}:${ids}`;
     if (request.filters) {
@@ -120,6 +125,13 @@ export class AgsIdentifyRequest implements AgsIdentifyRequestParameters {
         }
       }
       this.layerDefs = `{${layerDefs.join(',')}}`;
+=======
+    this.layers = `${layersPrefix}:${getQueryId<number>(type)}`;
+    if (request.filters) {
+      this.layerDefs = `{"${getQueryId<number>(type)}":"${new FilterBuilder(request.filters).build(
+        FilterBuilderTypeEnum.SQL
+      )}"}`;
+>>>>>>> master
     }
     if (!isNaN(Math.round(identifyTolerance))) {
       this.tolerance = `${Math.round(identifyTolerance)}`;

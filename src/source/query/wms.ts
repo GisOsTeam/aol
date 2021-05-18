@@ -5,156 +5,181 @@ import {
   IGisRequest,
   IFeatureType,
   IQueryFeatureTypeResponse,
-  IExtended,
   IAttribute,
   IIdentifyRequest,
+  IQuerySource,
 } from '../IExtended';
-import { toGeoJSONGeometry, disjoint } from '../../utils';
+import { toGeoJSONGeometry, disjoint, getQueryId } from '../../utils';
 import { getForViewAndSize } from 'ol/extent';
-import SimpleGeometry from 'ol/geom/SimpleGeometry';
 import Projection from 'ol/proj/Projection';
 import Geometry from 'ol/geom/Geometry';
-import { HttpEngine } from '../../HttpEngine';
+import { Engine } from 'bhreq';
+import SimpleGeometry from 'ol/geom/SimpleGeometry';
 
-const format = new WMSGetFeatureInfo();
-
-function getFeatureInfoOnBBOX(
-  source: IExtended,
-  type: IFeatureType<string>,
-  queryType: 'query' | 'identify',
-  requestProjectionCode: string,
-  featureProjectionCode: string,
-  bbox: number[],
-  renderSize: number,
-  tolerance: number,
-  limit: number,
-  id?: number | string,
-  cql?: string
-): Promise<Feature[]> {
-  let url = '';
-  if ('getUrl' in source) {
-    url = (source as any).getUrl();
-  } else if ('getUrls' in source) {
-    url = (source as any).getUrls()[0];
+function loadWmsFeaturesOnBBOX(options: {
+  url: string;
+  type: IFeatureType<string>;
+  queryType: 'query' | 'identify';
+  requestProjectionCode: string;
+  featureProjectionCode: string;
+  bbox: number[];
+  renderSize: number;
+  tolerance: number;
+  limit: number;
+  method: 'GET' | 'POST';
+  version: '1.0.0' | '1.1.0' | '1.3.0';
+  outputFormat: string;
+  swapXYBBOXRequest?: boolean;
+  swapLonLatGeometryResult?: boolean;
+  id?: number | string;
+  cql?: string;
+}): Promise<Feature[]> {
+  const params: { [id: string]: string } = {};
+  params.SERVICE = 'WMS';
+  params.VERSION = options.version;
+  params.REQUEST = 'GetFeatureInfo';
+  params.QUERY_LAYERS = getQueryId<string>(options.type);
+  params.LAYERS = getQueryId<string>(options.type);
+  params.INFO_FORMAT = options.outputFormat;
+  if (options.version === '1.3.0') {
+    params.CRS = options.requestProjectionCode;
+    params.I = `${Math.round(options.renderSize / 2)}`;
+    params.J = `${Math.round(options.renderSize / 2)}`;
+  } else {
+    params.SRS = options.requestProjectionCode;
+    params.X = `${Math.round(options.renderSize / 2)}`;
+    params.Y = `${Math.round(options.renderSize / 2)}`;
   }
-  const body: { [id: string]: string } = {};
-  body.SERVICE = 'WMS';
-  body.VERSION = '1.1.0';
-  body.REQUEST = 'GetFeatureInfo';
-  body.QUERY_LAYERS = type.id;
-  body.LAYERS = type.id;
-  body.INFO_FORMAT = 'application/vnd.ogc.gml';
-  body.SRS = requestProjectionCode;
-  body.X = `${Math.round(renderSize / 2)}`;
-  body.Y = `${Math.round(renderSize / 2)}`;
-  body.WIDTH = `${renderSize}`;
-  body.HEIGHT = `${renderSize}`;
-  body.BBOX = bbox.join(',');
-  body.FEATURE_COUNT = `${limit}`;
-  if (id != null) {
-    body.FEATUREID = `${id}`; // GeoServer
-    // ?? // QGis Server
+  params.WIDTH = `${options.renderSize}`;
+  params.HEIGHT = `${options.renderSize}`;
+  if (options.bbox != null && options.bbox.length === 4) {
+    if (options.swapXYBBOXRequest !== true) {
+      params.BBOX = options.bbox.join(',');
+    } else {
+      params.BBOX += `${options.bbox[1]},${options.bbox[0]},${options.bbox[3]},${options.bbox[2]}`;
+    }
+  }
+  params.FEATURE_COUNT = `${options.limit}`;
+  if (options.id != null) {
+    params.FEATUREID = `${options.id}`; // GeoServer, BG, QGis Server
     // ?? // MapServer
     // ?? // ArcGIS WMS
   }
-  const toleranceStr = `${tolerance}`;
-  body.BUFFER = toleranceStr; // GeoServer
-  body.RADIUS = toleranceStr; // MapServer
-  body.FI_POINT_TOLERANCE = toleranceStr; // QGis Server
-  body.FI_LINE_TOLERANCE = toleranceStr; // QGis Server
-  body.FI_POLYGON_TOLERANCE = toleranceStr; // QGis Server
-  body.WITH_GEOMETRY = 'true'; // QGis Server
-  if (cql != null && cql !== '') {
-    body.CQL_FILTER = cql;
+  const toleranceStr = `${options.tolerance}`;
+  params.BUFFER = toleranceStr; // GeoServer
+  params.RADIUS = toleranceStr; // MapServer
+  params.FI_POINT_TOLERANCE = toleranceStr; // QGis Server
+  params.FI_LINE_TOLERANCE = toleranceStr; // QGis Server
+  params.FI_POLYGON_TOLERANCE = toleranceStr; // QGis Server
+  params.WITH_GEOMETRY = 'true'; // QGis Server
+  if (options.cql != null && options.cql !== '') {
+    params.CQL_FILTER = options.cql;
   }
-  if (queryType === 'query') {
-    body.SLD_BODY = `<StyledLayerDescriptor version="1.0.0"><UserLayer><Name>${type.id}</Name><UserStyle><FeatureTypeStyle><Rule><PointSymbolizer><Graphic><Mark><WellKnownName>square</WellKnownName><Fill><CssParameter name="fill">#FFFFFF</CssParameter></Fill></Mark><Size>1</Size></Graphic></PointSymbolizer><LineSymbolizer><Stroke><CssParameter name="stroke">#000000</CssParameter><CssParameter name="stroke-width">1</CssParameter></Stroke></LineSymbolizer><PolygonSymbolizer><Stroke><CssParameter name="stroke">#000000</CssParameter><CssParameter name="stroke-width">1</CssParameter></Stroke></PolygonSymbolizer></Rule></FeatureTypeStyle></UserStyle></UserLayer></StyledLayerDescriptor>`;
+  if (options.queryType === 'query') {
+    params.SLD_BODY = `<StyledLayerDescriptor version="1.0.0"><UserLayer><Name>${getQueryId<string>(
+      options.type
+    )}</Name><UserStyle><FeatureTypeStyle><Rule><PointSymbolizer><Graphic><Mark><WellKnownName>square</WellKnownName><Fill><CssParameter name="fill">#FFFFFF</CssParameter></Fill></Mark><Size>1</Size></Graphic></PointSymbolizer><LineSymbolizer><Stroke><CssParameter name="stroke">#000000</CssParameter><CssParameter name="stroke-width">1</CssParameter></Stroke></LineSymbolizer><PolygonSymbolizer><Stroke><CssParameter name="stroke">#000000</CssParameter><CssParameter name="stroke-width">1</CssParameter></Stroke></PolygonSymbolizer></Rule></FeatureTypeStyle></UserStyle></UserLayer></StyledLayerDescriptor>`;
   }
+  params.FORMAT = 'image/png';
+  params.STYLES = '';
 
-  const httpEngine = HttpEngine.getInstance();
-  return httpEngine
-    .send({
-      url,
-      body,
+  let promise = null;
+  if (options.method === 'POST') {
+    promise = Engine.getInstance().send({
+      url: options.url,
+      body: params,
       method: 'POST',
       contentType: 'application/x-www-form-urlencoded',
       responseType: 'text',
-    })
-    .then(
-      (res) => {
-        // Read features
-        const features = [] as Feature[];
-        // Search projection on results
-        let dataProjection = getProjection(requestProjectionCode);
-        let dataProjectionCode = requestProjectionCode;
-        const res1 = res.body.match(/\ssrsName=\"([^\"]+)\"/i);
-        if (res1 && res1.length >= 2) {
-          const res2 = res1[1].match(/(\d+)(?!.*\d)/g);
-          if (res2 && res2.length > 0) {
-            dataProjectionCode = 'EPSG:' + res2[res2.length - 1];
-          }
+    });
+  } else {
+    promise = Engine.getInstance().send({
+      url: options.url,
+      params,
+      responseType: 'text',
+    });
+  }
+  return promise.then(
+    (res) => {
+      const features = [] as Feature[];
+      let txt = res.text;
+      // Search projection on results
+      let dataProjection = getProjection(options.requestProjectionCode);
+      let dataProjectionCode = options.requestProjectionCode;
+      const res1 = txt.match(/\ssrsName=\"([^\"]+)\"/i);
+      if (res1 && res1.length >= 2) {
+        const res2 = res1[1].match(/(\d+)(?!.*\d)/g);
+        if (res2 && res2.length > 0) {
+          dataProjectionCode = 'EPSG:' + res2[res2.length - 1];
+          txt = txt.replace(/\ssrsName=\"([^\"]+)\"/i, ` srsName="${dataProjectionCode}"`);
         }
-        try {
-          dataProjection = getProjection(dataProjectionCode);
-        } catch (err) {
-          console.error(err);
-        }
-        // Hack for GeoServer with space in name
-        let txt = res.text;
-        if (/\s/.test(type.id)) {
-          const withoutSpace = type.id.replace(/\s/g, '_');
-          const withSpace = type.id.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, '\\$1');
-          txt = txt.replace(new RegExp('<' + withSpace, 'g'), '<' + withoutSpace);
-          txt = txt.replace(new RegExp('</' + withSpace, 'g'), '</' + withoutSpace);
-        }
-        // Read features
-        const allFeatures = format.readFeatures(txt);
-        if (allFeatures != null && allFeatures.length > 0) {
-          allFeatures.forEach((feature: Feature) => {
-            if (limit == null || features.length < limit) {
-              if (dataProjection.getUnits() === 'degrees') {
-                if (feature.getGeometry()) {
-                  // In degree: This formats the geographic coordinates in longitude/latitude (x/y) order.
-                  // Reverse coordinates !
-                  (feature.getGeometry() as SimpleGeometry).applyTransform(
-                    (input: number[], ouput: number[], dimension: number) => {
-                      for (let i = 0; i < input.length; i += dimension) {
-                        const y = input[i];
-                        const x = input[i + 1];
-                        ouput[i] = x;
-                        ouput[i + 1] = y;
-                      }
-                      return ouput;
-                    }
-                  );
-                }
-              }
-              if (feature.getGeometry()) {
-                feature.getGeometry().transform(dataProjection, featureProjectionCode);
-              }
-              features.push(feature);
-            }
-          });
-        }
-        return features;
-      },
-      (err) => {
-        console.error('Get WMS feature info in error');
-        return err;
       }
-    );
+      try {
+        dataProjection = getProjection(dataProjectionCode);
+      } catch (err) {
+        console.error(err);
+      }
+      // Hack for GeoServer with space in name
+      if (/\s/.test(getQueryId<string>(options.type))) {
+        const withoutSpace = getQueryId<string>(options.type).replace(/\s/g, '_');
+        const withSpace = getQueryId<string>(options.type).replace(/([.*+?^=!:${}()|\[\]\/\\])/g, '\\$1');
+        txt = txt.replace(new RegExp('<' + withSpace, 'g'), '<' + withoutSpace);
+        txt = txt.replace(new RegExp('</' + withSpace, 'g'), '</' + withoutSpace);
+      }
+      // Read features
+      const allFeatures = new WMSGetFeatureInfo().readFeatures(txt);
+      if (allFeatures != null && allFeatures.length > 0) {
+        allFeatures.forEach((feature: Feature) => {
+          if (options.limit == null || features.length < options.limit) {
+            if (options.swapLonLatGeometryResult === true && dataProjection.getUnits() === 'degrees') {
+              if (feature.getGeometry()) {
+                // In degree: This formats the geographic coordinates in longitude/latitude (x/y) order.
+                // Reverse coordinates !
+                (feature.getGeometry() as SimpleGeometry).applyTransform(
+                  (input: number[], ouput: number[], dimension: number) => {
+                    for (let i = 0; i < input.length; i += dimension) {
+                      const y = input[i];
+                      const x = input[i + 1];
+                      ouput[i] = x;
+                      ouput[i + 1] = y;
+                    }
+                    return ouput;
+                  }
+                );
+              }
+            }
+            if (feature.getGeometry()) {
+              feature.getGeometry().transform(dataProjection, options.featureProjectionCode);
+            }
+            features.push(feature);
+          }
+        });
+      }
+      return features;
+    },
+    (err) => {
+      console.error('Get WMS feature info in error');
+      return err;
+    }
+  );
 }
 
-export function executeWmsQuery(
-  source: IExtended,
-  type: IFeatureType<string>,
-  request: IGisRequest
-): Promise<IQueryFeatureTypeResponse> {
-  const { olMap, geometry, geometryProjection, queryType, limit } = request;
-  const requestProjectionCode = 'EPSG:3857';
+export function executeWmsQuery(options: {
+  source: IQuerySource;
+  url: string;
+  type: IFeatureType<string>;
+  request: IGisRequest;
+  requestProjectionCode: string;
+  method: 'GET' | 'POST';
+  version: '1.0.0' | '1.1.0' | '1.3.0';
+  outputFormat: string;
+  swapXYBBOXRequest: boolean;
+  swapLonLatGeometryResult: boolean;
+}): Promise<IQueryFeatureTypeResponse> {
+  const { olMap, geometry, geometryProjection, queryType, limit } = options.request;
   const olView = olMap.getView();
   const mapProjection = olView.getProjection();
-  const extent = transformExtent(geometry.getExtent(), geometryProjection, requestProjectionCode);
+  const extent = transformExtent(geometry.getExtent(), geometryProjection, options.requestProjectionCode);
   const mapExtent = getForViewAndSize(
     [0.5 * extent[0] + 0.5 * extent[2], 0.5 * extent[1] + 0.5 * extent[3]],
     olView.getResolution(),
@@ -164,7 +189,7 @@ export function executeWmsQuery(
   let tolerance;
   switch (queryType) {
     case 'identify':
-      const { identifyTolerance } = request as IIdentifyRequest;
+      const { identifyTolerance } = options.request as IIdentifyRequest;
       if (Math.round(identifyTolerance) > 0) {
         tolerance = Math.round(identifyTolerance);
       } else {
@@ -182,56 +207,76 @@ export function executeWmsQuery(
       break;
   }
 
-  return getFeatureInfoOnBBOX(
-    source,
-    type,
+  return loadWmsFeaturesOnBBOX({
+    url: options.url,
+    type: options.type,
     queryType,
-    requestProjectionCode,
-    mapProjection.getCode(),
-    mapExtent,
-    1001,
+    requestProjectionCode: options.requestProjectionCode,
+    featureProjectionCode: mapProjection.getCode(),
+    bbox: mapExtent,
+    renderSize: 1001,
     tolerance,
-    limit ? 2 * limit : 100000
-  ).then((allFeatures) => {
+    limit: limit ? 2 * limit : 100000,
+    method: options.method,
+    version: options.version,
+    outputFormat: options.outputFormat,
+    swapXYBBOXRequest: options.swapXYBBOXRequest,
+    swapLonLatGeometryResult: options.swapLonLatGeometryResult,
+  }).then((allFeatures) => {
     const features = [] as Feature[];
-    allFeatures.forEach((feature: Feature) => {
-      // Check intersection
-      if (
-        feature.getGeometry() == null ||
-        (queryType === 'identify' && (geometry.getType() === 'Point' || geometry.getType() === 'MultiPoint')) ||
-        !disjoint(toGeoJSONGeometry(feature.getGeometry()), toGeoJSONGeometry(geometry))
-      ) {
-        features.push(feature);
-      }
-    });
+    if (allFeatures && allFeatures.length > 0) {
+      allFeatures.forEach((feature: Feature) => {
+        // Check intersection
+        if (feature.getGeometry() != null) {
+          const geom = feature.getGeometry().clone();
+          geom.transform(mapProjection, geometryProjection);
+          if (
+            (queryType === 'identify' && (geometry.getType() === 'Point' || geometry.getType() === 'MultiPoint')) ||
+            !disjoint(toGeoJSONGeometry(geom), toGeoJSONGeometry(geometry))
+          ) {
+            features.push(feature);
+          }
+        } else {
+          features.push(feature);
+        }
+      });
+    }
     return {
-      type,
+      type: options.type,
       features,
-      source,
+      source: options.source,
     };
   });
 }
 
-export function retrieveWmsFeature(
-  source: IExtended,
-  type: IFeatureType<string>,
-  id: number | string,
-  featureProjection: Projection
-): Promise<Feature> {
-  const requestProjectionCode = 'EPSG:3857';
+export function retrieveWmsFeature(options: {
+  url: string;
+  type: IFeatureType<string>;
+  id: number | string;
+  requestProjectionCode: string;
+  featureProjection: Projection;
+  method: 'GET' | 'POST';
+  version: '1.0.0' | '1.1.0' | '1.3.0';
+  outputFormat: string;
+  swapLonLatGeometryResult?: boolean;
+}): Promise<Feature> {
   const mapExtent = [-20026376.39, -20048966.1, 20026376.39, 20048966.1];
-  return getFeatureInfoOnBBOX(
-    source,
-    type,
-    'query',
-    requestProjectionCode,
-    featureProjection.getCode(),
-    mapExtent,
-    1001,
-    500,
-    1,
-    id
-  ).then((allFeatures) => {
+  return loadWmsFeaturesOnBBOX({
+    url: options.url,
+    type: options.type,
+    queryType: 'query',
+    requestProjectionCode: options.requestProjectionCode,
+    featureProjectionCode: options.featureProjection.getCode(),
+    bbox: mapExtent,
+    renderSize: 1001,
+    limit: 1,
+    tolerance: 500,
+    method: options.method,
+    version: options.version,
+    outputFormat: options.outputFormat,
+    swapLonLatGeometryResult: options.swapLonLatGeometryResult,
+    id: options.id,
+  }).then((allFeatures) => {
     let feature = null;
     if (allFeatures != null && allFeatures.length > 0) {
       feature = allFeatures[0];
@@ -240,23 +285,32 @@ export function retrieveWmsFeature(
   });
 }
 
-export function loadWmsFeatureDescription(source: IExtended, type: IFeatureType<string>): Promise<void> {
-  const requestProjectionCode = 'EPSG:3857';
+export function loadWmsFeatureDescription(options: {
+  url: string;
+  type: IFeatureType<string>;
+  requestProjectionCode: string;
+  method: 'GET' | 'POST';
+  version: '1.0.0' | '1.1.0' | '1.3.0';
+  outputFormat: string;
+}): Promise<void> {
   const mapExtent = [-20026376.39, -20048966.1, 20026376.39, 20048966.1];
-  return getFeatureInfoOnBBOX(
-    source,
-    type,
-    'query',
-    requestProjectionCode,
-    requestProjectionCode,
-    mapExtent,
-    3,
-    3,
-    1
-  ).then((allFeatures) => {
+  return loadWmsFeaturesOnBBOX({
+    url: options.url,
+    type: options.type,
+    queryType: 'query',
+    requestProjectionCode: options.requestProjectionCode,
+    featureProjectionCode: options.requestProjectionCode,
+    bbox: mapExtent,
+    renderSize: 3,
+    tolerance: 3,
+    limit: 1,
+    method: options.method,
+    version: options.version,
+    outputFormat: options.outputFormat,
+  }).then((allFeatures) => {
     let feature = null;
     if (allFeatures != null && allFeatures.length > 0) {
-      type.attributes = [];
+      options.type.attributes = [];
       feature = allFeatures[0];
       const properties = feature.getProperties();
       Object.keys(properties).forEach((key) => {
@@ -272,9 +326,8 @@ export function loadWmsFeatureDescription(source: IExtended, type: IFeatureType<
             attribute.type = 'Geometry';
           }
         }
-        type.attributes.push(attribute);
+        options.type.attributes.push(attribute);
       });
-      return;
     }
   });
 }

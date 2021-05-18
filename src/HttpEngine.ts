@@ -1,38 +1,26 @@
-import { IRequest, IResponse, send } from 'bhreq';
+import {
+  IRequest,
+  IResponse,
+  Engine,
+  BeforeSendInterceptor as BhreqBeforeSendInterceptor,
+  AfterReceivedInterceptor as BhreqAfterReceivedInterceptor,
+} from 'bhreq';
 
-export type BeforeSendInterceptor = (params: IRequest) => IRequest;
-export type AfterReceivedInterceptor = (params: IResponse) => IResponse;
+export type BeforeSendInterceptor = BhreqBeforeSendInterceptor;
+export type AfterReceivedInterceptor = BhreqAfterReceivedInterceptor;
 
+/**
+ * @deprecated use Engine of bhreq
+ */
 export class HttpEngine {
-  private static instance: HttpEngine;
-  public beforeSendInterceptors: BeforeSendInterceptor[];
-  public afterReceivedInterceptors: AfterReceivedInterceptor[];
-
-  private constructor() {
-    this.beforeSendInterceptors = [];
-    this.afterReceivedInterceptors = [];
-  }
+  public beforeSendInterceptors: BeforeSendInterceptor[] = Engine.getInstance().beforeSendInterceptors;
+  public afterReceivedInterceptors: AfterReceivedInterceptor[] = Engine.getInstance().afterReceivedInterceptors;
 
   static getInstance() {
-    if (!this.instance) {
-      this.instance = new HttpEngine();
-    }
-    return this.instance;
+    Engine.getInstance();
   }
 
   public send(rawRequest: IRequest): Promise<IResponse> {
-    let request: IRequest = rawRequest;
-    this.beforeSendInterceptors.forEach((interceptor) => {
-      request = interceptor(request);
-    });
-    return send(request).then(this.treatResponse);
+    return Engine.getInstance().send(rawRequest);
   }
-
-  private treatResponse = (rawResponse: IResponse): IResponse => {
-    let response = rawResponse;
-    this.afterReceivedInterceptors.forEach((interceptor) => {
-      response = interceptor(response);
-    });
-    return response;
-  };
 }

@@ -16,18 +16,49 @@ import { Options } from 'ol/source/ImageWMS';
 import Feature from 'ol/Feature';
 import Projection from 'ol/proj/Projection';
 import { loadLegendWms } from './legend/wms';
+import { executeWfsQuery, loadWfsFeatureDescription, retrieveWfsFeature } from './query';
+import { FilterBuilder, FilterBuilderTypeEnum } from '../filter';
+import { IPredicate } from '../filter/predicate';
 
 export interface IImageWMSOptions extends ISnapshotOptions, Options {
   types: IFeatureType<string>[];
+  queryWfsUrl?: string; // For Wfs query instead of Wms query
+  queryMethod?: 'GET' | 'POST';
+  queryFormat?: string;
+  requestProjectionCode?: string;
+  version?: '1.0.0' | '1.1.0' | '1.3.0';
+  swapXYBBOXRequest?: boolean;
+  swapLonLatGeometryResult?: boolean;
+  limit?: number;
 }
 
 export class ImageWms extends OlImageWMS implements IExtended {
   protected options: IImageWMSOptions;
+  private readonly defaultOptions: Pick<
+    IImageWMSOptions,
+    | 'queryMethod'
+    | 'queryFormat'
+    | 'version'
+    | 'requestProjectionCode'
+    | 'swapXYBBOXRequest'
+    | 'swapLonLatGeometryResult'
+    | 'limit'
+  > = {
+    queryMethod: 'GET',
+    queryFormat: 'text/xml; subtype=gml/3.1.1', // 'application/json',
+    version: '1.3.0',
+    requestProjectionCode: 'EPSG:3857',
+    swapXYBBOXRequest: false,
+    swapLonLatGeometryResult: false,
+    limit: 10000,
+  };
   protected legendByLayer: Record<string, ILayerLegend[]>;
+
+  protected defaultTypePredicateAsMap: Map<string, IPredicate>;
 
   constructor(options: IImageWMSOptions) {
     super({ crossOrigin: 'anonymous', ...options });
-    this.options = { ...options };
+    this.options = { ...this.defaultOptions, ...options };
     if (this.options.snapshotable != false) {
       this.options.snapshotable = true;
     }
@@ -37,13 +68,37 @@ export class ImageWms extends OlImageWMS implements IExtended {
     if (this.options.removable != false) {
       this.options.removable = true;
     }
+
+    this.defaultTypePredicateAsMap = new Map<string, IPredicate>();
+
     this.setSourceOptions(this.options);
   }
 
   public init(): Promise<void> {
     const promises: Promise<void>[] = [];
     for (const type of this.options.types) {
-      promises.push(loadWmsFeatureDescription(this, type));
+      if (this.options.queryWfsUrl != null) {
+        promises.push(
+          loadWfsFeatureDescription({
+            url: this.options.queryWfsUrl,
+            type,
+            version: '1.1.0', // Do not use version option !
+            outputFormat: this.options.queryFormat,
+            requestProjectionCode: this.options.requestProjectionCode,
+          })
+        );
+      } else {
+        promises.push(
+          loadWmsFeatureDescription({
+            url: 'getUrl' in this ? (this as any).getUrl() : (this as any).getUrls()[0],
+            type,
+            method: this.options.queryMethod,
+            version: this.options.version,
+            outputFormat: this.options.queryFormat,
+            requestProjectionCode: this.options.requestProjectionCode,
+          })
+        );
+      }
     }
 
     return Promise.all(promises).then(() => {
@@ -60,11 +115,24 @@ export class ImageWms extends OlImageWMS implements IExtended {
     return this.options;
   }
 
-  public setSourceOptions(options: IImageWMSOptions): void {
-    this.options = { ...options };
+  public setSourceOptions(options: IImageWMSOptions, forceRefresh = true): void {
+    this.options = { ...this.defaultOptions, ...options };
     this.un('propertychange', this.handlePropertychange);
     this.set('types', options.types);
-    this.updateParams({ ...this.getParams(), LAYERS: getWmsLayersFromTypes(options.types) });
+
+    const params = {
+      ...this.getParams(),
+      TRANSPARENT: 'TRUE',
+      LAYERS: getWmsLayersFromTypes(options.types),
+      VERSION: this.options.version,
+      NOW: Date.now(),
+    };
+    const cqlFilter = this.buildFilters();
+    if (cqlFilter) {
+      params.CQL_FILTER = cqlFilter;
+    }
+
+    this.updateParams(params);
     this.on('propertychange', this.handlePropertychange);
   }
 
@@ -89,7 +157,36 @@ export class ImageWms extends OlImageWMS implements IExtended {
     for (const type of this.options.types) {
       const isVisible = type.hide !== true;
       if (!onlyVisible || isVisible) {
-        promises.push(executeWmsQuery(this, type, request));
+        if (this.options.queryWfsUrl != null) {
+          promises.push(
+            executeWfsQuery({
+              source: this,
+              url: this.options.queryWfsUrl,
+              type,
+              request,
+              requestProjectionCode: this.options.requestProjectionCode,
+              version: '1.1.0', // Do not use version option !
+              outputFormat: this.options.queryFormat,
+              swapXYBBOXRequest: this.options.swapXYBBOXRequest,
+              swapLonLatGeometryResult: this.options.swapLonLatGeometryResult,
+            })
+          );
+        } else {
+          promises.push(
+            executeWmsQuery({
+              source: this,
+              url: 'getUrl' in this ? (this as any).getUrl() : (this as any).getUrls()[0],
+              type,
+              request,
+              method: this.options.queryMethod,
+              requestProjectionCode: this.options.requestProjectionCode,
+              version: this.options.version,
+              outputFormat: this.options.queryFormat,
+              swapXYBBOXRequest: this.options.swapXYBBOXRequest,
+              swapLonLatGeometryResult: this.options.swapLonLatGeometryResult,
+            })
+          );
+        }
       }
     }
     return Promise.all(promises).then((featureTypeResponses: IQueryFeatureTypeResponse[]) => {
@@ -100,10 +197,43 @@ export class ImageWms extends OlImageWMS implements IExtended {
     });
   }
 
+  public refresh(): void {
+    this.updateParams({ ...this.getParams(), NOW: Date.now() });
+    super.refresh();
+  }
+
   public retrieveFeature(id: number | string, projection: Projection): Promise<Feature> {
     const promises: Promise<Feature>[] = [];
     for (const type of this.options.types) {
-      promises.push(retrieveWmsFeature(this, type, id, projection));
+      if (this.options.queryWfsUrl != null) {
+        promises.push(
+          retrieveWfsFeature({
+            url: this.options.queryWfsUrl,
+            type,
+            id,
+            requestProjectionCode: this.options.requestProjectionCode,
+            featureProjection: projection,
+            version: '1.1.0', // Do not use version option !
+            outputFormat: this.options.queryFormat,
+            swapXYBBOXRequest: this.options.swapXYBBOXRequest,
+            swapLonLatGeometryResult: this.options.swapLonLatGeometryResult,
+          })
+        );
+      } else {
+        promises.push(
+          retrieveWmsFeature({
+            url: 'getUrl' in this ? (this as any).getUrl() : (this as any).getUrls()[0],
+            type,
+            id,
+            requestProjectionCode: this.options.requestProjectionCode,
+            featureProjection: projection,
+            method: this.options.queryMethod,
+            version: this.options.version,
+            outputFormat: this.options.queryFormat,
+            swapLonLatGeometryResult: this.options.swapLonLatGeometryResult,
+          })
+        );
+      }
     }
     let feature: Feature = null;
     Promise.all(promises).then((features: Feature[]) => {
@@ -120,7 +250,12 @@ export class ImageWms extends OlImageWMS implements IExtended {
     const key = event.key;
     const value = event.target.get(key);
     if (key === 'types') {
-      this.updateParams({ ...this.getParams(), LAYERS: getWmsLayersFromTypes(value) });
+      this.updateParams({
+        ...this.getParams(),
+        TRANSPARENT: 'TRUE',
+        LAYERS: getWmsLayersFromTypes(value),
+        VERSION: this.options.version,
+      });
       this.options.types = value;
     }
   };
@@ -133,5 +268,35 @@ export class ImageWms extends OlImageWMS implements IExtended {
       this.legendByLayer = res;
       return res;
     });
+  }
+
+  private buildFilters(): string {
+    let filters: string;
+    for (const type of this.options.types) {
+      let filterBuilder = this.buildFilterBuilderFromType(type);
+      if (filterBuilder) {
+        if (!filters) {
+          filters = '';
+        } else {
+          filters += ';';
+        }
+        filters += filterBuilder.build(FilterBuilderTypeEnum.CQL);
+        filterBuilder = undefined;
+      }
+    }
+    return filters;
+  }
+
+  private buildFilterBuilderFromType(type: IFeatureType<string>): FilterBuilder | undefined {
+    let filterBuilder;
+    if (this.defaultTypePredicateAsMap.has(type.id)) {
+      filterBuilder = new FilterBuilder(this.defaultTypePredicateAsMap.get(type.id));
+    } else if (type.predicate) {
+      this.defaultTypePredicateAsMap.set(type.id, type.predicate);
+    }
+    if (type.predicate && filterBuilder?.predicate.hashCode() !== type.predicate.hashCode()) {
+      filterBuilder = filterBuilder ? filterBuilder.and(type.predicate) : new FilterBuilder(type.predicate);
+    }
+    return filterBuilder;
   }
 }

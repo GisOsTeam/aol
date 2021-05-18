@@ -3,10 +3,10 @@ import GeoJSON from 'ol/format/GeoJSON';
 import Feature from 'ol/Feature';
 import * as JSZip from 'jszip';
 import * as shapefile2geojson from 'shapefile2geojson';
-import { createSource } from '../utils';
 import { LocalVector } from '../source/LocalVector';
 import { SourceTypeEnum } from '../source/types/sourceType';
 import { addProjection } from '../ProjectionInfo';
+import { SourceFactory } from '../source/factory';
 
 const geoJSONFormat = new GeoJSON();
 
@@ -61,7 +61,7 @@ export function loadZippedShapefile(file: File, map: Map): Promise<LocalVector> 
             dataProjection,
             featureProjection,
           }) as Feature[];
-          const localVectorSource = createSource(SourceTypeEnum.LocalVector, { name }) as LocalVector;
+          const localVectorSource = SourceFactory.create(SourceTypeEnum.LocalVector, { name }) as LocalVector;
           localVectorSource.addFeatures(features);
           resolve(localVectorSource);
         });

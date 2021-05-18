@@ -1,6 +1,7 @@
 import { FilterBuilderType, FilterValueType, IField } from '../IFilter';
 import { IOperator } from '../operator';
 import { IPredicate } from './IPredicate';
+import { hash64 } from '../../utils';
 
 export abstract class BasePredicate<
   LH extends IPredicate | IField<any>,
@@ -19,6 +20,10 @@ export abstract class BasePredicate<
 
   public toString(type?: FilterBuilderType): string {
     return `(${this.buildLeftHandString(type)} ${this.operator.toString(type)} ${this.buildRightHandString(type)})`;
+  }
+
+  public hashCode(): string {
+    return hash64(this.toString());
   }
 
   protected abstract buildLeftHandString(type: FilterBuilderType): string;

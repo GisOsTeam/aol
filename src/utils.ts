@@ -4,16 +4,18 @@ import BaseLayer from 'ol/layer/Base';
 import View from 'ol/View';
 import Geometry from 'ol/geom/Geometry';
 import SimpleGeometry from 'ol/geom/SimpleGeometry';
-import GeoJSON, { GeoJSONGeometry } from 'ol/format/GeoJSON';
+import GeoJSON, { GeoJSONFeature, GeoJSONGeometry } from 'ol/format/GeoJSON';
 import { LayerStyles } from './LayerStyles';
 import { fromCircle } from 'ol/geom/Polygon';
 import Circle from 'ol/geom/Circle';
 import booleanDisjoint from '@turf/boolean-disjoint';
+import * as turf from '@turf/turf';
 import { applyStyle } from 'ol-mapbox-style';
-import { SourceType } from './source/types/sourceType';
-import { IFeatureType, ISnapshotSource, ILegendSource, ILayerLegend, ILegendRecord } from './source/IExtended';
-import { SourceFactory } from './source/factory/SourceFacotry';
+import { SourceType } from './source/types';
+import { IFeatureType, ILegendRecord, ILegendSource, ISnapshotSource } from './source/IExtended';
 import { getCenter, getWidth } from 'ol/extent';
+import { ProjectionLike } from 'ol/proj';
+import Feature from 'ol/Feature';
 
 const geoJSONFormat = new GeoJSON();
 
@@ -75,14 +77,45 @@ export function revertCoordinate(geometry: SimpleGeometry): void {
 }
 
 /**
+ * Transform GeoJSON geometry to OpenLayers geometry
+ * @param {GeoJSONGeometry} geoJSONGeometry
+ * @return  {Geometry} geometry
+ */
+export function toOpenLayersGeometry(geoJSONGeometry: GeoJSONGeometry): Geometry {
+  return geoJSONFormat.readGeometry(geoJSONGeometry);
+}
+
+/**
  * Transform OpenLayers geometry to GeoJSON geometry
  * @param {Geometry} geometry
+ * @return  {GeoJSONGeometry} geoJSONGeometry
  */
 export function toGeoJSONGeometry(geometry: Geometry): GeoJSONGeometry {
   if (geometry.getType() === 'Circle') {
     geometry = fromCircle(geometry as Circle);
   }
-  return (geoJSONFormat.writeGeometryObject(geometry) as any) as GeoJSONGeometry;
+  return geoJSONFormat.writeGeometryObject(geometry);
+}
+
+/**
+ * Transform GeoJSON geometry to OpenLayers geometry
+ * @param {GeoJSONFeature} geoJSONFeature
+ * @return  {Feature} feature
+ */
+export function toOpenLayersFeature(geoJSONFeature: GeoJSONFeature): Feature {
+  return geoJSONFormat.readFeature(geoJSONFeature);
+}
+
+/**
+ * Transform OpenLayers feature to GeoJSON feature
+ * @param {Feature} feature
+ * @return {GeoJSONFeature} geoJSONFeature
+ */
+export function toGeoJSONFeature(feature: Feature): GeoJSONFeature {
+  if (feature.getGeometry()?.getType() === 'Circle') {
+    feature?.setGeometry(fromCircle(feature.getGeometry() as Circle));
+  }
+  return geoJSONFormat.writeFeatureObject(feature);
 }
 
 /**
@@ -92,6 +125,38 @@ export function toGeoJSONGeometry(geometry: Geometry): GeoJSONGeometry {
  */
 export function disjoint(g1: GeoJSONGeometry, g2: GeoJSONGeometry) {
   return booleanDisjoint(g1 as any, g2 as any);
+}
+
+/**
+ * Apply buffer to geometry
+ * @param {GeoJSONFeature} geoJsonFeatureSource
+ * @param {number} tolerance
+ * @param {ProjectionLike} projectionSource
+ * @return {GeoJSONFeature} Buffured feature
+ */
+export function buffer(
+  geoJsonFeatureSource: GeoJSONFeature,
+  tolerance: number,
+  projectionSource?: ProjectionLike
+): GeoJSONFeature {
+  // Si projectionSource non définit alors pas besoin de re-projeter donc on retourne la feature
+  if (!projectionSource) {
+    return turf.buffer(geoJsonFeatureSource as any, tolerance);
+  }
+  // Création d'une feature OpenLayers depuis la feature source GeoJSON
+  let tmpFeature: Feature = geoJSONFormat.readFeature(geoJsonFeatureSource);
+  // Projection de la géométrie de la feature depuis projectionSource vers 'EPSG:4326'
+  tmpFeature.setGeometry(tmpFeature.getGeometry().transform(projectionSource, 'EPSG:4326'));
+  // Création d'une feature GeoJSON depuis la feature OpenLayers
+  const geoJsonFeature = geoJSONFormat.writeFeatureObject(tmpFeature);
+  // Application de la tolerance à la géométrie
+  const wgs84BufferedFeature: GeoJSONFeature = turf.buffer(geoJsonFeature as any, tolerance);
+  // Création d'une feature OpenLayers depuis la feature GeoJSON intégrant la tolérance
+  tmpFeature = geoJSONFormat.readFeature(wgs84BufferedFeature);
+  // Projection de la géométrie de la feature depuis 'EPSG:4326' vers projectionSource
+  tmpFeature.setGeometry(tmpFeature.getGeometry().transform('EPSG:4326', projectionSource));
+  // Retour d'une feature GeoJSON
+  return geoJSONFormat.writeFeatureObject(tmpFeature);
 }
 
 /**
@@ -202,11 +267,20 @@ export function getAgsLayersFromTypes(types: IFeatureType<number>[], prefix = 's
 }
 
 /**
+ * Get query id from IFeatureType.
+ * @param {IFeatureType} type type
+ */
+export function getQueryId<IDT>(type: IFeatureType<any>): IDT {
+  return type.queryId != null ? type.queryId : type.id;
+}
+
+/**
  * Create MB layer styles
  */
 export function createLayerStyles(
-  props = { strokeColor: 'rgba(0, 0, 255, 0.9)', fillColor: 'rgba(127, 127, 127, 0.2)', width: 3, radius: 3 }
+  props: { strokeColor?: string; fillColor?: string; width?: number; radius?: number } = {}
 ): LayerStyles {
+  props = { strokeColor: 'rgba(0, 0, 255, 0.9)', fillColor: 'rgba(127, 127, 255, 0.4)', width: 3, radius: 3, ...props };
   return [
     {
       type: 'circle',
@@ -233,13 +307,6 @@ export function createLayerStyles(
       },
     },
   ];
-}
-
-/**
- * Create source from options.
- */
-export function createSource(sourceTypeName: SourceType, sourceOptions: any): ISnapshotSource {
-  return SourceFactory.create(sourceTypeName, sourceOptions);
 }
 
 /**
@@ -355,6 +422,11 @@ export function exportToImage(
         reject(new Error('Canvas context null'));
         return;
       }
+
+      // On force un background blanc pour avoir un rendu iso OL
+      mapContext.fillStyle = 'white';
+      mapContext.fillRect(0, 0, mapCanvas.width, mapCanvas.height);
+
       const elems = map.getTargetElement().querySelectorAll('.ol-layer canvas');
       if (elems != null) {
         elems.forEach(function (canvas: any) {
@@ -499,3 +571,35 @@ export const exportLegendToImage = (
     return Promise.resolve(dataUrl);
   });
 };
+
+/**
+ * Calculate a 32 bit FNV-1a hash
+ * Found here: https://gist.github.com/vaiorabbit/5657561
+ * Ref.: http://isthe.com/chongo/tech/comp/fnv/
+ * Ref.: https://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function#FNV-1_hash
+ *
+ * @param {string} s the input value
+ * @param {boolean} [asString=false] set to true to return the hash value as
+ *     8-digit hex string instead of an integer
+ * @param {number} [seed] optionally pass the hash of the previous chunk
+ * @returns {number | string}
+ */
+function hash32(s: string, asString = true, seed = 0x811c9dc5): number | string {
+  let hval: number = seed;
+
+  for (let i = 0, l = s.length; i < l; i++) {
+    hval ^= s.charCodeAt(i);
+    hval += (hval << 1) + (hval << 4) + (hval << 7) + (hval << 8) + (hval << 24);
+  }
+  // Convert to 8 digit hex string
+  if (asString) {
+    return ('0000000' + (hval >>> 0).toString(16)).substr(-8);
+  }
+
+  return hval >>> 0;
+}
+
+export function hash64(s: string): string {
+  const h1 = hash32(s, false) as number; // returns 32 bit (as 8 byte hex string)
+  return (hash32(s) as string) + hash32(s, true, h1); // 64 bit (as 16 byte hex string)
+}

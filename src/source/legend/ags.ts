@@ -1,10 +1,10 @@
-import { HttpEngine } from '../../HttpEngine';
+import { Engine } from 'bhreq';
 import { srcToImage } from '../../utils';
 import { ILayerLegend, ILegendRecord, ILegendSource } from '../IExtended';
 
 export function loadLegendAgs(source: ILegendSource): Promise<ILegendRecord> {
   if ((source as any).options != null && (source as any).options.url != null && (source as any).options.types != null) {
-    return HttpEngine.getInstance()
+    return Engine.getInstance()
       .send({ url: `${(source as any).options.url}/legend?f=json`, responseType: 'json' })
       .then((resp) => {
         const displayedLayers = (source as any).options.types.map((type: any) => type.id);

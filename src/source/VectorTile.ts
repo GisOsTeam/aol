@@ -2,11 +2,11 @@ import OlVectorTile from 'ol/source/VectorTile';
 import { ISnapshotOptions, ISnapshotSource } from './IExtended';
 import { SourceType, SourceTypeEnum } from './types/sourceType';
 import { LayerType, LayerTypeEnum } from './types/layerType';
-import { Options } from 'ol/source/Vector';
+import { Options } from 'ol/source/VectorTile';
 
 export interface IVectorTileOptions extends ISnapshotOptions, Options {}
 
-export abstract class VectorTile extends OlVectorTile implements ISnapshotSource {
+export class VectorTile extends OlVectorTile implements ISnapshotSource {
   protected options: IVectorTileOptions;
 
   constructor(options: IVectorTileOptions) {

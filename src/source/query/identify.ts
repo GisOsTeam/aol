@@ -65,7 +65,19 @@ export function identify(
         if (source && 'query' in source) {
           const extended = source as IQuerySource;
           if (!filter || filter(extended)) {
-            promises.push(extended.query(queryRequest, true));
+            promises.push(
+              extended.query(queryRequest, true).then(
+                (queryResponse) => queryResponse,
+                (err) => {
+                  console.error('Query error', err);
+                  const qr: IQueryResponse = {
+                    request: queryRequest,
+                    featureTypeResponses: [],
+                  };
+                  return qr;
+                }
+              )
+            );
           }
         }
       }

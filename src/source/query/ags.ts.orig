@@ -6,7 +6,10 @@ import {
   IFeatureType,
   IQueryFeatureTypeResponse,
   IGisRequest,
+<<<<<<< HEAD
+=======
   IQueryRequest,
+>>>>>>> master
   IIdentifyRequest,
 } from '../IExtended';
 import Projection from 'ol/proj/Projection';
@@ -75,7 +78,11 @@ export function executeAgsQuery(
   let body: AgsIdentifyRequest | AgsQueryRequest;
   switch (queryType) {
     case 'identify':
+<<<<<<< HEAD
       body = new AgsIdentifyRequest(source, [type], request as IIdentifyRequest);
+=======
+      body = new AgsIdentifyRequest(source, type, request as IIdentifyRequest);
+>>>>>>> master
       break;
     case 'query':
       body = new AgsQueryRequest(source, type, request as IQueryRequest);

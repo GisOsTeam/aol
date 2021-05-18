@@ -1,9 +1,9 @@
 import Map from 'ol/Map';
 import KML from 'ol/format/KML';
 import Feature from 'ol/Feature';
-import { createSource } from '../utils';
 import { LocalVector } from '../source/LocalVector';
 import { SourceTypeEnum } from '../source/types/sourceType';
+import { SourceFactory } from '../source/factory';
 
 const kmlFormat = new KML({ extractStyles: true, showPointNames: false });
 
@@ -19,7 +19,7 @@ export function loadKML(file: File, map: Map): Promise<LocalVector> {
       const features: Feature[] = kmlFormat.readFeatures(kmlString, {
         featureProjection: map.getView().getProjection(),
       }) as Feature[];
-      const localVectorSource = createSource(SourceTypeEnum.LocalVector, { name }) as LocalVector;
+      const localVectorSource = SourceFactory.create(SourceTypeEnum.LocalVector, { name }) as LocalVector;
       localVectorSource.addFeatures(features);
       resolve(localVectorSource);
     };
