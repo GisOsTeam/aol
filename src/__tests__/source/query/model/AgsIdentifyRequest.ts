@@ -36,7 +36,7 @@ describe('AgsIdentifyRequest', () => {
       geometryProjection: getProjection('EPSG:3857'),
       queryType: 'identify',
       returnGeometry: true,
-      returnFieldName: true
+      returnFieldName: true,
     };
     const agsQueryRequest = new AgsIdentifyRequest(states, [type], request);
 
@@ -62,7 +62,6 @@ describe('AgsIdentifyRequest', () => {
     //   'EPSG:2154',
     //   '+proj=lcc +lat_1=49 +lat_2=44 +lat_0=46.5 +lon_0=3 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs'
     // );
-
     // const request: IIdentifyRequest = {
     //   olMap: new OlMap({
     //     view: new OlView({
@@ -76,7 +75,6 @@ describe('AgsIdentifyRequest', () => {
     //   srId: '2154',
     // };
     // const agsQueryRequest = new AgsIdentifyRequest(states, [type], request);
-
     // expect<string>(agsQueryRequest.f).toMatchSnapshot();
     // expect<string>(agsQueryRequest.geometry).toMatchSnapshot('agsQueryRequest.geometry');
     // expect<string>(agsQueryRequest.geometryPrecision).toMatchSnapshot('agsQueryRequest.geometryPrecision');
@@ -99,7 +97,6 @@ describe('AgsIdentifyRequest', () => {
     //   'EPSG:3296',
     //   '+proj=utm +zone=5 +south +ellps=GRS80 +towgs84=0.072,-0.507,-0.245,-0.0183,0.0003,-0.007,-0.0093 +units=m +no_defs'
     // );
-
     // const request: IIdentifyRequest = {
     //   olMap: new OlMap({
     //     view: new OlView({
@@ -114,7 +111,6 @@ describe('AgsIdentifyRequest', () => {
     //   geometryPrecision: 20,
     // };
     // const agsQueryRequest = new AgsIdentifyRequest(states, [type], request);
-
     // expect<string>(agsQueryRequest.f).toMatchSnapshot();
     // expect<string>(agsQueryRequest.geometry).toMatchSnapshot('agsQueryRequest.geometry');
     // expect<string>(agsQueryRequest.geometryPrecision).toMatchSnapshot('agsQueryRequest.geometryPrecision');
