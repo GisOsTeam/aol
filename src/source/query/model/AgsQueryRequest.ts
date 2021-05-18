@@ -66,7 +66,7 @@ export class AgsQueryRequest implements AgsQueryRequestParameters {
   private format = new EsriJSON();
 
   constructor(source: IExtended, type: IFeatureType<number>, request: IQueryRequest) {
-    const { geometryProjection } = request;
+    const { geometryProjection, filters } = request;
     this.inSR = '3857';
     this.outSR = '3857';
 
@@ -115,13 +115,6 @@ export class AgsQueryRequest implements AgsQueryRequestParameters {
       this.geometry = geometryStr;
       this.geometryType = geometryType;
       this.geometryPrecision = !!request.geometryPrecision ? `${request.geometryPrecision}` : '10';
-    }
-
-    let filters;
-    switch (request.queryType) {
-      case 'query':
-        filters = request.filters;
-        break;
     }
 
     if (filters) {
