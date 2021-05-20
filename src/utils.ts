@@ -1,21 +1,20 @@
-import Map from 'ol/Map';
-import GroupLayer from 'ol/layer/Group';
-import BaseLayer from 'ol/layer/Base';
-import View from 'ol/View';
-import Geometry from 'ol/geom/Geometry';
-import SimpleGeometry from 'ol/geom/SimpleGeometry';
-import GeoJSON, { GeoJSONFeature, GeoJSONGeometry } from 'ol/format/GeoJSON';
-import { LayerStyles } from './LayerStyles';
-import { fromCircle } from 'ol/geom/Polygon';
-import Circle from 'ol/geom/Circle';
 import booleanDisjoint from '@turf/boolean-disjoint';
 import * as turf from '@turf/turf';
 import { applyStyle } from 'ol-mapbox-style';
-import { SourceType } from './source/types';
-import { IFeatureType, ILegendRecord, ILegendSource, ISnapshotSource } from './source/IExtended';
 import { getCenter, getWidth } from 'ol/extent';
-import { ProjectionLike } from 'ol/proj';
 import Feature from 'ol/Feature';
+import GeoJSON, { GeoJSONFeature, GeoJSONGeometry } from 'ol/format/GeoJSON';
+import Circle from 'ol/geom/Circle';
+import Geometry from 'ol/geom/Geometry';
+import { fromCircle } from 'ol/geom/Polygon';
+import SimpleGeometry from 'ol/geom/SimpleGeometry';
+import BaseLayer from 'ol/layer/Base';
+import GroupLayer from 'ol/layer/Group';
+import Map from 'ol/Map';
+import { ProjectionLike } from 'ol/proj';
+import View from 'ol/View';
+import { LayerStyles } from './LayerStyles';
+import { IFeatureType, ILegendRecord, ILegendSource } from './source/IExtended';
 
 const geoJSONFormat = new GeoJSON();
 

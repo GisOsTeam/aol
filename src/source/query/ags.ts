@@ -148,7 +148,8 @@ function processAgsResponse(
   }
 
   const responses: IQueryFeatureTypeResponse[] = [];
-  featuresByType.forEach((features, type) => {
+  types.forEach((type) => {
+    const features = featuresByType.get(type) || [];
     responses.push({
       type,
       features,
