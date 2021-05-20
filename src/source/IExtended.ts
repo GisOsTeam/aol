@@ -73,7 +73,6 @@ export type IGisRequest = IQueryRequest | IIdentifyRequest;
 export interface IAbstractRequest<T extends string> {
   olMap: OlMap;
   queryType: T;
-  filters?: IPredicate;
   limit?: number;
   returnGeometry?: boolean;
   srId?: string;
@@ -82,6 +81,7 @@ export interface IAbstractRequest<T extends string> {
 export interface IQueryRequest extends IAbstractRequest<'query'> {
   geometry?: Geometry;
   geometryProjection?: Projection;
+  filters?: IPredicate;
   geometryPrecision?: number;
 }
 
@@ -93,6 +93,11 @@ export interface IIdentifyRequest extends IAbstractRequest<'identify'> {
   layersPrefix?: LayersPrefix;
   outFields?: string;
   returnFieldName?: boolean;
+  returnGeometry?: boolean;
+  srId?: string;
+  filters?: Record<number, IPredicate>;
+
+  types?: IFeatureType<any>[];
 }
 
 export interface IQueryResponse {

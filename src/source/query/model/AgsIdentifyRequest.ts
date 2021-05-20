@@ -44,9 +44,10 @@ export class AgsIdentifyRequest implements AgsIdentifyRequestParameters {
 
   private format = new EsriJSON();
 
-  constructor(source: IExtended, type: IFeatureType<number>, request: IIdentifyRequest) {
+  constructor(source: IExtended, sourceTypes: IFeatureType<number>[], request: IIdentifyRequest) {
     const { olMap, geometryProjection, queryType } = request;
     this.sr = '3857';
+    const types = request.types || sourceTypes;
 
     if (request.srId) {
       this.sr = request.srId;
@@ -109,11 +110,17 @@ export class AgsIdentifyRequest implements AgsIdentifyRequestParameters {
     );
     this.mapExtent = mapExtent.join(',');
     this.imageDisplay = '1001,1001';
-    this.layers = `${layersPrefix}:${getQueryId<number>(type)}`;
+    const ids = types.map((type) => type.id).join(',');
+    this.layers = `${layersPrefix}:${ids}`;
     if (request.filters) {
-      this.layerDefs = `{"${getQueryId<number>(type)}":"${new FilterBuilder(request.filters).build(
-        FilterBuilderTypeEnum.SQL
-      )}"}`;
+      const layerDefs = [];
+      for (const type of types) {
+        const predicate = request.filters[type.id];
+        if (predicate) {
+          layerDefs.push(`"${type.id}":"${new FilterBuilder(predicate).build(FilterBuilderTypeEnum.SQL)}"`);
+        }
+      }
+      this.layerDefs = `{${layerDefs.join(',')}}`;
     }
     if (!isNaN(Math.round(identifyTolerance))) {
       this.tolerance = `${Math.round(identifyTolerance)}`;

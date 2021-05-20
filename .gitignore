@@ -65,3 +65,6 @@ lib
 
 # Webstorm folder
 .idea
+
+# Orig files
+*.orig
