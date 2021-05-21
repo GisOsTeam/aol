@@ -34,7 +34,8 @@ export function executeAgsIdentify(
   }
   url += '/identify';
 
-  const body = new AgsIdentifyRequest(source, types, request);
+  const identifyTypes = request.types || types;
+  const body = new AgsIdentifyRequest(source, identifyTypes, request);
   const httpEngine = Engine.getInstance();
   return httpEngine
     .send({
@@ -46,7 +47,7 @@ export function executeAgsIdentify(
     })
     .then(
       (res) => {
-        return processAgsResponse(res, source, types, mapProjection, body.getSrId(), limit);
+        return processAgsResponse(res, source, identifyTypes, mapProjection, body.getSrId(), limit);
       },
       (err) => {
         console.error(`Execute AGS identify in error: ${err}`);
