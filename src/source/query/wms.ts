@@ -197,14 +197,17 @@ export function executeWmsQuery(options: {
       }
       break;
     case 'query':
-      const mapH = Math.sqrt(
-        (mapExtent[2] - mapExtent[0]) * (mapExtent[2] - mapExtent[0]) + (mapExtent[3] - mapExtent[1])
-      );
-      const geomH = Math.sqrt(
-        (extent[2] - extent[0]) * (extent[2] - extent[0]) + (extent[3] - extent[1]) * (extent[3] - extent[1])
-      );
-      tolerance = 1 + Math.round((500 * geomH) / mapH);
+      tolerance = 1;
       break;
+  }
+  if (geometry.getType() !== 'Point') {
+    const mapH = Math.sqrt(
+      (mapExtent[2] - mapExtent[0]) * (mapExtent[2] - mapExtent[0]) + (mapExtent[3] - mapExtent[1])
+    );
+    const geomH = Math.sqrt(
+      (extent[2] - extent[0]) * (extent[2] - extent[0]) + (extent[3] - extent[1]) * (extent[3] - extent[1])
+    );
+    tolerance += Math.round((500 * geomH) / mapH);
   }
 
   return loadWmsFeaturesOnBBOX({
