@@ -1,4 +1,4 @@
-import simplepolygon from 'simplepolygon';
+import * as simplepolygon from 'simplepolygon';
 import * as turf from '@turf/turf';
 import { AllGeoJSON, Feature, FeatureCollection, Geometry, Units } from '@turf/helpers';
 
