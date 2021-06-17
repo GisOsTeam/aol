@@ -1,6 +1,8 @@
 import Feature from 'ol/Feature';
 import { get as getProjection, transformExtent } from 'ol/proj';
-import WMSGetFeatureInfo from 'ol/format/WMSGetFeatureInfo';
+import GML3 from 'ol/format/GML3';
+import GML32 from 'ol/format/GML32';
+import GML2 from 'ol/format/GML2';
 import {
   IGisRequest,
   IFeatureType,
@@ -111,7 +113,7 @@ function loadWmsFeaturesOnBBOX(options: {
         const res2 = res1[1].match(/(\d+)(?!.*\d)/g);
         if (res2 && res2.length > 0) {
           dataProjectionCode = 'EPSG:' + res2[res2.length - 1];
-          txt = txt.replace(/\ssrsName=\"([^\"]+)\"/i, ` srsName="${dataProjectionCode}"`);
+          txt = txt.replace(/\ssrsName=\"([^\"]+)\"/gi, ` srsName="${dataProjectionCode}"`);
         }
       }
       try {
@@ -127,7 +129,14 @@ function loadWmsFeaturesOnBBOX(options: {
         txt = txt.replace(new RegExp('</' + withSpace, 'g'), '</' + withoutSpace);
       }
       // Read features
-      const allFeatures = new WMSGetFeatureInfo().readFeatures(txt);
+      let allFeatures = null;
+      allFeatures = new GML3().readFeatures(txt);
+      if (allFeatures == null || allFeatures.length === 0) {
+        allFeatures = new GML32().readFeatures(txt);
+      }
+      if (allFeatures == null || allFeatures.length === 0) {
+        allFeatures = new GML2().readFeatures(txt);
+      }
       if (allFeatures != null && allFeatures.length > 0) {
         allFeatures.forEach((feature: Feature) => {
           if (options.limit == null || features.length < options.limit) {
