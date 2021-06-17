@@ -1,6 +1,6 @@
 {
   "name": "@gisosteam/aol",
-  "version": "0.1.21",
+  "version": "0.1.22",
   "description": "OpenLayers sources extensions",
   "scripts": {
     "test": "jest",
@@ -44,7 +44,7 @@
     "typescript": "4.3.3"
   },
   "dependencies": {
-    "@turf/turf": "^6.3.0",
+    "@turf/turf": "^6.4.0",
     "bhreq": "^0.1.2",
     "jszip": "^3.6.0",
     "ol-mapbox-style": "^6.3.2",
