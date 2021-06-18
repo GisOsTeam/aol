@@ -3,6 +3,7 @@
   "version": "0.1.23",
   "description": "OpenLayers sources extensions",
   "scripts": {
+    "prepare": "husky install",
     "test": "jest",
     "jest": "jest",
     "prettier": "prettier --single-quote --print-width 120 --write --parser typescript '{src, test}/**/*.ts'",
