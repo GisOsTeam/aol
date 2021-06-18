@@ -34,12 +34,26 @@ export function addProjection(
   name?: string,
   remarks?: string
 ): ProjectionInfo {
-  const projectionInfo = new ProjectionInfo();
+  if (code == null) {
+    return null;
+  }
+  let projectionInfo = projMap.get(code);
+  if (projectionInfo == null) {
+    projectionInfo = new ProjectionInfo();
+  }
   projectionInfo.code = code;
-  projectionInfo.wkt = wkt;
-  projectionInfo.lonLatValidity = lonLatValidity;
-  projectionInfo.name = name;
-  projectionInfo.remarks = remarks;
+  if (wkt != null) {
+    projectionInfo.wkt = wkt;
+  }
+  if (lonLatValidity != null) {
+    projectionInfo.lonLatValidity = lonLatValidity;
+  }
+  if (name != null) {
+    projectionInfo.name = name;
+  }
+  if (remarks != null) {
+    projectionInfo.remarks = remarks;
+  }
   if (proj4 == null) {
     console.warn('Proj4 is undefined !!!');
   } else {
@@ -50,7 +64,7 @@ export function addProjection(
     register(proj4);
   }
   projectionInfo.projection = getProjection(projectionInfo.code);
-  if (Array.isArray(projectionInfo.lonLatValidity)) {
+  if (Array.isArray(projectionInfo.lonLatValidity) && projectionInfo.projection != null) {
     const extent = transformExtent(projectionInfo.lonLatValidity, 'EPSG:4326', projectionInfo.projection);
     projectionInfo.projection.setExtent(extent);
   }
@@ -62,14 +76,8 @@ export function addProjection(
 addProjection(
   'EPSG:3857',
   null,
-  [-180.0, -85.06, 180.0, 85.06],
+  null,
   'WGS 84 / Pseudo-Mercator -- Spherical Mercator, Google Maps, OpenStreetMap, Bing, ArcGIS, ESRI',
   'Uses spherical development of ellipsoidal coordinates. Relative to WGS 84 / World Mercator (CRS code 3395) errors of 0.7 percent in scale and differences in northing of up to 43km in the map (equivalent to 21km on the ground) may arise.'
 );
-addProjection(
-  'EPSG:4326',
-  null,
-  [-180.0, -90.0, 180.0, 90.0],
-  'WGS 84 -- WGS84 - World Geodetic System 1984, used in GPS',
-  ''
-);
+addProjection('EPSG:4326', null, null, 'WGS 84 -- WGS84 - World Geodetic System 1984, used in GPS', '');
