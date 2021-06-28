@@ -66,6 +66,12 @@ export type ILegendRecord = Record<number | string, ILayerLegend[]>;
 
 export interface ILegendSource {
   fetchLegend(): Promise<ILegendRecord>;
+
+  /**
+   * La liste des id de couche en string
+   * Si rien n'est mit, toute les couches seront prises
+   */
+  includeLayers?: string[];
 }
 
 export interface IExtended extends IInitSource, IQuerySource, ILegendSource {}
