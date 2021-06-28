@@ -1,5 +1,5 @@
-import { LayerTypeEnum } from './source/types/layerType';
-import { SourceTypeEnum } from './source/types/sourceType';
+import { LayerType, SourceType } from './source/types';
+import {  } from './source/types';
 import { Extent } from 'ol/extent';
 
 export interface ISnapshot {
@@ -12,7 +12,7 @@ export interface ISnapshotView {
   center: [number, number];
   zoom: number;
   projectionCode: string;
-  constrainResolution: boolean;
+  constrainResolution?: boolean;
 }
 
 export interface ISnapshotProjection {
@@ -24,8 +24,8 @@ export interface ISnapshotProjection {
 }
 
 export interface ISnapshotLayer {
-  layerType: LayerTypeEnum;
-  layerOptions: any;
-  sourceType: SourceTypeEnum;
-  sourceOptions: any;
+  layerType?: LayerType;
+  layerOptions?: any;
+  sourceType?: SourceType;
+  sourceOptions?: any;
 }

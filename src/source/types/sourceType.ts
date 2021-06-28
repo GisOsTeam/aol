@@ -1,21 +1,3 @@
-export type SourceType =
-  | SourceTypeEnum.ExternalVector
-  | SourceTypeEnum.ImageArcGISRest
-  | SourceTypeEnum.ImageStatic
-  | SourceTypeEnum.ImageWms
-  | SourceTypeEnum.LocalVector
-  | SourceTypeEnum.Osm
-  | SourceTypeEnum.QueryArcGISRest
-  | SourceTypeEnum.TileArcGISRest
-  | SourceTypeEnum.TileWfs
-  | SourceTypeEnum.TileWms
-  | SourceTypeEnum.Vector
-  | SourceTypeEnum.VectorTile
-  | SourceTypeEnum.Wfs
-  | SourceTypeEnum.Wmts
-  | SourceTypeEnum.WmtsCapabilities
-  | SourceTypeEnum.Xyz;
-
 export enum SourceTypeEnum {
   ExternalVector = 'ExternalVector',
   ImageArcGISRest = 'ImageArcGISRest',
@@ -34,3 +16,21 @@ export enum SourceTypeEnum {
   WmtsCapabilities = 'WmtsCapabilities',
   Xyz = 'Xyz',
 }
+
+export type SourceType =
+  | SourceTypeEnum.ExternalVector
+  | SourceTypeEnum.ImageArcGISRest
+  | SourceTypeEnum.ImageStatic
+  | SourceTypeEnum.ImageWms
+  | SourceTypeEnum.LocalVector
+  | SourceTypeEnum.Osm
+  | SourceTypeEnum.QueryArcGISRest
+  | SourceTypeEnum.TileArcGISRest
+  | SourceTypeEnum.TileWfs
+  | SourceTypeEnum.TileWms
+  | SourceTypeEnum.Vector
+  | SourceTypeEnum.VectorTile
+  | SourceTypeEnum.Wfs
+  | SourceTypeEnum.Wmts
+  | SourceTypeEnum.WmtsCapabilities
+  | SourceTypeEnum.Xyz;

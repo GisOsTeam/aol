@@ -33,6 +33,7 @@ export function loadWfsFeaturesOnBBOX(options: {
   swapXYBBOXRequest?: boolean;
   swapLonLatGeometryResult?: boolean;
   id?: number | string;
+  cql?: string;
 }): Promise<Feature[]> {
   const params: { [id: string]: string } = {};
   params.SERVICE = 'WFS';
@@ -53,7 +54,10 @@ export function loadWfsFeaturesOnBBOX(options: {
     // ?? // MapServer
     // ?? // ArcGIS WFS
   }
-
+  if (options.cql != null && options.cql !== '') {
+    params.CQL_FILTER = options.cql;
+  }
+  
   return Engine.getInstance()
     .send({
       url: options.url,

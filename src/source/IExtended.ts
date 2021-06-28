@@ -23,7 +23,9 @@ export interface ISnapshotSource extends Source {
   getLayerType(): LayerType;
 
   isSnapshotable(): boolean; // Can save snapshot
+
   isListable(): boolean; // Visible by others tools
+  
   isRemovable(): boolean; // Removable from map by others tools
 }
 
