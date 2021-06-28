@@ -1,5 +1,5 @@
 import { LayerType, SourceType } from './source/types';
-import {  } from './source/types';
+import {} from './source/types';
 import { Extent } from 'ol/extent';
 
 export interface ISnapshot {

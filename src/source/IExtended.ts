@@ -25,7 +25,7 @@ export interface ISnapshotSource extends Source {
   isSnapshotable(): boolean; // Can save snapshot
 
   isListable(): boolean; // Visible by others tools
-  
+
   isRemovable(): boolean; // Removable from map by others tools
 }
 

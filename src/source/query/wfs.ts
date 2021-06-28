@@ -57,7 +57,7 @@ export function loadWfsFeaturesOnBBOX(options: {
   if (options.cql != null && options.cql !== '') {
     params.CQL_FILTER = options.cql;
   }
-  
+
   return Engine.getInstance()
     .send({
       url: options.url,
