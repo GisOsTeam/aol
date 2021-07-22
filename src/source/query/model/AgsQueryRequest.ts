@@ -3,6 +3,7 @@ import { fromCircle } from 'ol/geom/Polygon';
 import Circle from 'ol/geom/Circle';
 import { FilterBuilder, FilterBuilderTypeEnum } from '../../../filter';
 import EsriJSON from 'ol/format/EsriJSON';
+import { ImageArcGISRest } from '../../ImageArcGISRest';
 
 interface AgsQueryRequestParameters {
   f: string;
@@ -66,7 +67,8 @@ export class AgsQueryRequest implements AgsQueryRequestParameters {
   private format = new EsriJSON();
 
   constructor(source: IExtended, type: IFeatureType<number>, request: IQueryRequest) {
-    const { geometryProjection, filters } = request;
+    const { geometryProjection } = request;
+    const filters = (source as ImageArcGISRest).alterRequestFilterFromType(request, type);
     this.inSR = '3857';
     this.outSR = '3857';
 
@@ -121,6 +123,8 @@ export class AgsQueryRequest implements AgsQueryRequestParameters {
       this.where = new FilterBuilder(filters).build(FilterBuilderTypeEnum.SQL);
     }
     this.f = 'json';
+
+
   }
 
   public getSrId(): string {

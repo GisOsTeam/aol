@@ -6,6 +6,8 @@ import EsriJSON from 'ol/format/EsriJSON';
 import { fromCircle } from 'ol/geom/Polygon';
 import Circle from 'ol/geom/Circle';
 import { getQueryId } from '../../../utils';
+import { ImageArcGISRest } from '../../ImageArcGISRest';
+import { IPredicate } from '../../../filter/predicate/IPredicate';
 
 export interface AgsIdentifyRequestParameters {
   f: string;
@@ -111,13 +113,15 @@ export class AgsIdentifyRequest implements AgsIdentifyRequestParameters {
     this.imageDisplay = '1001,1001';
     const ids = types.map((type) => type.id).join(',');
     this.layers = `${layersPrefix}:${ids}`;
-    if (request.filters) {
+    for (const type of types) {
       const layerDefs = [];
-      for (const type of types) {
-        const predicate = request.filters[type.id];
-        if (predicate) {
-          layerDefs.push(`"${type.id}":"${new FilterBuilder(predicate).build(FilterBuilderTypeEnum.SQL)}"`);
-        }
+      let predicate: IPredicate;
+
+      if ((source as any).alterRequestFilterFromType) {
+        predicate = (source as any).alterRequestFilterFromType(request, type);
+      }
+      if (predicate) {
+        layerDefs.push(`"${type.id}":"${new FilterBuilder(predicate).build(FilterBuilderTypeEnum.SQL)}"`);
       }
       this.layerDefs = `{${layerDefs.join(',')}}`;
     }
