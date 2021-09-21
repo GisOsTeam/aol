@@ -8,7 +8,7 @@ import Geometry from 'ol/geom/Geometry';
 import { DEFAULT_TOLERANCE } from './query';
 import { fromCircle } from 'ol/geom/Polygon';
 import Circle from 'ol/geom/Circle';
-import { geodesicBuffer } from '../utils/geodesicBuffer';
+import { geodesicBuffer } from '../utils/geodesic-buffer/geodesic-buffer';
 import { GeoJSONFeature } from 'ol/format/GeoJSON';
 import { ProjectionLike } from 'ol/proj';
 

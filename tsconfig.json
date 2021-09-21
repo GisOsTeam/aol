@@ -5,6 +5,7 @@
     "sourceMap": true,
     "noImplicitAny": true,
     "skipLibCheck": true,
+    "resolveJsonModule": true,
     "module": "commonjs",
     "moduleResolution": "node",
     "target": "es5",

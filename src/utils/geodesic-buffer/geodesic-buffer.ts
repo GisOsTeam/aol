@@ -1,10 +1,26 @@
+/**
+ * Typescript file inspired by https://github.com/mclaeysb/turf-buffer project
+ */
+
 import * as simplepolygon from 'simplepolygon';
 import * as turf from '@turf/turf';
 import { AllGeoJSON, Feature, FeatureCollection, Geometry, Units } from '@turf/helpers';
 
-export function geodesicBuffer(feature: AllGeoJSON, radius: any, units: Units = 'meters', resolution = 64): AllGeoJSON {
-  if (radius < 0) throw new Error('The buffer radius must be positive');
-  if (radius == 0) return feature as Feature;
+/**
+ *
+ * @param {AllGeoJSON} feature - Feature in EPSG:4326 used to calculate new buffered feature
+ * @param {number} radius - Radius of buffer in unit=units
+ * @param {Units} [units=meters] - Unit of radius
+ * @param {number} [resolution=64] -
+ */
+export function geodesicBuffer(feature: AllGeoJSON, radius: number, units: Units = 'meters', resolution = 64): AllGeoJSON {
+  if (radius < 0) {
+    throw new Error('The buffer radius must be positive');
+  }
+  if (radius == 0)  {
+    return feature as Feature;
+  }
+  // FeatureCollection case
   if (feature.type === 'FeatureCollection') {
     const buffers: any[] = [];
     (feature as FeatureCollection).features.forEach(function (ft: Feature) {
@@ -44,7 +60,9 @@ export function geodesicBuffer(feature: AllGeoJSON, radius: any, units: Units = 
     });
     return turf.featureCollection(buffers);
   }
-  if ((feature as Feature).geometry === null) return feature;
+  // Null or undefined feature geometry case
+  if ((feature as Feature).geometry == null) return feature;
+  // Simplify geometry if it's one of 'LineString', 'MultiLineString', 'Polygon', 'MultiPolygon'
   if (['LineString', 'MultiLineString', 'Polygon', 'MultiPolygon'].indexOf((feature as Feature).geometry.type) > -1) {
     feature = turf.simplify(feature, { tolerance: turf.distanceToDegrees(radius / resolution, units) }); // radius/resolution seems like the optimal balance between speed and detail
   }
@@ -254,8 +272,7 @@ function arc(
   const arc = [];
   const resMultiple = 360 / resolution;
   const angle = modulo(Math.pow(-1, right ? 2 : 1) * (bearing1 - bearing2), 360);
-  const numSteps = Math.floor(angle / resMultiple);
-  let step = numSteps; // Counting steps first is easier than checking angle (angle involves checking 'right', 'modulo(360)', lefthandedness of bearings
+  let step = Math.floor(angle / resMultiple); // Counting steps first is easier than checking angle (angle involves checking 'right', 'modulo(360)', lefthandedness of bearings
   let bearing = bearing1;
   // Add spoke for bearing1
   let spoke = turf.destination(pt, radius, bearing1, { units: units });
