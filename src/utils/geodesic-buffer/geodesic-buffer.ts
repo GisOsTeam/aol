@@ -13,11 +13,16 @@ import { AllGeoJSON, Feature, FeatureCollection, Geometry, Units } from '@turf/h
  * @param {Units} [units=meters] - Unit of radius
  * @param {number} [resolution=64] -
  */
-export function geodesicBuffer(feature: AllGeoJSON, radius: number, units: Units = 'meters', resolution = 64): AllGeoJSON {
+export function geodesicBuffer(
+  feature: AllGeoJSON,
+  radius: number,
+  units: Units = 'meters',
+  resolution = 64
+): AllGeoJSON {
   if (radius < 0) {
     throw new Error('The buffer radius must be positive');
   }
-  if (radius == 0)  {
+  if (radius == 0) {
     return feature as Feature;
   }
   // FeatureCollection case
