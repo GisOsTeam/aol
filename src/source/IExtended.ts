@@ -78,6 +78,7 @@ export interface IAbstractRequest<T extends string> {
   limit?: number;
   returnGeometry?: boolean;
   srId?: string;
+  formatResponse?: boolean;
 }
 
 export interface IQueryRequest extends IAbstractRequest<'query'> {
@@ -111,6 +112,12 @@ export interface IQueryFeatureTypeResponse {
   type: IFeatureType<any>;
   features: Feature[];
   source: IQuerySource;
+}
+
+export type UntypedResponse = any;
+
+export interface IQueryUntypedResponse {
+  response: UntypedResponse;
 }
 
 export interface IAttribute {
