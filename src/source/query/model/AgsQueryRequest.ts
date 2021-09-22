@@ -1,4 +1,4 @@
-import { IExtended, IFeatureType, IIdentifyRequest, IGisRequest, IQueryRequest } from '../../IExtended';
+import { IExtended, IFeatureType, IQueryRequest } from '../../IExtended';
 import { fromCircle } from 'ol/geom/Polygon';
 import Circle from 'ol/geom/Circle';
 import { FilterBuilder, FilterBuilderTypeEnum } from '../../../filter';
@@ -77,6 +77,10 @@ export class AgsQueryRequest implements AgsQueryRequestParameters {
 
     this.outFields = '*';
     this.returnGeometry = request.returnGeometry !== false ? 'true' : 'false';
+
+    this.returnIdsOnly = (request as any).returnIdsOnly === true ? 'true' : 'false';
+
+    this.returnCountOnly = (request as any).returnCountOnly === true ? 'true' : 'false';
 
     let geometry = request.geometry;
     if (geometry) {
