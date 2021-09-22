@@ -101,12 +101,10 @@ export abstract class Vector extends OlVector implements IQuerySource {
         destGeometry = fromCircle(geometry as Circle);
       }
       // Géométrie GeoJSON bufferisée en EPSG:4326
-      const wgs84GeoJSONBuffured = (
-        geodesicBuffer(
-          toGeoJSONFeature(new Feature<Geometry>(destGeometry.clone())) as any,
-          geoTolerance
-        ) as GeoJSONFeature
-      ).geometry;
+      const wgs84GeoJSONBuffured = (geodesicBuffer(
+        toGeoJSONFeature(new Feature<Geometry>(destGeometry.clone())) as any,
+        geoTolerance
+      ) as GeoJSONFeature).geometry;
       // Géométrie OpenLayers bufferisée en EPSG:4326
       const wgs84GeoOlBuffered = toOpenLayersGeometry(wgs84GeoJSONBuffured);
       // Géométrie OpenLayers bufferisée en projectionUsed

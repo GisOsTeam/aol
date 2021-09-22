@@ -7,8 +7,7 @@ export abstract class BasePredicate<
   LH extends IPredicate | IField<any>,
   O extends IOperator,
   RH extends IPredicate | FilterValueType
-> implements IPredicate<LH, O, RH>
-{
+> implements IPredicate<LH, O, RH> {
   public readonly leftHand: LH;
   public readonly operator: O;
   public readonly rightHand: RH;
