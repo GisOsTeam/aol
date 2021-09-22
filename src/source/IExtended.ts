@@ -105,7 +105,7 @@ export interface IIdentifyRequest extends IAbstractRequest<'identify'> {
 
 export interface IQueryResponse {
   request: IGisRequest;
-  featureTypeResponses: IQueryFeatureTypeResponse[];
+  featureTypeResponses: (IQueryFeatureTypeResponse | IQueryUntypedResponse)[];
 }
 
 export interface IQueryFeatureTypeResponse {
