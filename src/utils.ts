@@ -1,7 +1,8 @@
 import booleanDisjoint from '@turf/boolean-disjoint';
 import * as turf from '@turf/turf';
 import { applyStyle } from 'ol-mapbox-style';
-import { getCenter, getWidth } from 'ol/extent';
+import { Coordinate } from 'ol/coordinate';
+import { getCenter, getHeight, getWidth } from 'ol/extent';
 import Feature from 'ol/Feature';
 import GeoJSON, { GeoJSONFeature, GeoJSONGeometry } from 'ol/format/GeoJSON';
 import Circle from 'ol/geom/Circle';
@@ -367,6 +368,25 @@ export function exportToImage(
   imageSize: [number, number],
   extent: [number, number, number, number],
   format: 'JPEG' | 'PNG',
+  cancelFunction = () => false,
+) {
+  const center = getCenter(extent);
+  const resolutionX = getWidth(extent) / imageSize[0];
+  const resolutionY = getHeight(extent) / imageSize[1];
+  const resolution = Math.max(resolutionX, resolutionY);
+
+  return exportToImageFromResolution(map, imageSize, center, resolution, format, cancelFunction);
+}
+
+/**
+ * Export to image from resolution.
+ */
+export function exportToImageFromResolution(
+  map: Map,
+  imageSize: [number, number],
+  center: Coordinate,
+  resolution: number,
+  format: 'JPEG' | 'PNG',
   cancelFunction = () => false
 ): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -469,8 +489,8 @@ export function exportToImage(
     const view = new View({
       projection: initialView.getProjection(),
       rotation: initialView.getRotation(),
-      center: getCenter(extent),
-      resolution: getWidth(extent) / imageSize[0],
+      center,
+      resolution,
     });
     map.setView(view);
   });
