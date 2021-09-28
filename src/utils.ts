@@ -368,7 +368,7 @@ export function exportToImage(
   imageSize: [number, number],
   extent: [number, number, number, number],
   format: 'JPEG' | 'PNG',
-  cancelFunction = () => false,
+  cancelFunction = () => false
 ) {
   const center = getCenter(extent);
   const resolutionX = getWidth(extent) / imageSize[0];
