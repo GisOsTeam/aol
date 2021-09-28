@@ -8,10 +8,9 @@ import {
   IGisRequest,
   IQueryRequest,
   IIdentifyRequest,
-  IQueryUntypedResponse,
 } from '../IExtended';
 import Projection from 'ol/proj/Projection';
-import { Engine, IResponse } from 'bhreq';
+import { Engine } from 'bhreq';
 import { AgsIdentifyRequest } from './model/AgsIdentifyRequest';
 import { AgsQueryRequest } from './model/AgsQueryRequest';
 import { getQueryId } from '../../utils';
@@ -61,7 +60,7 @@ export function executeAgsQuery(
   source: IExtended,
   type: IFeatureType<number>,
   request: IGisRequest
-): Promise<IQueryFeatureTypeResponse | IQueryUntypedResponse> {
+): Promise<IQueryFeatureTypeResponse> {
   const { olMap, queryType, limit } = request;
 
   const mapProjection = olMap.getView().getProjection();
@@ -94,9 +93,6 @@ export function executeAgsQuery(
     })
     .then(
       (res) => {
-        if (request.formatResponse === false) {
-          return processUntypedResponse(res);
-        }
         const [formattedResp] = processAgsResponse(res, source, [type], mapProjection, body.getSrId(), limit);
         return formattedResp;
       },
@@ -107,18 +103,6 @@ export function executeAgsQuery(
     );
 }
 
-function processUntypedResponse(res: IResponse): IQueryUntypedResponse {
-  let jsonQueryRes = res.body;
-  if (typeof jsonQueryRes === 'string') {
-    try {
-      jsonQueryRes = JSON.parse(jsonQueryRes);
-    } catch (e) {
-      console.error(`Error occurred during reading identify response body `);
-      return e;
-    }
-  }
-  return { response: jsonQueryRes };
-}
 
 function processAgsResponse(
   res: any,
