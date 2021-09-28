@@ -103,7 +103,6 @@ export function executeAgsQuery(
     );
 }
 
-
 function processAgsResponse(
   res: any,
   source: IExtended,
