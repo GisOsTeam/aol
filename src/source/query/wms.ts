@@ -139,16 +139,15 @@ export function executeWmsQuery(options: {
   let tolerance = DEFAULT_TOLERANCE;
 
   switch (queryType) {
-    case "query":
+    case 'query':
       tolerance = 1;
       break;
-    case "identify":
+    case 'identify':
       const { identifyTolerance } = options.request as IIdentifyRequest;
       if (Math.round(identifyTolerance) > 0) {
         tolerance = identifyTolerance;
       }
       break;
-
   }
   // Assignation de la résolution
   const resolution = olView.getResolution() == null ? 1 : olView.getResolution();
@@ -163,7 +162,6 @@ export function executeWmsQuery(options: {
 
   // Utilisation de l'étendue re-projetée comme étendue par défaut
   extentUsed = transformExtent(extentUsed, geometryProjection, options.requestProjectionCode);
-
 
   // TODO gestion spécifique du !point ?
   // if (geometry.getType() !== 'Point') {
