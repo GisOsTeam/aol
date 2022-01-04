@@ -1,5 +1,5 @@
 import Feature from 'ol/Feature';
-import { get as getProjection, transformExtent } from 'ol/proj';
+import { get as getProjection } from 'ol/proj';
 import GML3Format from 'ol/format/GML3';
 import GML32Format from 'ol/format/GML32';
 import GML2Format from 'ol/format/GML2';
@@ -8,6 +8,10 @@ import { IFeatureType } from '../source/IExtended';
 import { getQueryId } from '../utils';
 import Geometry from 'ol/geom/Geometry';
 import SimpleGeometry from 'ol/geom/SimpleGeometry';
+import { WMSGetFeatureInfo } from 'ol/format';
+import { Options as WMSGetFeatureInfoOptions } from 'ol/format/WMSGetFeatureInfo';
+import { ReadOptions } from 'ol/format/Feature';
+import { Extent } from 'ol/extent';
 
 export function readFeatures(
   txt: string,
@@ -86,4 +90,35 @@ export function readFeatures(
     });
   }
   return features;
+}
+
+export function readWMSFeatures(
+  txt: string,
+  options: {
+    bbox: Extent;
+    type: IFeatureType<string>;
+    requestProjectionCode: string;
+    featureProjectionCode: string;
+    limit: number;
+    outputFormat: string;
+    swapLonLatGeometryResult?: boolean;
+  }
+): Feature<Geometry>[] {
+  const optionsWMSGetFeatureInfo: WMSGetFeatureInfoOptions = { layers: [] };
+  if (options.type) {
+    optionsWMSGetFeatureInfo.layers.push(options.type.id);
+  }
+
+  const optionsRead: ReadOptions = {};
+  if (options.requestProjectionCode) {
+    optionsRead.dataProjection = options.requestProjectionCode;
+  }
+  if (options.featureProjectionCode) {
+    optionsRead.featureProjection = options.featureProjectionCode;
+  }
+  if (options.bbox) {
+    optionsRead.extent = options.bbox;
+  }
+
+  return new WMSGetFeatureInfo(optionsWMSGetFeatureInfo).readFeatures(txt, optionsRead);
 }

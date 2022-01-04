@@ -1,19 +1,22 @@
 import Feature from 'ol/Feature';
 import { transformExtent } from 'ol/proj';
 import {
-  IGisRequest,
-  IFeatureType,
-  IQueryFeatureTypeResponse,
   IAttribute,
+  IFeatureType,
+  IGisRequest,
   IIdentifyRequest,
+  IQueryFeatureTypeResponse,
   IQuerySource,
 } from '../IExtended';
-import { toGeoJSONGeometry, disjoint, getQueryId } from '../../utils';
-import { getForViewAndSize } from 'ol/extent';
+import { buffer, disjoint, getQueryId, toGeoJSONFeature, toGeoJSONGeometry, toOpenLayersGeometry } from '../../utils';
+import { Extent } from 'ol/extent';
 import Projection from 'ol/proj/Projection';
 import Geometry from 'ol/geom/Geometry';
 import { Engine } from 'bhreq';
-import { readFeatures } from '../../utils/featuresRead';
+import { readWMSFeatures } from '../../utils/featuresRead';
+import { calculateGeoExtent } from '../../utils/extent';
+import { DEFAULT_TOLERANCE } from './wfs';
+import { WMSGetFeatureInfo } from 'ol/format';
 
 function loadWmsFeaturesOnBBOX(options: {
   url: string;
@@ -21,7 +24,7 @@ function loadWmsFeaturesOnBBOX(options: {
   queryType: 'query' | 'identify';
   requestProjectionCode: string;
   featureProjectionCode: string;
-  bbox: number[];
+  bbox: Extent;
   renderSize: number;
   tolerance: number;
   limit: number;
@@ -103,8 +106,7 @@ function loadWmsFeaturesOnBBOX(options: {
       if (res.status !== 200) {
         throw new Error('WMS request error ' + res.status);
       }
-      const txt = res.text;
-      return readFeatures(txt, options);
+      return readWMSFeatures(res.text, options);
     },
     (err) => {
       console.error('Get WMS feature info in error');
@@ -128,36 +130,51 @@ export function executeWmsQuery(options: {
   const { olMap, geometry, geometryProjection, queryType, limit } = options.request;
   const olView = olMap.getView();
   const mapProjection = olView.getProjection();
-  const extent = transformExtent(geometry.getExtent(), geometryProjection, options.requestProjectionCode);
-  const mapExtent = getForViewAndSize(
-    [0.5 * extent[0] + 0.5 * extent[2], 0.5 * extent[1] + 0.5 * extent[3]],
-    olView.getResolution(),
-    0,
-    [1001, 1001]
-  );
-  let tolerance;
+  const extentOriginal: Extent = [...geometry.getExtent()];
+  let extentUsed: Extent = [...extentOriginal];
+  // Géométrie utilisée pour vérifier que les features resultant de la requête ne sont pas disjoint
+  let geometryUsedForDisjoint = geometry.clone();
+
+  // tolérance utilisée
+  let tolerance = DEFAULT_TOLERANCE;
+
   switch (queryType) {
-    case 'identify':
-      const { identifyTolerance } = options.request as IIdentifyRequest;
-      if (Math.round(identifyTolerance) > 0) {
-        tolerance = Math.round(identifyTolerance);
-      } else {
-        tolerance = 4;
-      }
-      break;
-    case 'query':
+    case "query":
       tolerance = 1;
       break;
+    case "identify":
+      const { identifyTolerance } = options.request as IIdentifyRequest;
+      if (Math.round(identifyTolerance) > 0) {
+        tolerance = identifyTolerance;
+      }
+      break;
+
   }
-  if (geometry.getType() !== 'Point') {
-    const mapH = Math.sqrt(
-      (mapExtent[2] - mapExtent[0]) * (mapExtent[2] - mapExtent[0]) + (mapExtent[3] - mapExtent[1])
-    );
-    const geomH = Math.sqrt(
-      (extent[2] - extent[0]) * (extent[2] - extent[0]) + (extent[3] - extent[1]) * (extent[3] - extent[1])
-    );
-    tolerance += Math.round((500 * geomH) / mapH);
-  }
+  // Assignation de la résolution
+  const resolution = olView.getResolution() == null ? 1 : olView.getResolution();
+  // Assignation de la tolérance à appliquer
+  const geoTolerance = tolerance * resolution;
+  // Utilisation de l'étendue intégrant la tolérance comme étendue par défaut
+  extentUsed = [...calculateGeoExtent(extentOriginal, tolerance, resolution, geoTolerance)];
+
+  geometryUsedForDisjoint = toOpenLayersGeometry(
+    buffer(toGeoJSONFeature(new Feature<Geometry>(geometry.clone())), geoTolerance, geometryProjection).geometry
+  );
+
+  // Utilisation de l'étendue re-projetée comme étendue par défaut
+  extentUsed = transformExtent(extentUsed, geometryProjection, options.requestProjectionCode);
+
+
+  // TODO gestion spécifique du !point ?
+  // if (geometry.getType() !== 'Point') {
+  //   const mapH = Math.sqrt(
+  //     (mapExtent[2] - mapExtent[0]) * (mapExtent[2] - mapExtent[0]) + (mapExtent[3] - mapExtent[1])
+  //   );
+  //   const geomH = Math.sqrt(
+  //     (extent[2] - extent[0]) * (extent[2] - extent[0]) + (extent[3] - extent[1]) * (extent[3] - extent[1])
+  //   );
+  //   tolerance += Math.round((500 * geomH) / mapH);
+  // }
 
   return loadWmsFeaturesOnBBOX({
     url: options.url,
@@ -165,7 +182,7 @@ export function executeWmsQuery(options: {
     queryType,
     requestProjectionCode: options.requestProjectionCode,
     featureProjectionCode: mapProjection.getCode(),
-    bbox: mapExtent,
+    bbox: extentUsed,
     renderSize: 1001,
     tolerance,
     limit: limit ? 2 * limit : 100000,
@@ -180,11 +197,15 @@ export function executeWmsQuery(options: {
       allFeatures.forEach((feature: Feature) => {
         // Check intersection
         if (feature.getGeometry() != null) {
-          const geom = feature.getGeometry().clone();
-          geom.transform(mapProjection, geometryProjection);
+          // Duplication de la géométrie de la feature courante et transformation vers la projection de la géométrie
+          // source
+          const geom = feature.getGeometry().clone().transform(mapProjection, geometryProjection);
+          // Si en mode identify et la géométrie source et de type point (ou multi point)
+          // Ou si la géométrie de la feature intersecte la géométrie de la requête
+          // Alors on ajoute la feature aux features à retourner
           if (
             (queryType === 'identify' && (geometry.getType() === 'Point' || geometry.getType() === 'MultiPoint')) ||
-            !disjoint(toGeoJSONGeometry(geom), toGeoJSONGeometry(geometry))
+            !disjoint(toGeoJSONGeometry(geom), toGeoJSONGeometry(geometryUsedForDisjoint))
           ) {
             features.push(feature);
           }
@@ -212,7 +233,7 @@ export function retrieveWmsFeature(options: {
   outputFormat: string;
   swapLonLatGeometryResult?: boolean;
 }): Promise<Feature> {
-  const mapExtent = [-20026376.39, -20048966.1, 20026376.39, 20048966.1];
+  const mapExtent: Extent = [-20026376.39, -20048966.1, 20026376.39, 20048966.1];
   return loadWmsFeaturesOnBBOX({
     url: options.url,
     type: options.type,
@@ -245,7 +266,7 @@ export function loadWmsFeatureDescription(options: {
   version: '1.0.0' | '1.1.0' | '1.3.0';
   outputFormat: string;
 }): Promise<void> {
-  const mapExtent = [-20026376.39, -20048966.1, 20026376.39, 20048966.1];
+  const mapExtent: Extent = [-20026376.39, -20048966.1, 20026376.39, 20048966.1];
   return loadWmsFeaturesOnBBOX({
     url: options.url,
     type: options.type,

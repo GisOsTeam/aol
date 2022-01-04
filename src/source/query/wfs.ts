@@ -1,19 +1,20 @@
 import Feature from 'ol/Feature';
 import { transformExtent } from 'ol/proj';
 import {
-  IFeatureType,
   IAttribute,
+  IFeatureType,
   IGisRequest,
+  IIdentifyRequest,
   IQueryFeatureTypeResponse,
   IQuerySource,
-  IIdentifyRequest,
 } from '../IExtended';
-import { toGeoJSONGeometry, disjoint, getQueryId, buffer, toGeoJSONFeature, toOpenLayersGeometry } from '../../utils';
-import { Extent, getForViewAndSize } from 'ol/extent';
+import { buffer, disjoint, getQueryId, toGeoJSONFeature, toGeoJSONGeometry, toOpenLayersGeometry } from '../../utils';
+import { Extent } from 'ol/extent';
 import Geometry from 'ol/geom/Geometry';
 import { Engine } from 'bhreq';
 import Projection from 'ol/proj/Projection';
 import { readFeatures } from '../../utils/featuresRead';
+import { calculateGeoExtent } from '../../utils/extent';
 
 export const DEFAULT_TOLERANCE = 4;
 
@@ -39,6 +40,7 @@ export function loadWfsFeaturesOnBBOX(options: {
   params.TYPENAME = getQueryId<string>(options.type);
   params.MAXFEATURES = `${options.limit}`;
   params.OUTPUTFORMAT = options.outputFormat;
+  params.SRSNAME = options.requestProjectionCode;
   if (options.bbox != null && options.bbox.length === 4) {
     if (options.swapXYBBOXRequest !== true) {
       params.BBOX = `${options.bbox.join(',')},${options.requestProjectionCode}`;
@@ -90,8 +92,8 @@ export function executeWfsQuery(options: {
   const { olMap, geometry, geometryProjection, queryType, limit } = options.request;
   const olView = olMap.getView();
   const mapProjection = olView.getProjection();
-  const originalExtent = geometry.getExtent();
-  let extentUsed: Extent = [...originalExtent];
+  const extentOriginal = geometry.getExtent();
+  let extentUsed: Extent = [...extentOriginal];
   // Géométrie utilisée pour vérifier que les features resultant de la requête ne sont pas disjoint
   let geometryUsedForDisjoint = geometry.clone();
   if (queryType === 'identify') {
@@ -100,24 +102,8 @@ export function executeWfsQuery(options: {
     const resolution = olView.getResolution() == null ? 1 : olView.getResolution();
     // Assignation de la tolérance à appliquer
     const geoTolerance = (Math.round(identifyTolerance) > 0 ? identifyTolerance : DEFAULT_TOLERANCE) * resolution;
-    // Calcul de la largeur géo référencée comprenant la largeur de l'étendue originale et 2 * la tolérance (gauche et droite)
-    const geoWidth = Math.abs(originalExtent[2] - originalExtent[0]) + 2 * geoTolerance;
-    // Calcul de la hauteur géo référencée comprenant la hauteur de l'étendue originale et 2 * la tolérance (haut et bas)
-    const geoHeight = Math.abs(originalExtent[3] - originalExtent[1]) + 2 * geoTolerance;
-    // Calcul du centre de l'étendue originale
-    const originalExtentCenter = [
-      0.5 * originalExtent[0] + 0.5 * originalExtent[2],
-      0.5 * originalExtent[1] + 0.5 * originalExtent[3],
-    ];
-    // Calcule de l'étendue intégrant la tolérance
-    const extentBuffered = getForViewAndSize(
-      originalExtentCenter,
-      1, // 1 car déjà en géo !
-      0, // 0 car déjà en géo !
-      [geoWidth, geoHeight]
-    );
     // Utilisation de l'étendue intégrant la tolérance comme étendue par défaut
-    extentUsed = [...extentBuffered];
+    extentUsed = [...calculateGeoExtent(extentOriginal, identifyTolerance, resolution, geoTolerance)];
 
     geometryUsedForDisjoint = toOpenLayersGeometry(
       buffer(toGeoJSONFeature(new Feature<Geometry>(geometry.clone())), geoTolerance, geometryProjection).geometry
