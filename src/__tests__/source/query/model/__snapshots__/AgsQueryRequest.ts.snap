@@ -32,13 +32,13 @@ exports[`Simple AgsQueryRequest: agsQueryRequest.relationParam 1`] = `undefined`
 
 exports[`Simple AgsQueryRequest: agsQueryRequest.resultOffset 1`] = `undefined`;
 
-exports[`Simple AgsQueryRequest: agsQueryRequest.returnCountOnly 1`] = `undefined`;
+exports[`Simple AgsQueryRequest: agsQueryRequest.returnCountOnly 1`] = `"false"`;
 
 exports[`Simple AgsQueryRequest: agsQueryRequest.returnExtentOnly 1`] = `undefined`;
 
 exports[`Simple AgsQueryRequest: agsQueryRequest.returnGeometry 1`] = `"true"`;
 
-exports[`Simple AgsQueryRequest: agsQueryRequest.returnIdsOnly 1`] = `undefined`;
+exports[`Simple AgsQueryRequest: agsQueryRequest.returnIdsOnly 1`] = `"false"`;
 
 exports[`Simple AgsQueryRequest: agsQueryRequest.returnM 1`] = `undefined`;
 

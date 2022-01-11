@@ -7,6 +7,7 @@ import {
   IGisRequest,
   IQueryResponse,
   ISnapshotOptions,
+  IQueryUntypedResponse,
 } from './IExtended';
 import { getAgsLayersFromTypes } from '../utils';
 import { LayerType, LayerTypeEnum, SourceType, SourceTypeEnum } from './types';
@@ -124,8 +125,8 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
   }
 
   public async query(request: IGisRequest, onlyVisible = false): Promise<IQueryResponse> {
-    const promises: Promise<IQueryFeatureTypeResponse>[] = [];
-    let featureTypeResponses: IQueryFeatureTypeResponse[];
+    const promises: Promise<IQueryFeatureTypeResponse | IQueryUntypedResponse>[] = [];
+    let featureTypeResponses: (IQueryFeatureTypeResponse | IQueryUntypedResponse)[];
 
     // List des FeatureType interrogés
     const targetTypes = !onlyVisible ? this.options.types : this.options.types.filter((type) => type.hide !== true);
