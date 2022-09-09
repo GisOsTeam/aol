@@ -1,6 +1,10 @@
 import OlFeature from 'ol/Feature';
-import { Vector, IVectorOptions } from './Vector';
 import Wkt from 'ol/format/WKT';
+import { Extent } from 'ol/extent';
+import { LoadingStrategy } from 'ol/source/Vector';
+import { all } from 'ol/loadingstrategy';
+import { Projection } from 'ol/proj';
+import { Vector, IVectorOptions } from './Vector';
 import { SourceType, SourceTypeEnum } from './types/sourceType';
 import { LayerType, LayerTypeEnum } from './types/layerType';
 
@@ -9,14 +13,23 @@ export interface ILocalVectorOptions extends IVectorOptions {
 }
 
 export class LocalVector extends Vector {
-  private readonly strategy_: (extent: [number, number, number, number], resolution: number) => any;
-
-  private origstrategy_: (extent: [number, number, number, number], resolution: number) => any;
-
   private wktFormat = new Wkt();
 
+  protected oldProjectionCode: string;
+
   constructor(options: ILocalVectorOptions) {
-    super({ ...options, useSpatialIndex: true });
+    super({
+      ...options,
+      useSpatialIndex: true,
+      strategy: (extent: Extent, resolution: number, projection: Projection): Extent[] => {
+        if (this.oldProjectionCode !== this.actualProjectionCode) {
+          this.reproj();
+          this.oldProjectionCode = this.actualProjectionCode;
+        }
+        const origstrategy = options.strategy !== undefined ? options.strategy : all;
+        return origstrategy.call(this, extent, resolution, projection);
+      },
+    });
     const initialFeatures = options.initialFeatures;
     options.initialFeatures = undefined;
     this.options = { ...options };
@@ -26,13 +39,6 @@ export class LocalVector extends Vector {
     if (this.options.listable != false) {
       this.options.listable = true;
     }
-    this.origstrategy_ = this.strategy_;
-    this.strategy_ = (extent: [number, number, number, number], resolution: number) => {
-      if (this.oldProjectionCode !== this.actualProjectionCode) {
-        this.reproj();
-      }
-      return this.origstrategy_.call(this, extent, resolution);
-    };
     if (initialFeatures != null) {
       // Load features from snapshot
       initialFeatures.forEach((initialFeature: any) => {

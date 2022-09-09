@@ -9,7 +9,7 @@ export class Ilike<T> extends FilterPredicate<T, IlikeOp> {
 
   protected buildLeftHandString(type: FilterBuilderType): string {
     if (type === FilterBuilderTypeEnum.SQL) {
-      return `UPPER(${this.leftHand.key})`;
+      return `UPPER(${String(this.leftHand.key)})`;
     }
     return this.defaultLeftHandString(type);
   }

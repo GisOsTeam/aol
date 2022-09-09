@@ -17,12 +17,12 @@ export abstract class FilterPredicate<T, O extends IOperator = IOperator> extend
         switch (this.leftHand.type) {
           case FieldTypeEnum.Number:
           case FieldTypeEnum.Boolean:
-            return `${this.leftHand.key}`;
+            return `${String(this.leftHand.key)}`;
           default:
-            return `Concatenate(${this.leftHand.key})`;
+            return `Concatenate(${String(this.leftHand.key)})`;
         }
       default:
-        return `${this.leftHand.key}`;
+        return `${String(this.leftHand.key)}`;
     }
   }
 

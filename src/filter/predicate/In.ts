@@ -8,7 +8,7 @@ export class In<T> extends FilterPredicate<T, InOp> {
   }
 
   protected buildLeftHandString(type: FilterBuilderType): string {
-    return `${this.leftHand.key}`;
+    return `${String(this.leftHand.key)}`;
   }
 
   protected buildRightHandString(type: FilterBuilderType): string {

@@ -17,8 +17,6 @@ export interface IVectorOptions extends ISnapshotOptions, Options {}
 export abstract class Vector extends OlVector implements IQuerySource {
   protected options: IVectorOptions;
 
-  protected oldProjectionCode: string;
-
   protected actualProjectionCode: string;
 
   constructor(options: IVectorOptions) {
@@ -64,8 +62,7 @@ export abstract class Vector extends OlVector implements IQuerySource {
   }
 
   public loadFeatures(extent: [number, number, number, number], resolution: number, projection: Projection) {
-    if (projection != null && this.oldProjectionCode !== projection.getCode()) {
-      this.oldProjectionCode = this.actualProjectionCode;
+    if (projection != null) {
       this.actualProjectionCode = projection.getCode();
     }
     super.loadFeatures(extent, resolution, projection);
