@@ -1,6 +1,6 @@
 {
   "name": "@gisosteam/aol",
-  "version": "0.2.6",
+  "version": "0.2.7",
   "description": "OpenLayers sources extensions",
   "scripts": {
     "test": "jest",
@@ -47,7 +47,7 @@
     "@turf/turf": "^6.5.0",
     "bhreq": "^0.1.2",
     "jszip": "^3.10.1",
-    "ol-mapbox-style": "^9.2.0",
+    "ol-mapbox-style": "^6.3.2",
     "shapefile2geojson": "^1.0.7",
     "simplepolygon": "1.2.3"
   },
