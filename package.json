@@ -1,6 +1,6 @@
 {
   "name": "@gisosteam/aol",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "description": "OpenLayers sources extensions",
   "scripts": {
     "test": "jest",
@@ -27,6 +27,7 @@
     "@babel/preset-env": "^7.19.0",
     "@types/jest": "^29.0.0",
     "@types/jszip": "^3.4.1",
+    "@types/ol": "^6.5.3",
     "@typescript-eslint/eslint-plugin": "^5.36.2",
     "@typescript-eslint/parser": "^5.36.2",
     "babel-jest": "^29.0.2",
@@ -35,7 +36,7 @@
     "husky": "^8.0.1",
     "jest": "^29.0.2",
     "jest-canvas-mock": "^2.4.0",
-    "ol": "^7.1.0",
+    "ol": "^6.5.0",
     "prettier": "^2.7.1",
     "proj4": "2.8.0",
     "rimraf": "^3.0.2",
@@ -51,8 +52,7 @@
     "simplepolygon": "1.2.3"
   },
   "peerDependencies": {
-    "@types/ol": "6.5.3",
-    "ol": "^7.1.0",
+    "ol": "^6.5.0",
     "proj4": "^2.8.0"
   },
   "engines": {
