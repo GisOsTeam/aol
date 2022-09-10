@@ -130,8 +130,6 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
 
     // List des FeatureType interrogés
     const targetTypes = !onlyVisible ? this.options.types : this.options.types.filter((type) => type.hide !== true);
-    // Enrichissement des Predicats de la requête
-    targetTypes.forEach((type) => this.alterRequestFilterFromType(request, type));
 
     switch (request.queryType) {
       case 'identify':
@@ -154,8 +152,6 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
   public async queryLayer(request: IGisRequest, layerId: number): Promise<IQueryResponse> {
     const layer = this.options.types.find((subLayer) => subLayer.id === layerId);
     if (layer) {
-      this.alterRequestFilterFromType(request, layer);
-
       const featureTypeResponse = await executeAgsQuery(this, layer, request);
       return {
         featureTypeResponses: [featureTypeResponse],
@@ -212,7 +208,7 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
     return filterBuilder;
   }
 
-  private alterRequestFilterFromType(request: IGisRequest, type: IFeatureType<number>) {
+  public alterRequestFilterFromType(request: IGisRequest, type: IFeatureType<number>): IPredicate | undefined  {
     let filterBuilder = this.buildFilterBuilderFromType(type);
     switch (request.queryType) {
       case 'query':

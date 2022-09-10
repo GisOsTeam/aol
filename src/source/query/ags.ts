@@ -15,6 +15,7 @@ import { Engine, IResponse } from 'bhreq';
 import { AgsIdentifyRequest } from './model/AgsIdentifyRequest';
 import { AgsQueryRequest } from './model/AgsQueryRequest';
 import { getQueryId } from '../../utils';
+import { ImageArcGISRest } from '../ImageArcGISRest';
 
 const format = new EsriJSON();
 
