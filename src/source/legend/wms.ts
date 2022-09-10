@@ -1,6 +1,5 @@
-import { HttpEngine } from '../../HttpEngine';
 import { srcToImage, getWmsLayersFromTypes } from '../../utils';
-import { ILayerLegend, ILegendRecord, ILegendSource } from '../IExtended';
+import { ILegendRecord, ILegendSource } from '../IExtended';
 
 export function loadLegendWms(source: ILegendSource): Promise<ILegendRecord> {
   if (typeof (source as any).getLegendUrl === 'function') {
