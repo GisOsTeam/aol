@@ -6,7 +6,6 @@
     "noImplicitAny": true,
     "skipLibCheck": true,
     "module": "commonjs",
-    "moduleResolution": "node",
     "target": "es5",
     "lib": [
       "dom",
