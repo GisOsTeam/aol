@@ -10,8 +10,6 @@ import {
 import Point from 'ol/geom/Point';
 import LinearRing from 'ol/geom/LinearRing';
 import Feature from 'ol/Feature';
-import { Coordinate } from 'ol/coordinate';
-import GeometryType from 'ol/geom/GeometryType';
 import Polygon from 'ol/geom/Polygon';
 
 describe('utils', () => {
@@ -58,7 +56,7 @@ describe('utils', () => {
       );
       const geoJSONFeatureSource = toGeoJSONFeature(featureSource);
       const geoJSONFeatureBuffered = buffer(geoJSONFeatureSource, 1);
-      expect(toOpenLayersFeature(geoJSONFeatureBuffered).getGeometry().getType()).toEqual(GeometryType.POLYGON);
+      expect(toOpenLayersFeature(geoJSONFeatureBuffered).getGeometry().getType()).toEqual('Polygon');
       expect(JSON.stringify(geoJSONFeatureBuffered)).toMatchSnapshot();
     });
   });

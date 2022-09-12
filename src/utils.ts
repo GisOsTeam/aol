@@ -326,7 +326,7 @@ export function applyLayerStyles(layer: BaseLayer, layerStyles: LayerStyles, id:
   layerStyles.forEach((style) => {
     mbstyle.layers.push({ ...style, id, source: id });
   });
-  applyStyle(layer, mbstyle, id);
+  applyStyle(layer as any, mbstyle, id);
 }
 
 /**
