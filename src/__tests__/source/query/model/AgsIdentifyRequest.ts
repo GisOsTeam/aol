@@ -5,8 +5,6 @@ import { IFeatureType, IIdentifyRequest } from '../../../../source/IExtended';
 import Polygon from 'ol/geom/Polygon';
 import { get as getProjection } from 'ol/proj';
 import { AgsIdentifyRequest } from '../../../../source/query/model/AgsIdentifyRequest';
-import Point from 'ol/geom/Point';
-import { addProjection } from '../../../../ProjectionInfo';
 
 const states = new ImageArcGISRest({
   url: 'https://sampleserver6.arcgisonline.com/arcgis/rest/services/USA/MapServer',

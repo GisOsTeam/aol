@@ -1,4 +1,3 @@
-import { ILayerLegend } from '../../../source/IExtended';
 import { ImageArcGISRest } from '../../../source/ImageArcGISRest';
 
 const states = new ImageArcGISRest({

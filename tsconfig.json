@@ -5,6 +5,7 @@
     "sourceMap": true,
     "noImplicitAny": true,
     "skipLibCheck": true,
+    "allowJs": true,
     "module": "commonjs",
     "target": "es5",
     "lib": [
@@ -13,9 +14,11 @@
     ]
   },
   "include": [
-    "./src/**/*.ts"
+    "./src/**/*.ts",
+    "./src/**/*.js"
   ],
   "exclude": [
-    "./src/sample/**/*"
+    "./src/sample/**/*",
+    "./src/__tests__/**/*"
   ]
 }

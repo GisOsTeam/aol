@@ -1,12 +1,12 @@
 {
   "name": "@gisosteam/aol",
-  "version": "0.2.9",
+  "version": "0.2.10",
   "description": "OpenLayers sources extensions",
   "scripts": {
     "test": "jest",
     "jest": "jest",
     "prettier": "prettier --single-quote --print-width 120 --write --parser typescript '{src, test}/**/*.ts'",
-    "lint": "npm run prettier && eslint . --ext .ts,.tsx",
+    "lint": "npm run prettier && eslint src/** --ext .ts,.tsx",
     "genindex": "barrelsby -d ./src -D -L -l all -q -e sample -e __tests__ -e .d.ts",
     "build": "rimraf lib && npm run genindex && npm run lint && tsc -p tsconfig.json && cp ./package.json lib",
     "prepublishOnly": "[[ \"$PWD\" =~ /lib ]]",
@@ -27,8 +27,8 @@
     "@babel/preset-env": "^7.19.0",
     "@types/jest": "^29.0.1",
     "@types/jszip": "^3.4.1",
-    "@typescript-eslint/eslint-plugin": "^5.36.2",
-    "@typescript-eslint/parser": "^5.36.2",
+    "@typescript-eslint/eslint-plugin": "^5.37.0",
+    "@typescript-eslint/parser": "^5.37.0",
     "babel-jest": "^29.0.3",
     "barrelsby": "^2.4.0",
     "eslint": "^8.23.1",
@@ -46,7 +46,6 @@
     "@turf/turf": "^6.5.0",
     "bhreq": "^0.1.2",
     "jszip": "^3.10.1",
-    "ol-mapbox-style": "8.0.4",
     "shapefile2geojson": "^1.0.7",
     "simplepolygon": "^1.2.3"
   },

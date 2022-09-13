@@ -1,11 +1,10 @@
-import { IExtended, IFeatureType, IIdentifyRequest, IGisRequest, LayersPrefixEnum } from '../../IExtended';
+import { IExtended, IFeatureType, IIdentifyRequest, LayersPrefixEnum } from '../../IExtended';
 import { transformExtent } from 'ol/proj';
 import { getForViewAndSize } from 'ol/extent';
 import { FilterBuilder, FilterBuilderTypeEnum } from '../../../filter';
 import EsriJSON from 'ol/format/EsriJSON';
 import { fromCircle } from 'ol/geom/Polygon';
 import Circle from 'ol/geom/Circle';
-import { getQueryId } from '../../../utils';
 
 export interface AgsIdentifyRequestParameters {
   f: string;
@@ -45,7 +44,7 @@ export class AgsIdentifyRequest implements AgsIdentifyRequestParameters {
   private format = new EsriJSON();
 
   constructor(source: IExtended, types: IFeatureType<number>[], request: IIdentifyRequest) {
-    const { olMap, geometryProjection, queryType } = request;
+    const { olMap, geometryProjection } = request;
     this.sr = '3857';
 
     if (request.srId) {

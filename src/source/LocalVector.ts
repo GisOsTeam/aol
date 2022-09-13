@@ -1,7 +1,6 @@
 import OlFeature from 'ol/Feature';
 import Wkt from 'ol/format/WKT';
 import { Extent } from 'ol/extent';
-import { LoadingStrategy } from 'ol/source/Vector';
 import { all } from 'ol/loadingstrategy';
 import { Projection } from 'ol/proj';
 import { Vector, IVectorOptions } from './Vector';

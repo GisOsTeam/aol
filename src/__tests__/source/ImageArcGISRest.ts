@@ -1,4 +1,4 @@
-import { ImageArcGISRest, ImageWms } from '../../source';
+import { ImageArcGISRest } from '../../source';
 import { Equal, IPredicate, Like } from '../../filter/predicate';
 import { Equal as EqualOp, Like as LikeOp } from '../../filter/operator';
 import { FieldTypeEnum, FilterBuilder, IField } from '../../filter';

@@ -1,5 +1,5 @@
 import { FilterBuilderType } from '../IFilter';
-import { IOperator, Or as OrOp } from '../operator';
+import { Or as OrOp } from '../operator';
 import { BasePredicate } from './BasePredicate';
 import { IPredicate } from './IPredicate';
 

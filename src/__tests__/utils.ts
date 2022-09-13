@@ -1,12 +1,4 @@
-import {
-  buffer,
-  disjoint,
-  hash64,
-  revertCoordinate,
-  toGeoJSONFeature,
-  toGeoJSONGeometry,
-  toOpenLayersFeature,
-} from '../utils';
+import { buffer, hash64, revertCoordinate, toGeoJSONFeature, toOpenLayersFeature } from '../utils';
 import Point from 'ol/geom/Point';
 import LinearRing from 'ol/geom/LinearRing';
 import Feature from 'ol/Feature';

@@ -22,7 +22,6 @@ import {
   Like,
   LowerOrEqualThan,
   LowerThan,
-  Or,
 } from '../../filter/predicate';
 import { Null } from '../../filter/predicate/Null';
 

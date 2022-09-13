@@ -1,4 +1,4 @@
-import { FilterBuilderType, FilterValueType, IField } from '../IFilter';
+import { FilterBuilderType, IField } from '../IFilter';
 import { Null as NullOp } from '../operator';
 import { FilterPredicate } from './FilterPredicate';
 

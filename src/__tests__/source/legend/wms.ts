@@ -1,4 +1,3 @@
-import { ILayerLegend } from '../../../source/IExtended';
 import { ImageWms } from '../../../source/ImageWms';
 
 const states = new ImageWms({

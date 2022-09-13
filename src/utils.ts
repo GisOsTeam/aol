@@ -1,6 +1,6 @@
 import booleanDisjoint from '@turf/boolean-disjoint';
 import * as turf from '@turf/turf';
-import { applyStyle } from 'ol-mapbox-style';
+import { applyStyle } from './olms';
 import { Coordinate } from 'ol/coordinate';
 import { getCenter, getHeight, getWidth } from 'ol/extent';
 import Feature from 'ol/Feature';
@@ -16,6 +16,8 @@ import { ProjectionLike } from 'ol/proj';
 import View from 'ol/View';
 import { LayerStyles } from './LayerStyles';
 import { IFeatureType, ILegendRecord, ILegendSource } from './source/IExtended';
+import VectorLayer from 'ol/layer/Vector';
+import VectorTileLayer from 'ol/layer/VectorTile';
 
 const geoJSONFormat = new GeoJSON();
 
@@ -312,7 +314,7 @@ export function createLayerStyles(
 /**
  * Apply MB style.
  */
-export function applyLayerStyles(layer: BaseLayer, layerStyles: LayerStyles, id: string) {
+export function applyLayerStyles(layer: VectorLayer<any> | VectorTileLayer, layerStyles: LayerStyles, id: string) {
   if (layerStyles == null && 'setStyle' in layer) {
     (layer as any).setStyle(undefined);
     return;
@@ -390,18 +392,6 @@ export function exportToImageFromResolution(
   cancelFunction = () => false
 ): Promise<string> {
   return new Promise((resolve, reject) => {
-    const exportOptions = {
-      filter: function (element: any) {
-        const className = element.className || '';
-        return (
-          className.indexOf('ol-control') === -1 ||
-          className.indexOf('ol-scale') > -1 ||
-          (className.indexOf('ol-attribution') > -1 && className.indexOf('ol-uncollapsible'))
-        );
-      },
-      width: imageSize[0],
-      height: imageSize[1],
-    };
     let canceled = false;
     const initialView = map.getView();
     const initialSize = map.getSize();

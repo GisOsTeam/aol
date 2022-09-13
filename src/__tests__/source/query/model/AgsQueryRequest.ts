@@ -1,7 +1,6 @@
 import OlMap from 'ol/Map';
 import OlView from 'ol/View';
 import { ImageArcGISRest } from '../../../../source';
-import { FieldTypeEnum, IField } from '../../../../filter';
 import { IFeatureType, IGisRequest } from '../../../../source/IExtended';
 import Polygon from 'ol/geom/Polygon';
 import { get as getProjection } from 'ol/proj';

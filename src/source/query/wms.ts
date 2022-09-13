@@ -16,7 +16,6 @@ import { Engine } from 'bhreq';
 import { readWMSFeatures } from '../../utils/featuresRead';
 import { calculateGeoExtent } from '../../utils/extent';
 import { DEFAULT_TOLERANCE } from './wfs';
-import { WMSGetFeatureInfo } from 'ol/format';
 
 function loadWmsFeaturesOnBBOX(options: {
   url: string;
@@ -86,7 +85,7 @@ function loadWmsFeaturesOnBBOX(options: {
   params.STYLES = '';
 
   let promise = null;
-  if (options.method === 'POST') {
+  if (options.method == 'POST') {
     promise = Engine.getInstance().send({
       url: options.url,
       body: params,
