@@ -42,15 +42,15 @@ export function identify(
   if (map && identifyEntity) {
     const promises: Promise<IQueryResponse>[] = [];
     let queryRequest: IIdentifyRequest;
-    if (identifyEntity instanceof Geometry) {
+    if (Array.isArray(identifyEntity)) {
+      queryRequest = constructIdentifyQueryRequestFromPixel(identifyEntity, map);
+    } else {
       queryRequest = {
         olMap: map,
         geometry: identifyEntity,
         geometryProjection: map.getView().getProjection(),
         queryType: 'identify',
       };
-    } else {
-      queryRequest = constructIdentifyQueryRequestFromPixel(identifyEntity, map);
     }
 
     queryRequest.returnGeometry = returnGeometry;

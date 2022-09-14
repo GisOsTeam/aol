@@ -1,6 +1,5 @@
 import booleanDisjoint from '@turf/boolean-disjoint';
 import * as turf from '@turf/turf';
-import { applyStyle } from './olms';
 import { Coordinate } from 'ol/coordinate';
 import { getCenter, getHeight, getWidth } from 'ol/extent';
 import Feature from 'ol/Feature';
@@ -14,10 +13,7 @@ import GroupLayer from 'ol/layer/Group';
 import Map from 'ol/Map';
 import { ProjectionLike } from 'ol/proj';
 import View from 'ol/View';
-import { LayerStyles } from './LayerStyles';
 import { IFeatureType, ILegendRecord, ILegendSource } from './source/IExtended';
-import VectorLayer from 'ol/layer/Vector';
-import VectorTileLayer from 'ol/layer/VectorTile';
 
 const geoJSONFormat = new GeoJSON();
 
@@ -274,61 +270,6 @@ export function getAgsLayersFromTypes(types: IFeatureType<number>[], prefix = 's
  */
 export function getQueryId<IDT>(type: IFeatureType<any>): IDT {
   return type.queryId != null ? type.queryId : type.id;
-}
-
-/**
- * Create MB layer styles
- */
-export function createLayerStyles(
-  props: { strokeColor?: string; fillColor?: string; width?: number; radius?: number } = {}
-): LayerStyles {
-  props = { strokeColor: 'rgba(0, 0, 255, 0.9)', fillColor: 'rgba(127, 127, 255, 0.4)', width: 3, radius: 3, ...props };
-  return [
-    {
-      type: 'circle',
-      paint: {
-        'circle-color': `${props.fillColor}`,
-        'circle-stroke-color': `${props.strokeColor}`,
-        'circle-radius': props.radius,
-        'circle-stroke-width': props.width,
-      },
-    },
-    {
-      type: 'line',
-      paint: {
-        'line-color': `${props.strokeColor}`,
-        'line-cap': 'butt',
-        'line-join': 'miter',
-        'line-width': props.width,
-      },
-    },
-    {
-      type: 'fill',
-      paint: {
-        'fill-color': `${props.fillColor}`,
-      },
-    },
-  ];
-}
-
-/**
- * Apply MB style.
- */
-export function applyLayerStyles(layer: VectorLayer<any> | VectorTileLayer, layerStyles: LayerStyles, id: string) {
-  if (layerStyles == null && 'setStyle' in layer) {
-    (layer as any).setStyle(undefined);
-    return;
-  }
-  const mbstyle = {
-    version: 8,
-    sources: {} as any,
-    layers: [] as any[],
-  };
-  mbstyle.sources[id] = { type: 'vector' };
-  layerStyles.forEach((style) => {
-    mbstyle.layers.push({ ...style, id, source: id });
-  });
-  applyStyle(layer as any, mbstyle, id);
 }
 
 /**

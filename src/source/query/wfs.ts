@@ -219,7 +219,7 @@ export function loadWfsFeatureDescription(options: {
         if (value != null) {
           if (typeof value === 'string') {
             attribute.type = 'String';
-          } else if (typeof value === 'object' && value instanceof Geometry) {
+          } else if (typeof value === 'object') {
             attribute.type = 'Geometry';
           }
         }
