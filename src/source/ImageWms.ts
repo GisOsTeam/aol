@@ -20,7 +20,7 @@ import { executeWfsQuery, loadWfsFeatureDescription, retrieveWfsFeature } from '
 import { FilterBuilder, FilterBuilderTypeEnum } from '../filter';
 import { IPredicate } from '../filter/predicate';
 
-export interface IImageWMSOptions extends ISnapshotOptions, Options {
+export interface IImageWmsOptions extends ISnapshotOptions, Options {
   types: IFeatureType<string>[];
   queryWfsUrl?: string; // For Wfs query instead of Wms query
   queryMethod?: 'GET' | 'POST';
@@ -33,9 +33,9 @@ export interface IImageWMSOptions extends ISnapshotOptions, Options {
 }
 
 export class ImageWms extends OlImageWMS implements IExtended {
-  protected options: IImageWMSOptions;
+  protected options: IImageWmsOptions;
   private readonly defaultOptions: Pick<
-    IImageWMSOptions,
+    IImageWmsOptions,
     | 'queryMethod'
     | 'queryFormat'
     | 'version'
@@ -56,7 +56,7 @@ export class ImageWms extends OlImageWMS implements IExtended {
 
   protected defaultTypePredicateAsMap: Map<string, IPredicate>;
 
-  constructor(options: IImageWMSOptions) {
+  constructor(options: IImageWmsOptions) {
     super({ crossOrigin: 'anonymous', ...options });
     this.options = { ...this.defaultOptions, ...options };
     if (this.options.snapshotable != false) {
@@ -111,11 +111,11 @@ export class ImageWms extends OlImageWMS implements IExtended {
     return SourceTypeEnum.ImageWms;
   }
 
-  public getSourceOptions(): IImageWMSOptions {
+  public getSourceOptions(): IImageWmsOptions {
     return this.options;
   }
 
-  public setSourceOptions(options: IImageWMSOptions, forceRefresh = true): void {
+  public setSourceOptions(options: IImageWmsOptions, forceRefresh = true): void {
     this.options = { ...this.defaultOptions, ...options };
     this.un('propertychange', this.handlePropertychange);
     this.set('types', options.types);

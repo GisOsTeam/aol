@@ -1,8 +1,8 @@
 import OlTileWMS from 'ol/source/TileWMS';
 import {
+  IQueryFeatureTypeResponse,
   IGisRequest,
   IQueryResponse,
-  IQueryFeatureTypeResponse,
   ISnapshotOptions,
   IFeatureType,
   IExtended,
@@ -10,13 +10,15 @@ import {
 } from './IExtended';
 import { getWmsLayersFromTypes } from '../utils';
 import { executeWmsQuery, retrieveWmsFeature, loadWmsFeatureDescription } from './query/wms';
-import { SourceType, SourceTypeEnum } from './types/sourceType';
 import { LayerType, LayerTypeEnum } from './types/layerType';
+import { SourceType, SourceTypeEnum } from './types/sourceType';
 import { Options } from 'ol/source/TileWMS';
 import Feature from 'ol/Feature';
 import Projection from 'ol/proj/Projection';
 import { loadLegendWms } from './legend/wms';
 import { executeWfsQuery, loadWfsFeatureDescription, retrieveWfsFeature } from './query';
+import { FilterBuilder, FilterBuilderTypeEnum } from '../filter';
+import { IPredicate } from '../filter/predicate';
 
 export interface ITileWmsOptions extends ISnapshotOptions, Options {
   types: IFeatureType<string>[];
@@ -52,6 +54,8 @@ export class TileWms extends OlTileWMS implements IExtended {
   };
   protected legendByLayer: Record<string, ILayerLegend[]>;
 
+  protected defaultTypePredicateAsMap: Map<string, IPredicate>;
+
   constructor(options: ITileWmsOptions) {
     super({ crossOrigin: 'anonymous', ...options });
     this.options = { ...this.defaultOptions, ...options };
@@ -64,6 +68,9 @@ export class TileWms extends OlTileWMS implements IExtended {
     if (this.options.removable != false) {
       this.options.removable = true;
     }
+
+    this.defaultTypePredicateAsMap = new Map<string, IPredicate>();
+
     this.setSourceOptions(this.options);
   }
 
@@ -112,7 +119,19 @@ export class TileWms extends OlTileWMS implements IExtended {
     this.options = { ...options };
     this.un('propertychange', this.handlePropertychange);
     this.set('types', options.types);
-    this.updateParams({ ...this.getParams(), TRANSPARENT: 'TRUE', LAYERS: getWmsLayersFromTypes(options.types) });
+
+    const params = {
+      ...this.getParams(),
+      TRANSPARENT: 'TRUE',
+      LAYERS: getWmsLayersFromTypes(options.types),
+      VERSION: this.options.version,
+    };
+    const cqlFilter = this.buildFilters();
+    if (cqlFilter) {
+      params.CQL_FILTER = cqlFilter;
+    }
+
+    this.updateParams(params);
     this.on('propertychange', this.handlePropertychange);
   }
 
@@ -177,6 +196,11 @@ export class TileWms extends OlTileWMS implements IExtended {
     });
   }
 
+  public refresh(): void {
+    this.updateParams({ ...this.getParams(), NOW: Date.now() });
+    super.refresh();
+  }
+
   public retrieveFeature(id: number | string, projection: Projection): Promise<Feature> {
     const promises: Promise<Feature>[] = [];
     for (const type of this.options.types) {
@@ -225,7 +249,12 @@ export class TileWms extends OlTileWMS implements IExtended {
     const key = event.key;
     const value = event.target.get(key);
     if (key === 'types') {
-      this.updateParams({ ...this.getParams(), TRANSPARENT: 'TRUE', LAYERS: getWmsLayersFromTypes(value) });
+      this.updateParams({
+        ...this.getParams(),
+        TRANSPARENT: 'TRUE',
+        LAYERS: getWmsLayersFromTypes(value),
+        VERSION: this.options.version,
+      });
       this.options.types = value;
     }
   };
@@ -238,5 +267,35 @@ export class TileWms extends OlTileWMS implements IExtended {
       this.legendByLayer = res;
       return res;
     });
+  }
+
+  private buildFilters(): string {
+    let filters: string;
+    for (const type of this.options.types) {
+      let filterBuilder = this.buildFilterBuilderFromType(type);
+      if (filterBuilder) {
+        if (!filters) {
+          filters = '';
+        } else {
+          filters += ';';
+        }
+        filters += filterBuilder.build(FilterBuilderTypeEnum.CQL);
+        filterBuilder = undefined;
+      }
+    }
+    return filters;
+  }
+
+  private buildFilterBuilderFromType(type: IFeatureType<string>): FilterBuilder | undefined {
+    let filterBuilder;
+    if (this.defaultTypePredicateAsMap.has(type.id)) {
+      filterBuilder = new FilterBuilder(this.defaultTypePredicateAsMap.get(type.id));
+    } else if (type.predicate) {
+      this.defaultTypePredicateAsMap.set(type.id, type.predicate);
+    }
+    if (type.predicate && filterBuilder?.predicate.hashCode() !== type.predicate.hashCode()) {
+      filterBuilder = filterBuilder ? filterBuilder.and(type.predicate) : new FilterBuilder(type.predicate);
+    }
+    return filterBuilder;
   }
 }
