@@ -9,7 +9,7 @@ import {
   IQuerySource,
 } from '../IExtended';
 import { buffer, disjoint, getQueryId, toGeoJSONFeature, toGeoJSONGeometry, toOpenLayersGeometry } from '../../utils';
-import { Extent } from 'ol/extent';
+import { Extent, getCenter, getForViewAndSize } from 'ol/extent';
 import Projection from 'ol/proj/Projection';
 import Geometry from 'ol/geom/Geometry';
 import { Engine } from 'bhreq';
@@ -137,23 +137,28 @@ export function executeWmsQuery(options: {
   // tolérance utilisée
   let tolerance = DEFAULT_TOLERANCE;
 
+  // Assignation de la résolution
+  const resolution = olView.getResolution() == null ? 1 : olView.getResolution();
+
+  // Assignation de la tolérance à appliquer
+  const geoTolerance = tolerance * resolution;
+
   switch (queryType) {
     case 'query':
       tolerance = 1;
+      // Utilisation de l'étendue intégrant la tolérance comme étendue par défaut
+      extentUsed = [...calculateGeoExtent(extentOriginal, geoTolerance)];
       break;
     case 'identify':
       const { identifyTolerance } = options.request as IIdentifyRequest;
       if (Math.round(identifyTolerance) > 0) {
         tolerance = identifyTolerance;
       }
+      // Utilisation de l'étendue centrée sur la géometry
+      const center = getCenter(geometry.getExtent());
+      extentUsed = getForViewAndSize(center, resolution, 0, [1001, 1001]);
       break;
   }
-  // Assignation de la résolution
-  const resolution = olView.getResolution() == null ? 1 : olView.getResolution();
-  // Assignation de la tolérance à appliquer
-  const geoTolerance = tolerance * resolution;
-  // Utilisation de l'étendue intégrant la tolérance comme étendue par défaut
-  extentUsed = [...calculateGeoExtent(extentOriginal, tolerance, resolution, geoTolerance)];
 
   geometryUsedForDisjoint = toOpenLayersGeometry(
     buffer(toGeoJSONFeature(new Feature<Geometry>(geometry.clone())), geoTolerance, geometryProjection).geometry
@@ -161,17 +166,6 @@ export function executeWmsQuery(options: {
 
   // Utilisation de l'étendue re-projetée comme étendue par défaut
   extentUsed = transformExtent(extentUsed, geometryProjection, options.requestProjectionCode);
-
-  // TODO gestion spécifique du !point ?
-  // if (geometry.getType() !== 'Point') {
-  //   const mapH = Math.sqrt(
-  //     (mapExtent[2] - mapExtent[0]) * (mapExtent[2] - mapExtent[0]) + (mapExtent[3] - mapExtent[1])
-  //   );
-  //   const geomH = Math.sqrt(
-  //     (extent[2] - extent[0]) * (extent[2] - extent[0]) + (extent[3] - extent[1]) * (extent[3] - extent[1])
-  //   );
-  //   tolerance += Math.round((500 * geomH) / mapH);
-  // }
 
   return loadWmsFeaturesOnBBOX({
     url: options.url,

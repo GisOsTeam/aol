@@ -103,7 +103,7 @@ export function executeWfsQuery(options: {
     // Assignation de la tolérance à appliquer
     const geoTolerance = (Math.round(identifyTolerance) > 0 ? identifyTolerance : DEFAULT_TOLERANCE) * resolution;
     // Utilisation de l'étendue intégrant la tolérance comme étendue par défaut
-    extentUsed = [...calculateGeoExtent(extentOriginal, identifyTolerance, resolution, geoTolerance)];
+    extentUsed = [...calculateGeoExtent(extentOriginal, geoTolerance)];
 
     geometryUsedForDisjoint = toOpenLayersGeometry(
       buffer(toGeoJSONFeature(new Feature<Geometry>(geometry.clone())), geoTolerance, geometryProjection).geometry
