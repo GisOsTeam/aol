@@ -199,11 +199,7 @@ export function createLayerStyles(
 /**
  * Apply layer MB styles.
  */
-export function applyLayerStyles(layer: VectorLayer<any> | VectorTileLayer, layerStyles: LayerStyles, olMap?: OlMap) {
-  if (layerStyles == null) {
-    layer.setStyle(undefined);
-    return;
-  }
+export function createStyleFunction(layerStyles: LayerStyles, olMap?: OlMap) {
   const styleRoot: StyleRoot = {
     layers: layerStyles,
     olMap,
@@ -213,9 +209,20 @@ export function applyLayerStyles(layer: VectorLayer<any> | VectorTileLayer, laye
       style.filterFunction = createFilter(style.filter);
     }
   }
-  layer.setStyle((feature: any, resolution: number) => {
+  return (feature: any, resolution: number) => {
     return styleFunction(styleRoot, feature, resolution);
-  });
+  };
+}
+
+/**
+ * Apply layer MB styles.
+ */
+export function applyLayerStyles(layer: VectorLayer<any> | VectorTileLayer, layerStyles: LayerStyles, olMap?: OlMap) {
+  if (layerStyles == null) {
+    layer.setStyle(undefined);
+    return;
+  }
+  layer.setStyle(createStyleFunction(layerStyles, olMap));
 }
 
 /**
