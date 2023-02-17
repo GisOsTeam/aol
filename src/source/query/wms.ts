@@ -13,7 +13,7 @@ import { Extent, getCenter, getForViewAndSize } from 'ol/extent';
 import Projection from 'ol/proj/Projection';
 import Geometry from 'ol/geom/Geometry';
 import { Engine } from 'bhreq';
-import { readWMSFeatures } from '../../utils/featuresRead';
+import { readFeatures } from '../../utils/featuresRead';
 import { calculateGeoExtent } from '../../utils/extent';
 import { DEFAULT_TOLERANCE } from './wfs';
 
@@ -105,7 +105,7 @@ function loadWmsFeaturesOnBBOX(options: {
       if (res.status !== 200) {
         throw new Error('WMS request error ' + res.status);
       }
-      return readWMSFeatures(res.text, options);
+      return readFeatures(res.text, options);
     },
     (err) => {
       console.error('Get WMS feature info in error');
