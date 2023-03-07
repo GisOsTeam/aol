@@ -3,6 +3,7 @@ import { get as getProjection } from 'ol/proj';
 import GML3Format from 'ol/format/GML3';
 import GML32Format from 'ol/format/GML32';
 import GML2Format from 'ol/format/GML2';
+import GMLFormat from 'ol/format/GML';
 import JSONFormat from 'ol/format/GeoJSON';
 import { IFeatureType } from '../source/IExtended';
 import { getQueryId } from '../utils';
@@ -54,12 +55,14 @@ export function readFeatures(
       txt = txt.replace(new RegExp('</' + withSpace, 'g'), '</' + withoutSpace);
     }
     // Read features
-    allFeatures = new GML3Format().readFeatures(txt);
-    if (allFeatures == null || allFeatures.length === 0) {
+    if (txt.indexOf('http://www.opengis.net/gml/3.2') > 0) {
       allFeatures = new GML32Format().readFeatures(txt);
-    }
-    if (allFeatures == null || allFeatures.length === 0) {
+    } else if (txt.indexOf(' gml:id="') > 0) {
+      allFeatures = new GML3Format().readFeatures(txt);
+    } else if (txt.indexOf(' gml:fid="') > 0 || txt.indexOf(' fid="') > 0) {
       allFeatures = new GML2Format().readFeatures(txt);
+    } else {
+      allFeatures = new GMLFormat().readFeatures(txt);
     }
   }
   if (allFeatures != null && allFeatures.length > 0) {
