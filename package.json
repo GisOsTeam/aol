@@ -1,11 +1,11 @@
 {
   "name": "@gisosteam/aol",
-  "version": "0.4.3",
+  "version": "0.4.4",
   "description": "OpenLayers sources extensions",
   "scripts": {
     "test": "jest",
     "jest": "jest",
-    "prepare": "husky init",
+    "prepare": "husky",
     "prettier": "prettier --single-quote --print-width 120 --write --parser typescript '{src, test}/**/*.ts'",
     "lint": "npm run prettier && eslint src/** --ext .ts,.tsx",
     "genindex": "barrelsby -d ./src -D -L -l all -q -e sample -e __tests__ -e .d.ts",
