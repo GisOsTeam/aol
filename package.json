@@ -51,8 +51,8 @@
     "simplepolygon": "^1.2.3"
   },
   "peerDependencies": {
-    "ol": "^7.3.0",
-    "proj4": "^2.8.1"
+    "ol": "^9.1.0",
+    "proj4": "^2.11.0"
   },
   "engines": {
     "node": ">= 18.20.1",
