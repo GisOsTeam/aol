@@ -15,7 +15,7 @@ import { loadWfsFeaturesOnBBOX, loadWfsFeatureDescription, executeWfsQuery, retr
 import Projection from 'ol/proj/Projection';
 import { Feature } from 'ol';
 
-export interface IWfsOptions extends ISnapshotOptions, Options {
+export interface IWfsOptions extends ISnapshotOptions, Options<any> {
   url: string;
   type: IFeatureType<string>;
   outputFormat?: string;

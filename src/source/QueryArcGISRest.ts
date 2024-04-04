@@ -6,7 +6,7 @@ import { ISnapshotOptions } from './IExtended';
 import { Options } from 'ol/source/Vector';
 import { Engine } from 'bhreq';
 
-export interface IQueryArcGISRestOptions extends ISnapshotOptions, Options {}
+export interface IQueryArcGISRestOptions extends ISnapshotOptions, Options<any> {}
 
 export class QueryArcGISRest extends ExternalVector {
   protected options: any;

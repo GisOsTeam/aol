@@ -4,7 +4,7 @@ import { SourceType, SourceTypeEnum } from './types/sourceType';
 import { LayerType, LayerTypeEnum } from './types/layerType';
 import { Options } from 'ol/source/VectorTile';
 
-export interface IVectorTileOptions extends ISnapshotOptions, Options {}
+export interface IVectorTileOptions extends ISnapshotOptions, Options<any> {}
 
 export class VectorTile extends OlVectorTile implements ISnapshotSource {
   protected options: IVectorTileOptions;

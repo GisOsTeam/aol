@@ -17,7 +17,7 @@ import Projection from 'ol/proj/Projection';
 import { Feature } from 'ol';
 import { TileCoord } from 'ol/tilecoord';
 
-export interface ITileWfsOptions extends ISnapshotOptions, Options {
+export interface ITileWfsOptions extends ISnapshotOptions, Options<any> {
   url: string;
   type: IFeatureType<string>;
   outputFormat?: string;

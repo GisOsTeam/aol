@@ -12,7 +12,7 @@ import { geodesicBuffer } from '../utils/geodesicBuffer';
 import { GeoJSONFeature } from 'ol/format/GeoJSON';
 import { ProjectionLike } from 'ol/proj';
 
-export interface IVectorOptions extends ISnapshotOptions, Options {}
+export interface IVectorOptions extends ISnapshotOptions, Options<any> {}
 
 export abstract class Vector extends OlVector implements IQuerySource {
   protected options: IVectorOptions;
