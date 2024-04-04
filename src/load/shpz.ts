@@ -44,7 +44,7 @@ export function loadZippedShapefile(file: File, map: Map): Promise<LocalVector> 
                     reader.readAsArrayBuffer(blob);
                   }
                 });
-              })
+              }),
           );
         Promise.all(promises).then((elements) => {
           const dbfElement = elements.filter((element) => element.name.endsWith('.dbf')).pop();
@@ -68,7 +68,7 @@ export function loadZippedShapefile(file: File, map: Map): Promise<LocalVector> 
       },
       (err) => {
         reject(err);
-      }
+      },
     );
   });
 }

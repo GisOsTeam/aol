@@ -392,7 +392,7 @@ describe('aol.filter', () => {
             const predicate3 = new Equal(field3, new EqualOp(), 'bar3');
 
             expect(
-              new FilterBuilder(predicate1).and(predicate2).or(predicate3).build(FilterBuilderTypeEnum.CQL)
+              new FilterBuilder(predicate1).and(predicate2).or(predicate3).build(FilterBuilderTypeEnum.CQL),
             ).toMatchSnapshot();
           });
         });
@@ -423,7 +423,7 @@ describe('aol.filter', () => {
               .or(predicate3)
               .and(predicate1)
               .and(predicate4)
-              .build(FilterBuilderTypeEnum.SQL)
+              .build(FilterBuilderTypeEnum.SQL),
           ).toMatchSnapshot();
         });
       });

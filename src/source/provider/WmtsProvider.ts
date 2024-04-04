@@ -6,7 +6,7 @@ import { Engine } from 'bhreq';
 export class WmtsProvider {
   public static provideSync(
     source: Document | Element | string,
-    wmtsCapabilitiesOptions: IWmtsCapabilitiesOptions
+    wmtsCapabilitiesOptions: IWmtsCapabilitiesOptions,
   ): Wmts {
     this.isWmtsCapabilitiesOptionsValid(wmtsCapabilitiesOptions);
     return WmtsFactory.create(source, wmtsCapabilitiesOptions);

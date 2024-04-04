@@ -23,7 +23,7 @@ export function readFeatures(
     limit: number;
     outputFormat: string;
     swapLonLatGeometryResult?: boolean;
-  }
+  },
 ): Feature<Geometry>[] {
   const features = [] as Feature<Geometry>[];
   let allFeatures = [] as Feature<Geometry>[];
@@ -81,7 +81,7 @@ export function readFeatures(
                   ouput[i + 1] = y;
                 }
                 return ouput;
-              }
+              },
             );
           }
         }
@@ -105,7 +105,7 @@ export function readWMSFeatures(
     limit: number;
     outputFormat: string;
     swapLonLatGeometryResult?: boolean;
-  }
+  },
 ): Feature<Geometry>[] {
   const optionsWMSGetFeatureInfo: WMSGetFeatureInfoOptions = { layers: [] };
   if (options.type) {

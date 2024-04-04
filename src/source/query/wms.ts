@@ -78,7 +78,7 @@ function loadWmsFeaturesOnBBOX(options: {
   }
   if (options.queryType === 'query') {
     params.SLD_BODY = `<StyledLayerDescriptor version="1.0.0"><UserLayer><Name>${getQueryId<string>(
-      options.type
+      options.type,
     )}</Name><UserStyle><FeatureTypeStyle><Rule><PointSymbolizer><Graphic><Mark><WellKnownName>square</WellKnownName><Fill><CssParameter name="fill">#FFFFFF</CssParameter></Fill></Mark><Size>1</Size></Graphic></PointSymbolizer><LineSymbolizer><Stroke><CssParameter name="stroke">#000000</CssParameter><CssParameter name="stroke-width">1</CssParameter></Stroke></LineSymbolizer><PolygonSymbolizer><Stroke><CssParameter name="stroke">#000000</CssParameter><CssParameter name="stroke-width">1</CssParameter></Stroke></PolygonSymbolizer></Rule></FeatureTypeStyle></UserStyle></UserLayer></StyledLayerDescriptor>`;
   }
   params.FORMAT = 'image/png';
@@ -110,7 +110,7 @@ function loadWmsFeaturesOnBBOX(options: {
     (err) => {
       console.error('Get WMS feature info in error');
       return err;
-    }
+    },
   );
 }
 
@@ -161,7 +161,7 @@ export function executeWmsQuery(options: {
   }
 
   geometryUsedForDisjoint = toOpenLayersGeometry(
-    buffer(toGeoJSONFeature(new Feature<Geometry>(geometry.clone())), geoTolerance, geometryProjection).geometry
+    buffer(toGeoJSONFeature(new Feature<Geometry>(geometry.clone())), geoTolerance, geometryProjection).geometry,
   );
 
   // Utilisation de l'étendue re-projetée comme étendue par défaut

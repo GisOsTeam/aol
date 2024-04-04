@@ -109,7 +109,7 @@ const loadImageFromImageWms = (imageWms: ImageWms): void => {
       [3870102.8510801145, -7329.74024825776, 5336050.900731673, 1458618.3094033008],
       2443,
       1,
-      new Projection({ code: 'EPSG:3044' })
+      new Projection({ code: 'EPSG:3044' }),
     )
     .load();
 };

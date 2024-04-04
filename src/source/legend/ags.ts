@@ -26,7 +26,7 @@ export function loadLegendAgs(source: ILegendSource): Promise<ILegendRecord> {
                       width: legend.width,
                     },
                   ];
-                })
+                }),
               );
             }
           }

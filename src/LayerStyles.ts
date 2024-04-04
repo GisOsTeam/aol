@@ -165,7 +165,7 @@ export interface IBackgroundStyle {
  * Create MB layer styles
  */
 export function createLayerStyles(
-  props: { strokeColor?: string; fillColor?: string; width?: number; radius?: number } = {}
+  props: { strokeColor?: string; fillColor?: string; width?: number; radius?: number } = {},
 ): LayerStyles {
   props = { strokeColor: 'rgba(0, 0, 255, 0.9)', fillColor: 'rgba(127, 127, 255, 0.4)', width: 3, radius: 3, ...props };
   return [
@@ -442,7 +442,7 @@ function createCircleStyle(styleRoot: StyleRoot, paintLayout: any, feature: any,
         color: getColorWithOpacity(
           styleRoot,
           getValue(styleRoot, paintLayout, 'circle-stroke-color', '#000000'),
-          getValue(styleRoot, paintLayout, 'circle-stroke-opacity', 1)
+          getValue(styleRoot, paintLayout, 'circle-stroke-opacity', 1),
         ),
         width: getValue(styleRoot, paintLayout, 'circle-stroke-width', 1),
       }),
@@ -450,7 +450,7 @@ function createCircleStyle(styleRoot: StyleRoot, paintLayout: any, feature: any,
         color: getColorWithOpacity(
           styleRoot,
           getValue(styleRoot, paintLayout, 'circle-color', '#000000'),
-          getValue(styleRoot, paintLayout, 'circle-opacity', 1)
+          getValue(styleRoot, paintLayout, 'circle-opacity', 1),
         ),
       }),
     }),
@@ -467,13 +467,13 @@ function createSymbolStyle(styleRoot: StyleRoot, paintLayout: any, feature: any,
       font: getFont(
         styleRoot,
         getValue(styleRoot, paintLayout, 'text-font', 'sans-serif'),
-        getValue(styleRoot, paintLayout, 'text-size', 16)
+        getValue(styleRoot, paintLayout, 'text-size', 16),
       ),
       stroke: new Stroke({
         color: getColorWithOpacity(
           styleRoot,
           getValue(styleRoot, paintLayout, 'text-halo-color', '#000000'),
-          getValue(styleRoot, paintLayout, 'text-halo-opacity', 0)
+          getValue(styleRoot, paintLayout, 'text-halo-opacity', 0),
         ),
         width: getValue(styleRoot, paintLayout, 'text-halo-width', 0),
       }),
@@ -481,7 +481,7 @@ function createSymbolStyle(styleRoot: StyleRoot, paintLayout: any, feature: any,
         color: getColorWithOpacity(
           styleRoot,
           getValue(styleRoot, paintLayout, 'text-color', '#000000'),
-          getValue(styleRoot, paintLayout, 'text-opacity', 1)
+          getValue(styleRoot, paintLayout, 'text-opacity', 1),
         ),
       }),
       offsetX: getArray(styleRoot, paintLayout, 'text-offset', [0, 0])[0],
@@ -491,7 +491,7 @@ function createSymbolStyle(styleRoot: StyleRoot, paintLayout: any, feature: any,
             color: getColorWithOpacity(
               styleRoot,
               getValue(styleRoot, paintLayout, 'background-fill-color', '#000000'),
-              getValue(styleRoot, paintLayout, 'background-fill-opacity', '#000000')
+              getValue(styleRoot, paintLayout, 'background-fill-opacity', '#000000'),
             ),
           })
         : undefined,
@@ -500,7 +500,7 @@ function createSymbolStyle(styleRoot: StyleRoot, paintLayout: any, feature: any,
             color: getColorWithOpacity(
               styleRoot,
               getValue(styleRoot, paintLayout, 'background-stroke-color', '#000000'),
-              getValue(styleRoot, paintLayout, 'background-stroke-opacity', 1)
+              getValue(styleRoot, paintLayout, 'background-stroke-opacity', 1),
             ),
             width: getValue(paintLayout, 'background-stroke-width', '#000000'),
           })
@@ -538,7 +538,7 @@ function createStrokeStyle(styleRoot: StyleRoot, paintLayout: any, feature: any,
       color: getColorWithOpacity(
         styleRoot,
         getValue(styleRoot, paintLayout, 'line-color', '#FFFFFF'),
-        getValue(styleRoot, paintLayout, 'line-opacity', 1)
+        getValue(styleRoot, paintLayout, 'line-opacity', 1),
       ),
       width,
       lineCap: getValue(styleRoot, paintLayout, 'line-cap', 'butt'),
@@ -556,7 +556,7 @@ function createFillStyle(styleRoot: StyleRoot, paintLayout: any, feature: any, i
       color: getColorWithOpacity(
         styleRoot,
         getValue(styleRoot, paintLayout, 'fill-color', '#FFFFFF'),
-        getValue(styleRoot, paintLayout, 'fill-opacity', 1)
+        getValue(styleRoot, paintLayout, 'fill-opacity', 1),
       ),
     }),
     zIndex: index,
@@ -656,24 +656,24 @@ function compile(filter: any) {
     op === '=='
       ? compileComparisonOp(filter[1], filter[2], '===', false)
       : op === '!='
-      ? compileComparisonOp(filter[1], filter[2], '!==', false)
-      : op === '<' || op === '>' || op === '<=' || op === '>='
-      ? compileComparisonOp(filter[1], filter[2], op, true)
-      : op === 'any'
-      ? compileLogicalOp(filter.slice(1), '||')
-      : op === 'all'
-      ? compileLogicalOp(filter.slice(1), '&&')
-      : op === 'none'
-      ? compileNegation(compileLogicalOp(filter.slice(1), '||'))
-      : op === 'in'
-      ? compileInOp(filter[1], filter.slice(2))
-      : op === '!in'
-      ? compileNegation(compileInOp(filter[1], filter.slice(2)))
-      : op === 'has'
-      ? compileHasOp(filter[1])
-      : op === '!has'
-      ? compileNegation(compileHasOp(filter[1]))
-      : 'true';
+        ? compileComparisonOp(filter[1], filter[2], '!==', false)
+        : op === '<' || op === '>' || op === '<=' || op === '>='
+          ? compileComparisonOp(filter[1], filter[2], op, true)
+          : op === 'any'
+            ? compileLogicalOp(filter.slice(1), '||')
+            : op === 'all'
+              ? compileLogicalOp(filter.slice(1), '&&')
+              : op === 'none'
+                ? compileNegation(compileLogicalOp(filter.slice(1), '||'))
+                : op === 'in'
+                  ? compileInOp(filter[1], filter.slice(2))
+                  : op === '!in'
+                    ? compileNegation(compileInOp(filter[1], filter.slice(2)))
+                    : op === 'has'
+                      ? compileHasOp(filter[1])
+                      : op === '!has'
+                        ? compileNegation(compileHasOp(filter[1]))
+                        : 'true';
   return `(${str})`;
 }
 

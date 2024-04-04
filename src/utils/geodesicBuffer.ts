@@ -98,7 +98,7 @@ function lineBuffer(line: any, radius: any, units: any, resolution: any) {
       1,
       0,
       turf.midpoint(turf.point(line.geometry.coordinates[0]), turf.point(line.geometry.coordinates[1])).geometry
-        .coordinates
+        .coordinates,
     );
   }
 
@@ -158,12 +158,12 @@ function polygonBuffer(poly: any, radius: any, units: any, resolution: any) {
 
   polygonOffset.push(
     ringOffsetOneSide(turf.lineString(poly.geometry.coordinates[0]), radius, units, resolution, false, true).geometry
-      .coordinates
+      .coordinates,
   );
   for (let i = 1; i < poly.geometry.coordinates.length; i++) {
     polygonOffset.push(
       ringOffsetOneSide(turf.lineString(poly.geometry.coordinates[i]), radius, units, resolution, false, true).geometry
-        .coordinates
+        .coordinates,
     );
   }
 
@@ -189,7 +189,7 @@ function lineOffsetOneSide(line: any, radius: any, units: any, resolution: any, 
       units,
       resolution,
       right,
-      true
+      true,
     );
     if (arcGeom != null) {
       // eslint-disable-next-line prefer-spread
@@ -231,7 +231,7 @@ function ringOffsetOneSide(ring: any, radius: any, units: any, resolution: any, 
     units,
     resolution,
     right,
-    true
+    true,
   );
   if (arcGeom != null) {
     // eslint-disable-next-line prefer-spread
@@ -249,7 +249,7 @@ function arc(
   units: any,
   resolution: any,
   right = true,
-  shortcut = false
+  shortcut = false,
 ) {
   const arc = [];
   const resMultiple = 360 / resolution;
@@ -310,12 +310,12 @@ function offsetToBuffer(polygonOffset: any) {
   const unionWithWindingOne = unionFeatureCollection(
     filterNetWinding(sp, function (netWinding: any) {
       return netWinding == 1;
-    })
+    }),
   );
   const unionWithWindingZero = unionFeatureCollection(
     filterNetWinding(sp, function (netWinding: any) {
       return netWinding == 0;
-    })
+    }),
   );
   // This last one might have winding -1, so we might have to rewind it if the difference algorithm requires so
 

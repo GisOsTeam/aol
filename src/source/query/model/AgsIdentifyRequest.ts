@@ -104,7 +104,7 @@ export class AgsIdentifyRequest implements AgsIdentifyRequestParameters {
       [0.5 * extent[0] + 0.5 * extent[2], 0.5 * extent[1] + 0.5 * extent[3]],
       olView.getResolution(),
       0,
-      [1001, 1001]
+      [1001, 1001],
     );
     this.mapExtent = mapExtent.join(',');
     this.imageDisplay = '1001,1001';

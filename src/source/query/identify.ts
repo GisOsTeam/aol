@@ -37,7 +37,7 @@ export function identify(
   tolerance = 4,
   filter?: IdentifyFilterType,
   layersPrefix?: LayersPrefix,
-  returnGeometry = true
+  returnGeometry = true,
 ) {
   if (map && identifyEntity) {
     const promises: Promise<IQueryResponse>[] = [];
@@ -75,8 +75,8 @@ export function identify(
                     featureTypeResponses: [],
                   };
                   return qr;
-                }
-              )
+                },
+              ),
             );
           }
         }

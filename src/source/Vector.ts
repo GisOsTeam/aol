@@ -101,7 +101,7 @@ export abstract class Vector extends OlVector implements IQuerySource {
       const wgs84GeoJSONBuffured = (
         geodesicBuffer(
           toGeoJSONFeature(new Feature<Geometry>(destGeometry.clone())) as any,
-          geoTolerance
+          geoTolerance,
         ) as GeoJSONFeature
       ).geometry;
       // Géométrie OpenLayers bufferisée en EPSG:4326
@@ -110,7 +110,7 @@ export abstract class Vector extends OlVector implements IQuerySource {
       const originalProjGeoOlBuffered = wgs84GeoOlBuffered.clone().transform('EPSG:4326', projectionUsed);
       // Géométrie GeoJSON bufferisée en projectionUsed
       const originalProjFeatureJSONBuffered = toGeoJSONFeature(
-        new Feature<Geometry>(originalProjGeoOlBuffered.clone())
+        new Feature<Geometry>(originalProjGeoOlBuffered.clone()),
       );
 
       const extent = originalProjGeoOlBuffered.clone().getExtent();

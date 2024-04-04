@@ -85,7 +85,7 @@ export class ImageWms extends OlImageWMS implements IExtended {
             version: '1.1.0', // Do not use version option !
             outputFormat: this.options.queryFormat,
             requestProjectionCode: this.options.requestProjectionCode,
-          })
+          }),
         );
       } else {
         promises.push(
@@ -96,7 +96,7 @@ export class ImageWms extends OlImageWMS implements IExtended {
             version: this.options.version,
             outputFormat: this.options.queryFormat,
             requestProjectionCode: this.options.requestProjectionCode,
-          })
+          }),
         );
       }
     }
@@ -169,7 +169,7 @@ export class ImageWms extends OlImageWMS implements IExtended {
               outputFormat: this.options.queryFormat,
               swapXYBBOXRequest: this.options.swapXYBBOXRequest,
               swapLonLatGeometryResult: this.options.swapLonLatGeometryResult,
-            })
+            }),
           );
         } else {
           promises.push(
@@ -184,7 +184,7 @@ export class ImageWms extends OlImageWMS implements IExtended {
               outputFormat: this.options.queryFormat,
               swapXYBBOXRequest: this.options.swapXYBBOXRequest,
               swapLonLatGeometryResult: this.options.swapLonLatGeometryResult,
-            })
+            }),
           );
         }
       }
@@ -217,7 +217,7 @@ export class ImageWms extends OlImageWMS implements IExtended {
             outputFormat: this.options.queryFormat,
             swapXYBBOXRequest: this.options.swapXYBBOXRequest,
             swapLonLatGeometryResult: this.options.swapLonLatGeometryResult,
-          })
+          }),
         );
       } else {
         promises.push(
@@ -231,7 +231,7 @@ export class ImageWms extends OlImageWMS implements IExtended {
             version: this.options.version,
             outputFormat: this.options.queryFormat,
             swapLonLatGeometryResult: this.options.swapLonLatGeometryResult,
-          })
+          }),
         );
       }
     }

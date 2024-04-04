@@ -85,7 +85,7 @@ export class TileWms extends OlTileWMS implements IExtended {
             version: '1.1.0', // Do not use version option !
             outputFormat: this.options.queryFormat,
             requestProjectionCode: this.options.requestProjectionCode,
-          })
+          }),
         );
       } else {
         promises.push(
@@ -96,7 +96,7 @@ export class TileWms extends OlTileWMS implements IExtended {
             version: this.options.version,
             outputFormat: this.options.queryFormat,
             requestProjectionCode: this.options.requestProjectionCode,
-          })
+          }),
         );
       }
     }
@@ -168,7 +168,7 @@ export class TileWms extends OlTileWMS implements IExtended {
               outputFormat: this.options.queryFormat,
               swapXYBBOXRequest: this.options.swapXYBBOXRequest,
               swapLonLatGeometryResult: this.options.swapLonLatGeometryResult,
-            })
+            }),
           );
         } else {
           promises.push(
@@ -183,7 +183,7 @@ export class TileWms extends OlTileWMS implements IExtended {
               outputFormat: this.options.queryFormat,
               swapXYBBOXRequest: this.options.swapXYBBOXRequest,
               swapLonLatGeometryResult: this.options.swapLonLatGeometryResult,
-            })
+            }),
           );
         }
       }
@@ -216,7 +216,7 @@ export class TileWms extends OlTileWMS implements IExtended {
             outputFormat: this.options.queryFormat,
             swapXYBBOXRequest: this.options.swapXYBBOXRequest,
             swapLonLatGeometryResult: this.options.swapLonLatGeometryResult,
-          })
+          }),
         );
       } else {
         promises.push(
@@ -230,7 +230,7 @@ export class TileWms extends OlTileWMS implements IExtended {
             version: this.options.version,
             outputFormat: this.options.queryFormat,
             swapLonLatGeometryResult: this.options.swapLonLatGeometryResult,
-          })
+          }),
         );
       }
     }

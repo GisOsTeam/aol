@@ -15,6 +15,6 @@ export function calculateGeoExtent(originalExtent: Extent, geoTolerance: number)
     originalExtentCenter,
     1, // 1 car déjà en géo !
     0, // 0 car déjà en géo !
-    [geoWidth, geoHeight]
+    [geoWidth, geoHeight],
   );
 }

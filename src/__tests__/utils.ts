@@ -44,7 +44,7 @@ describe('utils', () => {
             [1, 0],
             [-1, 0],
           ],
-        ])
+        ]),
       );
       const geoJSONFeatureSource = toGeoJSONFeature(featureSource);
       const geoJSONFeatureBuffered = buffer(geoJSONFeatureSource, 1);

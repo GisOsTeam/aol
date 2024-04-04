@@ -41,7 +41,7 @@ export function loadKMZ(file: File, map: Map): Promise<LocalVector> {
                   reader.readAsText(blob);
                 }
               });
-            })
+            }),
         );
       Promise.all(promises).then(
         (elements) => {
@@ -62,7 +62,7 @@ export function loadKMZ(file: File, map: Map): Promise<LocalVector> {
         },
         (err) => {
           reject(err);
-        }
+        },
       );
     });
   });

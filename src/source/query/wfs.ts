@@ -74,7 +74,7 @@ export function loadWfsFeaturesOnBBOX(options: {
       (err) => {
         console.error('Get WMS feature info in error');
         return err;
-      }
+      },
     );
 }
 
@@ -106,7 +106,7 @@ export function executeWfsQuery(options: {
     extentUsed = [...calculateGeoExtent(extentOriginal, geoTolerance)];
 
     geometryUsedForDisjoint = toOpenLayersGeometry(
-      buffer(toGeoJSONFeature(new Feature<Geometry>(geometry.clone())), geoTolerance, geometryProjection).geometry
+      buffer(toGeoJSONFeature(new Feature<Geometry>(geometry.clone())), geoTolerance, geometryProjection).geometry,
     );
   }
 

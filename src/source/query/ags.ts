@@ -21,7 +21,7 @@ const format = new EsriJSON();
 export function executeAgsIdentify(
   source: IExtended,
   types: IFeatureType<number>[],
-  request: IIdentifyRequest
+  request: IIdentifyRequest,
 ): Promise<IQueryFeatureTypeResponse[] | IQueryUntypedResponse[]> {
   const { olMap, limit } = request;
 
@@ -53,14 +53,14 @@ export function executeAgsIdentify(
       (err) => {
         console.error(`Execute AGS identify in error: ${err}`);
         return err;
-      }
+      },
     );
 }
 
 export function executeAgsQuery(
   source: IExtended,
   type: IFeatureType<number>,
-  request: IGisRequest
+  request: IGisRequest,
 ): Promise<IQueryFeatureTypeResponse | IQueryUntypedResponse> {
   const { olMap, queryType, limit } = request;
 
@@ -103,7 +103,7 @@ export function executeAgsQuery(
       (err) => {
         console.error(`Execute AGS query/identify in error: ${err}`);
         return err;
-      }
+      },
     );
 }
 
@@ -126,7 +126,7 @@ function processAgsResponse(
   types: IFeatureType<number>[],
   mapProjection: Projection,
   srId: string,
-  limit?: number
+  limit?: number,
 ): IQueryFeatureTypeResponse[] {
   const featuresByType: Map<IFeatureType<number>, Feature[]> = new Map();
   // Read features
@@ -181,7 +181,7 @@ export function retrieveAgsFeature(
   source: IExtended,
   type: IFeatureType<number>,
   id: number | string,
-  featureProjection: Projection
+  featureProjection: Projection,
 ): Promise<Feature> {
   const srId = '3857';
   let url = '';
@@ -233,7 +233,7 @@ export function retrieveAgsFeature(
       (err) => {
         console.error(`Execute AGS query in error: ${err}`);
         return err;
-      }
+      },
     );
 }
 
@@ -288,6 +288,6 @@ export function loadAgsFeatureDescription(source: IExtended, type: IFeatureType<
       (err) => {
         console.error('Get AGS feature description in error');
         return err;
-      }
+      },
     );
 }

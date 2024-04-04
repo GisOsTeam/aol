@@ -4,7 +4,7 @@ import { FilterBuilderType, FilterValueType, IField } from '../IFilter';
 export interface IPredicate<
   LH extends IPredicate | IField<any> = any,
   O extends IOperator = IOperator,
-  RH extends IPredicate | FilterValueType = any
+  RH extends IPredicate | FilterValueType = any,
 > {
   leftHand: LH;
   operator: O;

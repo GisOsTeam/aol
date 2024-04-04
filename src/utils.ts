@@ -135,7 +135,7 @@ export function disjoint(g1: GeoJSONGeometry, g2: GeoJSONGeometry) {
 export function buffer(
   geoJsonFeatureSource: GeoJSONFeature,
   tolerance: number,
-  projectionSource?: ProjectionLike
+  projectionSource?: ProjectionLike,
 ): GeoJSONFeature {
   // Si projectionSource non définit alors pas besoin de re-projeter donc on retourne la feature
   if (!projectionSource) {
@@ -277,7 +277,7 @@ export function getQueryId<IDT>(type: IFeatureType<any>): IDT {
  */
 export function srcToImage(
   dataUrl: string,
-  options: { emptyImageOnError: boolean; timeout: number } = { emptyImageOnError: true, timeout: 10000 }
+  options: { emptyImageOnError: boolean; timeout: number } = { emptyImageOnError: true, timeout: 10000 },
 ): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -311,7 +311,7 @@ export function exportToImage(
   imageSize: [number, number],
   extent: [number, number, number, number],
   format: 'JPEG' | 'PNG',
-  cancelFunction = () => false
+  cancelFunction = () => false,
 ) {
   const center = getCenter(extent);
   const resolutionX = getWidth(extent) / imageSize[0];
@@ -330,7 +330,7 @@ export function exportToImageFromResolution(
   center: Coordinate,
   resolution: number,
   format: 'JPEG' | 'PNG',
-  cancelFunction = () => false
+  cancelFunction = () => false,
 ): Promise<string> {
   return new Promise((resolve, reject) => {
     let canceled = false;
@@ -434,7 +434,7 @@ export const exportLegendToImage = (
   sources: ILegendSource[],
   imageSize: [number, number],
   format: 'JPEG' | 'PNG',
-  cancelFunction = () => false
+  cancelFunction = () => false,
 ): Promise<string> => {
   const legendCanvas = document.createElement('canvas');
   legendCanvas.width = imageSize[0];
@@ -475,8 +475,8 @@ export const exportLegendToImage = (
           },
           () => {
             return [0, 0, {}];
-          }
-        )
+          },
+        ),
       );
     }
   }
@@ -509,7 +509,7 @@ export const exportLegendToImage = (
             legendContext.fillText(
               legend.label,
               ratio * (legend.width + 2),
-              pos + 0.5 * ratio * legend.height + 0.5 * ratio * textSize
+              pos + 0.5 * ratio * legend.height + 0.5 * ratio * textSize,
             );
           }
           pos += ratio * legend.height;
