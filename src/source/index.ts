@@ -3,6 +3,7 @@
  */
 
 export * from './ExternalVector';
+export * from './GeoTIFF';
 export * from './Image';
 export * from './ImageArcGISRest';
 export * from './ImageStatic';

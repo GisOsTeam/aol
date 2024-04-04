@@ -15,6 +15,7 @@ export enum SourceTypeEnum {
   Wmts = 'Wmts',
   WmtsCapabilities = 'WmtsCapabilities',
   Xyz = 'Xyz',
+  GeoTIFF = 'GeoTIFF',
 }
 
 export type SourceType =
@@ -33,4 +34,5 @@ export type SourceType =
   | SourceTypeEnum.Wfs
   | SourceTypeEnum.Wmts
   | SourceTypeEnum.WmtsCapabilities
-  | SourceTypeEnum.Xyz;
+  | SourceTypeEnum.Xyz
+  | SourceTypeEnum.GeoTIFF;
