@@ -5,6 +5,7 @@
   "scripts": {
     "test": "jest",
     "jest": "jest",
+    "prepare": "husky init",
     "prettier": "prettier --single-quote --print-width 120 --write --parser typescript '{src, test}/**/*.ts'",
     "lint": "npm run prettier && eslint src/** --ext .ts,.tsx",
     "genindex": "barrelsby -d ./src -D -L -l all -q -e sample -e __tests__ -e .d.ts",
