@@ -3,6 +3,7 @@ import { ISnapshotSource } from '../IExtended';
 import { ExternalVector } from '../ExternalVector';
 import { ImageArcGISRest } from '../ImageArcGISRest';
 import { ImageStatic } from '../ImageStatic';
+import { GeoTIFF } from '../GeoTIFF';
 import { ImageWms } from '../ImageWms';
 import { LocalVector } from '../LocalVector';
 import { QueryArcGISRest } from '../QueryArcGISRest';
@@ -28,6 +29,9 @@ export class SourceFactory {
         break;
       case SourceTypeEnum.ImageStatic:
         source = new ImageStatic(sourceOptions);
+        break;
+      case SourceTypeEnum.GeoTIFF:
+        source = new GeoTIFF(sourceOptions);
         break;
       case SourceTypeEnum.ImageWms:
         source = new ImageWms(sourceOptions);
