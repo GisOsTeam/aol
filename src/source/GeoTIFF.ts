@@ -34,7 +34,7 @@ export class GeoTIFF extends OlGeoTIFF implements ISnapshotSource {
   }
 
   public getLayerType(): LayerType {
-    return LayerTypeEnum.Tile;
+    return LayerTypeEnum.WebGLTile;
   }
 
   public isSnapshotable(): boolean {
