@@ -46,25 +46,34 @@ export function loadZippedShapefile(file: File, map: Map): Promise<LocalVector> 
                 });
               }),
           );
-        Promise.all(promises).then((elements) => {
-          const dbfElement = elements.filter((element) => element.name.endsWith('.dbf')).pop();
-          const shpElement = elements.filter((element) => element.name.endsWith('.shp')).pop();
-          const prjElement = elements.filter((element) => element.name.endsWith('.prj')).pop();
-          const featureCollection = shapefile2geojson(shpElement.data, dbfElement.data);
-          const name = shpElement.name;
-          const featureProjection = map.getView().getProjection();
-          let dataProjection = featureProjection;
-          if (prjElement != null) {
-            dataProjection = addProjection(prjElement.name, prjElement.data).projection;
-          }
-          const features: Feature[] = geoJSONFormat.readFeatures(featureCollection, {
-            dataProjection,
-            featureProjection,
-          }) as Feature[];
-          const localVectorSource = SourceFactory.create(SourceTypeEnum.LocalVector, { name }) as LocalVector;
-          localVectorSource.addFeatures(features);
-          resolve(localVectorSource);
-        });
+        Promise.all(promises).then(
+          (elements) => {
+            try {
+              const dbfElement = elements.filter((element) => element.name.endsWith('.dbf')).pop();
+              const shpElement = elements.filter((element) => element.name.endsWith('.shp')).pop();
+              const prjElement = elements.filter((element) => element.name.endsWith('.prj')).pop();
+              const featureCollection = shapefile2geojson(shpElement.data, dbfElement.data);
+              const name = shpElement.name;
+              const featureProjection = map.getView().getProjection();
+              let dataProjection = featureProjection;
+              if (prjElement != null) {
+                dataProjection = addProjection(prjElement.name, prjElement.data).projection;
+              }
+              const features: Feature[] = geoJSONFormat.readFeatures(featureCollection, {
+                dataProjection,
+                featureProjection,
+              }) as Feature[];
+              const localVectorSource = SourceFactory.create(SourceTypeEnum.LocalVector, { name }) as LocalVector;
+              localVectorSource.addFeatures(features);
+              resolve(localVectorSource);
+            } catch (err) {
+              reject(err);
+            }
+          },
+          (err) => {
+            reject(err);
+          },
+        );
       },
       (err) => {
         reject(err);
