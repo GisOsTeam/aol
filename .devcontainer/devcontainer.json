@@ -1,0 +1,57 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/typescript-node
+{
+  "name": "aol",
+  // Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
+  "build": {
+    "dockerfile": "Dockerfile",
+    "args": {
+      "CONTAINER_USER": "node",
+      "NODE_VERSION": "0-18",
+      "VARIANT": "bullseye"
+    }
+  },
+
+  // An array of additional mount points to add to the container when created.
+  // Each value is a string that accepts the same values as the Docker CLI --mount flag.
+  // Environment and pre-defined variables may be referenced in the value
+  "mounts": [
+    // enable cache for vscode extension
+    "source=${localWorkspaceFolderBasename}-vscode-extension,target=/home/node/.vscode-server/extensions,type=volume",
+    // enable cache for node
+    "source=cache-node-18,target=/home/node/.npm,type=volume",
+    // enable cache for node_modules
+    "source=${localWorkspaceFolderBasename}-node_modules,target=${containerWorkspaceFolder}/node_modules,type=volume",
+  ],
+
+  // Features to add to the dev container. More info: https://containers.dev/features.
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {
+      "ppa": true,
+      "version": "latest"
+    },
+    "ghcr.io/jungaretti/features/make:1": {},
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+  },
+
+  // Use 'forwardPorts' to make a list of ports inside the container available locally.
+  // "forwardPorts": [],
+
+  // A command string or list of command arguments to run on the host machine
+  // before the container is created.
+  // "initializeCommand": "/bin/bash .devcontainer/initializeCommand.sh",
+  // Use 'postCreateCommand' to run commands after the container is created.
+  "postCreateCommand": "/bin/bash .devcontainer/postCreateCommand.sh",
+
+  // Configure tool-specific properties.
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "donjayamanne.githistory"
+      ]
+    }
+  },
+
+  // Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
+  "remoteUser": "node"
+}
