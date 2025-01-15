@@ -206,7 +206,7 @@ export function createStyleFunction(layerStyles: LayerStyles, olMap?: OlMap) {
   };
   for (const style of styleRoot.layers) {
     if ('filter' in style) {
-      style.filterFunction = createFilter(style.filter);
+      style.filterFunction = LayerStylesFilterUtils.createFilter(style.filter);
     }
   }
   return (feature: any, resolution: number) => {
@@ -239,7 +239,7 @@ export function applyFeatureStyles(feature: Feature<any>, layerStyles: LayerStyl
   };
   for (const style of styleRoot.layers) {
     if ('filter' in style) {
-      style.filterFunction = createFilter(style.filter);
+      style.filterFunction = LayerStylesFilterUtils.createFilter(style.filter);
     }
   }
   feature.setStyle((feature: any, resolution: number) => {
@@ -639,90 +639,106 @@ function styleFunction(styleRoot: StyleRoot, feature: any, resolution: number): 
   return olStyles;
 }
 
-function createFilter(filter: any) {
-  // tslint:disable-next-line
-  return new Function('f', `var p = (f && f.properties || {}); return ${compile(filter)}`);
-}
-
-function compile(filter: any) {
-  if (!filter) {
-    return 'true';
-  }
-  const op = filter[0];
-  if (filter.length <= 1) {
-    return op === 'any' ? 'false' : 'true';
-  }
-  const str =
-    op === '=='
-      ? compileComparisonOp(filter[1], filter[2], '===', false)
-      : op === '!='
-        ? compileComparisonOp(filter[1], filter[2], '!==', false)
-        : op === '<' || op === '>' || op === '<=' || op === '>='
-          ? compileComparisonOp(filter[1], filter[2], op, true)
-          : op === 'any'
-            ? compileLogicalOp(filter.slice(1), '||')
-            : op === 'all'
-              ? compileLogicalOp(filter.slice(1), '&&')
-              : op === 'none'
-                ? compileNegation(compileLogicalOp(filter.slice(1), '||'))
-                : op === 'in'
-                  ? compileInOp(filter[1], filter.slice(2))
-                  : op === '!in'
-                    ? compileNegation(compileInOp(filter[1], filter.slice(2)))
-                    : op === 'has'
-                      ? compileHasOp(filter[1])
-                      : op === '!has'
-                        ? compileNegation(compileHasOp(filter[1]))
-                        : 'true';
-  return `(${str})`;
-}
-
-function compilePropertyReference(property: any) {
-  const ref = property === '$type' ? 'f.type' : property === '$id' ? 'f.id' : `p[${JSON.stringify(property)}]`;
-  return ref;
-}
-
-function compileComparisonOp(property: any, value: any, op: any, checkType: any) {
-  const left = compilePropertyReference(property);
-  const right = property === '$type' ? filterTypes.indexOf(value) : JSON.stringify(value);
-  return (checkType ? `typeof ${left}=== typeof ${right}&&` : '') + left + op + right;
-}
-
-function compileLogicalOp(expressions: any, op: any) {
-  return expressions.map(compile).join(op);
-}
-
-function compileInOp(property: any, values: any) {
-  if (property === '$type') {
-    values = values.map((value: any) => {
-      return filterTypes.indexOf(value);
-    });
-  }
-  const left = JSON.stringify(values.sort(compare));
-  const right = compilePropertyReference(property);
-
-  if (values.length <= 200) {
-    return `${left}.indexOf(${right}) !== -1`;
+class LayerStylesFilterUtils {
+  public static createFilter(filter: any) {
+    return function (f: any) {
+      const p = (f && f.properties) || {};
+      return this.evaluateFilter(filter, p, f);
+    };
   }
 
-  return `${
-    'function(v, a, i, j) {' +
-    'while (i <= j) { var m = (i + j) >> 1;' +
-    '    if (a[m] === v) return true; if (a[m] > v) j = m - 1; else i = m + 1;' +
-    '}' +
-    'return false; }('
-  }${right}, ${left},0,${values.length - 1})`;
-}
+  private static evaluateFilter(filter: any, properties: any, feature: any): boolean {
+    if (!filter) {
+      return true;
+    }
+    const op = filter[0];
+    if (filter.length <= 1) {
+      return op === 'any' ? false : true;
+    }
+    switch (op) {
+      case '==':
+        return this.evaluateComparisonOp(properties, filter[1], filter[2], '===');
+      case '!=':
+        return this.evaluateComparisonOp(properties, filter[1], filter[2], '!==');
+      case '<':
+        return this.evaluateComparisonOp(properties, filter[1], filter[2], '<');
+      case '>':
+        return this.evaluateComparisonOp(properties, filter[1], filter[2], '>');
+      case '<=':
+        return this.evaluateComparisonOp(properties, filter[1], filter[2], '<=');
+      case '>=':
+        return this.evaluateComparisonOp(properties, filter[1], filter[2], '>=');
+      case 'any':
+        return filter
+          .slice(1)
+          .some((subFilter: any) =>
+            this.evaluateFilter(subFilter, properties, feature)
+          );
+      case 'all':
+        return filter
+          .slice(1)
+          .every((subFilter: any) =>
+            this.evaluateFilter(subFilter, properties, feature)
+          );
+      case 'none':
+        return !filter
+          .slice(1)
+          .some((subFilter: any) =>
+            this.evaluateFilter(subFilter, properties, feature)
+          );
+      case 'in':
+        return this.evaluateInOp(properties, filter[1], filter.slice(2));
+      case '!in':
+        return !this.evaluateInOp(properties, filter[1], filter.slice(2));
+      case 'has':
+        return this.evaluateHasOp(properties, filter[1]);
+      case '!has':
+        return !this.evaluateHasOp(properties, filter[1]);
+      default:
+        return true;
+    }
+  }
 
-function compileHasOp(property: any) {
-  return property === '$id' ? '"id" in f' : `${JSON.stringify(property)} in p`;
-}
+  private static evaluateComparisonOp(
+    properties: any,
+    property: any,
+    value: any,
+    op: string
+  ): boolean {
+    const left = this.getPropertyReference(properties, property);
+    const right = property === '$type' ? filterTypes.indexOf(value) : value;
+    switch (op) {
+      case '===':
+        return left === right;
+      case '!==':
+        return left !== right;
+      case '<':
+        return left < right;
+      case '>':
+        return left > right;
+      case '<=':
+        return left <= right;
+      case '>=':
+        return left >= right;
+      default:
+        return false;
+    }
+  }
 
-function compileNegation(expression: any) {
-  return `!(${expression})`;
-}
+  private static getPropertyReference(properties: any, property: any) {
+    return property === '$type'
+      ? properties.type
+      : property === '$id'
+      ? properties.id
+      : properties[property];
+  }
 
-// Comparison function to sort numbers and strings
-function compare(a: any, b: any) {
-  return a < b ? -1 : a > b ? 1 : 0;
+  private static evaluateInOp(properties: any, property: any, values: any): boolean {
+    const value = this.getPropertyReference(properties, property);
+    return values.includes(value);
+  }
+
+  private static evaluateHasOp(properties: any, property: any): boolean {
+    return property === '$id' ? 'id' in properties : property in properties;
+  }
 }
