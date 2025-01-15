@@ -669,23 +669,11 @@ class LayerStylesFilterUtils {
       case '>=':
         return this.evaluateComparisonOp(properties, filter[1], filter[2], '>=');
       case 'any':
-        return filter
-          .slice(1)
-          .some((subFilter: any) =>
-            this.evaluateFilter(subFilter, properties, feature)
-          );
+        return filter.slice(1).some((subFilter: any) => this.evaluateFilter(subFilter, properties, feature));
       case 'all':
-        return filter
-          .slice(1)
-          .every((subFilter: any) =>
-            this.evaluateFilter(subFilter, properties, feature)
-          );
+        return filter.slice(1).every((subFilter: any) => this.evaluateFilter(subFilter, properties, feature));
       case 'none':
-        return !filter
-          .slice(1)
-          .some((subFilter: any) =>
-            this.evaluateFilter(subFilter, properties, feature)
-          );
+        return !filter.slice(1).some((subFilter: any) => this.evaluateFilter(subFilter, properties, feature));
       case 'in':
         return this.evaluateInOp(properties, filter[1], filter.slice(2));
       case '!in':
@@ -699,12 +687,7 @@ class LayerStylesFilterUtils {
     }
   }
 
-  private static evaluateComparisonOp(
-    properties: any,
-    property: any,
-    value: any,
-    op: string
-  ): boolean {
+  private static evaluateComparisonOp(properties: any, property: any, value: any, op: string): boolean {
     const left = this.getPropertyReference(properties, property);
     const right = property === '$type' ? filterTypes.indexOf(value) : value;
     switch (op) {
@@ -726,11 +709,7 @@ class LayerStylesFilterUtils {
   }
 
   private static getPropertyReference(properties: any, property: any) {
-    return property === '$type'
-      ? properties.type
-      : property === '$id'
-      ? properties.id
-      : properties[property];
+    return property === '$type' ? properties.type : property === '$id' ? properties.id : properties[property];
   }
 
   private static evaluateInOp(properties: any, property: any, values: any): boolean {
