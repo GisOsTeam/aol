@@ -4,3 +4,4 @@
 
 export * from './extent';
 export * from './geodesicBuffer';
+export * from './zipSecurityCheck';
