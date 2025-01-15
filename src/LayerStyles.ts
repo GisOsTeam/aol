@@ -250,7 +250,8 @@ export function applyFeatureStyles(feature: Feature<any>, layerStyles: LayerStyl
 const stdView = new OlView();
 const colorElement = document.createElement('div');
 const colorRegEx = /^rgba?\((.*)\)$/;
-const templateRegEx = /^(.*)\{(.*)\}(.*)$/;
+// Secured regex to capture variables in format {variable}
+const templateRegEx = /{\s*([^{}\s]+)\s*}/g;
 const types: { [key: string]: number } = {
   Point: 1,
   MultiPoint: 1,
@@ -379,13 +380,12 @@ function getColorWithOpacity(styleRoot: StyleRoot, color: string, opacity: numbe
 }
 
 function getTextFromTemplate(text: string, properties: any): string {
-  const parts = text.match(templateRegEx);
-  let res = text;
-  if (parts) {
-    const value = properties[parts[2]] || '';
-    res = parts[1] + value + parts[3];
-  }
-  return res;
+  // Replace properties by their values in text
+  return text.replace(templateRegEx, (match, propertyKey) => {
+    // match = '{propertyKey}', propertyKey = 'propertyKey'
+    // If property is found, match is replaced by property value, elsewhere match remains untouched in text
+    return properties[propertyKey] !== undefined ? properties[propertyKey] : match;
+  });
 }
 
 function getFont(styleRoot: StyleRoot, font: string, size: number): string {

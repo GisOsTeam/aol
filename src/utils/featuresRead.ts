@@ -36,9 +36,9 @@ export function readFeatures(
     // Search projection on results
     const res1 = txt.match(/\ssrsName=\"([^\"]+)\"/i);
     if (res1 && res1.length >= 2) {
-      const res2 = res1[1].match(/(\d+)(?!.*\d)/g);
-      if (res2 && res2.length > 0) {
-        dataProjectionCode = 'EPSG:' + res2[res2.length - 1];
+      const res2 = res1[1].match(/EPSG::(\d+)/i);
+      if (res2 && res2.length > 1) {
+        dataProjectionCode = 'EPSG:' + res2[1];
         txt = txt.replace(/\ssrsName=\"([^\"]+)\"/gi, ` srsName="${dataProjectionCode}"`);
       }
     }
