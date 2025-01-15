@@ -13,7 +13,7 @@ const defaultZipSecurityCheckOpts: ZipSecurityCheckOptions = {
 
 /**
  * Check whether a JSZip is safe or not.
- * 
+ *
  * @param zip JS Zip to check
  * @param opts security options
  * @returns promise true if zip is safe, false otherwise
