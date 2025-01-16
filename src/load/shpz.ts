@@ -7,17 +7,27 @@ import { LocalVector } from '../source/LocalVector';
 import { SourceTypeEnum } from '../source/types/sourceType';
 import { addProjection } from '../ProjectionInfo';
 import { SourceFactory } from '../source/factory';
+import { checkJSZipSecurity, ZipSecurityCheckOptions } from '../utils/zipSecurityCheck';
+
+interface ILoadShpzOptions {
+  zipSecurityCheckOpts?: ZipSecurityCheckOptions;
+}
+export type LoadShpzOptions = ILoadShpzOptions;
 
 const geoJSONFormat = new GeoJSON();
 
 /**
  * Load zipped Shapefile from file.
  */
-export function loadZippedShapefile(file: File, map: Map): Promise<LocalVector> {
+export function loadZippedShapefile(file: File, map: Map, opts?: LoadShpzOptions): Promise<LocalVector> {
   return new Promise<LocalVector>((resolve, reject) => {
     const zipFile = new JSZip();
     zipFile.loadAsync(file).then(
-      (zip) => {
+      async (zip) => {
+        // Check ZIP secure
+        if ((await checkJSZipSecurity(zip, opts?.zipSecurityCheckOpts)) === false) {
+          reject('Security check failed on ZIP');
+        }
         const promises = Object.keys(zip.files)
           .map((name) => zip.files[name])
           .map(

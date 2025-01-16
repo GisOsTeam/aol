@@ -5,17 +5,28 @@ import * as JSZip from 'jszip';
 import { LocalVector } from '../source/LocalVector';
 import { SourceTypeEnum } from '../source/types/sourceType';
 import { SourceFactory } from '../source/factory';
+import { ZipSecurityCheckOptions } from '../utils/zipSecurityCheck';
+import { checkJSZipSecurity } from '../utils/zipSecurityCheck';
+
+interface ILoadKmzOptions {
+  zipSecurityCheckOpts?: ZipSecurityCheckOptions;
+}
+export type LoadKmzOptions = ILoadKmzOptions;
 
 const kmlFormat = new KML({ extractStyles: true, showPointNames: false });
 
 /**
  * Load KMZ from file.
  */
-export function loadKMZ(file: File, map: Map): Promise<LocalVector> {
+export function loadKMZ(file: File, map: Map, opts?: LoadKmzOptions): Promise<LocalVector> {
   return new Promise<LocalVector>((resolve, reject) => {
     const zipFile = new JSZip();
     zipFile.loadAsync(file).then(
-      (zip) => {
+      async (zip) => {
+        // Check ZIP secure
+        if ((await checkJSZipSecurity(zip, opts?.zipSecurityCheckOpts)) === false) {
+          reject('Security check failed on ZIP');
+        }
         const promises = Object.keys(zip.files)
           .map((name) => zip.files[name])
           .map(
