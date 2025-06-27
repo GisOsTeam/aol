@@ -1,0 +1,105 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`describe wms 1`] = `6`;
+
+exports[`identify wms 1`] = `10509`;
+
+exports[`identify wms 2`] = `
+{
+  "boundedBy": [
+    534333.55580771,
+    5732403.6615682,
+    534333.55580771,
+    5732403.6615682,
+  ],
+  "dossier": "true",
+  "gid": "1",
+  "insee": "69387",
+  "source": "Open Street Map",
+  "the_geom": Point {
+    "dispatching_": {},
+    "disposed": false,
+    "eventTarget_": undefined,
+    "extentRevision_": -1,
+    "extent_": [
+      Infinity,
+      Infinity,
+      -Infinity,
+      -Infinity,
+    ],
+    "flatCoordinates": [
+      534333.55580771,
+      5732403.6615682,
+      0,
+    ],
+    "layout": "XYZ",
+    "listeners_": {
+      "change": [
+        [Function],
+      ],
+    },
+    "ol_uid": "79",
+    "on": [Function],
+    "once": [Function],
+    "pendingRemovals_": {},
+    "revision_": 2,
+    "simplifiedGeometryMaxMinSquaredTolerance": 0,
+    "simplifiedGeometryRevision": 0,
+    "simplifyTransformedInternal": [Function],
+    "stride": 3,
+    "un": [Function],
+    "values_": null,
+  },
+}
+`;
+
+exports[`query wms 1`] = `6`;
+
+exports[`query wms 2`] = `
+{
+  "boundedBy": [
+    561829.47003365,
+    5747718.13304753,
+    561829.47003365,
+    5747718.13304753,
+  ],
+  "dossier": "true",
+  "gid": "1191",
+  "insee": "69279",
+  "source": "Open Street Map",
+  "the_geom": Point {
+    "dispatching_": {},
+    "disposed": false,
+    "eventTarget_": undefined,
+    "extentRevision_": -1,
+    "extent_": [
+      Infinity,
+      Infinity,
+      -Infinity,
+      -Infinity,
+    ],
+    "flatCoordinates": [
+      561829.47003365,
+      5747718.13304753,
+      0,
+    ],
+    "layout": "XYZ",
+    "listeners_": {
+      "change": [
+        [Function],
+      ],
+    },
+    "ol_uid": "33",
+    "on": [Function],
+    "once": [Function],
+    "pendingRemovals_": {},
+    "revision_": 2,
+    "simplifiedGeometryMaxMinSquaredTolerance": 0,
+    "simplifiedGeometryRevision": 0,
+    "simplifyTransformedInternal": [Function],
+    "stride": 3,
+    "un": [Function],
+    "values_": null,
+  },
+}
+`;

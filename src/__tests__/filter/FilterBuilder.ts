@@ -349,7 +349,7 @@ describe('aol.filter', () => {
   describe('filterBuilder', () => {
     describe('empty', () => {
       test('', () => {
-        expect(FilterBuilder.build(undefined, FilterBuilderTypeEnum.CQL)).toMatchSnapshot();
+        expect(FilterBuilder.build(null as never, FilterBuilderTypeEnum.CQL)).toMatchSnapshot();
       });
     });
 

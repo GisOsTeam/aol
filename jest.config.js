@@ -125,7 +125,9 @@ module.exports = {
   // The paths to modules that run some code to configure or set up the testing environment before each test
   setupFiles: [
     "./config/jest/xmlserializer.js",
-    "jest-canvas-mock"
+    "./config/jest/resize-observer.mock.js",
+    "jest-canvas-mock",
+    "jest-environment-jsdom"
   ],
 
   // A list of paths to modules that run some code to configure or set up the testing framework before each test
@@ -177,7 +179,7 @@ module.exports = {
 
   // An array of regexp pattern strings that are matched against all source file paths, matched files will skip transformation
   transformIgnorePatterns: [
-    "/node_modules/(?!(ol|ol-mapbox-style|@mapbox)/)"
+    "/node_modules/(?!ol|ol-mapbox-style|@mapbox|quickselect|rbush)/"
   ],
 
   // An array of regexp pattern strings that are matched against all modules before the module loader will automatically return a mock for them

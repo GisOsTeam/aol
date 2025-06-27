@@ -3,7 +3,7 @@ import OlView from 'ol/View';
 import { ImageArcGISRest } from '../../../../source';
 import { IFeatureType, IGisRequest } from '../../../../source/IExtended';
 import Polygon from 'ol/geom/Polygon';
-import { get as getProjection } from 'ol/proj';
+import { get as getProjection, Projection } from 'ol/proj';
 import { AgsQueryRequest } from '../../../../source/query/model/AgsQueryRequest';
 
 const states = new ImageArcGISRest({
@@ -30,7 +30,7 @@ test('Simple AgsQueryRequest', () => {
         [-11580733.168194728, 4880526.966432655],
       ],
     ]),
-    geometryProjection: getProjection('EPSG:3857'),
+    geometryProjection: getProjection('EPSG:3857') as Projection,
     queryType: 'query',
   };
   const agsQueryRequest = new AgsQueryRequest(states, type, request);

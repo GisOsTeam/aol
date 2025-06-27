@@ -1,9 +1,9 @@
 import { executeAgsQuery, loadAgsFeatureDescription } from '../../../source/query/ags';
 import OlMap from 'ol/Map';
 import OlView from 'ol/View';
-import { get as getProjection } from 'ol/proj';
+import { get as getProjection, Projection } from 'ol/proj';
 import Polygon from 'ol/geom/Polygon';
-import { IFeatureType, IQueryFeatureTypeResponse, IGisRequest } from '../../../source/IExtended';
+import { IFeatureType, IQueryFeatureTypeResponse, IGisRequest, IQueryUntypedResponse } from '../../../source/IExtended';
 import { ImageArcGISRest } from '../../../source/ImageArcGISRest';
 import { Like } from '../../../filter/predicate';
 import { Like as LikeOp } from '../../../filter/operator';
@@ -22,6 +22,9 @@ describe('Ags', () => {
   test('describe ags', () => {
     const type: IFeatureType<number> = states.get('types')[0];
     return loadAgsFeatureDescription(states, type).then(() => {
+      if (type.identifierAttribute === undefined) {
+        throw new Error('Attributes should not be undefined');
+      }
       expect<string>(type.identifierAttribute.key).toEqual('objectid');
     });
   });
@@ -43,14 +46,19 @@ describe('Ags', () => {
           [-11580733.168194728, 4880526.966432655],
         ],
       ]),
-      geometryProjection: getProjection('EPSG:3857'),
+      geometryProjection: getProjection('EPSG:3857') as Projection,
       queryType: 'query',
     };
     const type: IFeatureType<number> = states.get('types')[0];
-    return executeAgsQuery(states, type, request).then((response: IQueryFeatureTypeResponse) => {
-      expect<number>(response.features.length).toEqual(1);
-      expect<string>(response.features[0].getProperties().state_name).toEqual('Colorado');
-    });
+    return executeAgsQuery(states, type, request).then(
+      (response: IQueryFeatureTypeResponse | IQueryUntypedResponse) => {
+        if ('features' in response === false) {
+          throw new Error('Response should contain features');
+        }
+        expect<number>(response.features.length).toEqual(1);
+        expect<string>(response.features[0].getProperties().state_name).toEqual('Colorado');
+      },
+    );
   });
 
   test('query ags attr', () => {
@@ -71,14 +79,19 @@ describe('Ags', () => {
         ],
       ]),
       filters: new Like(stateNameField, new LikeOp(), 'Col%'),
-      geometryProjection: getProjection('EPSG:3857'),
+      geometryProjection: getProjection('EPSG:3857') as Projection,
       queryType: 'query',
     };
     const type: IFeatureType<number> = states.get('types')[0];
-    return executeAgsQuery(states, type, request).then((response: IQueryFeatureTypeResponse) => {
-      expect<number>(response.features.length).toEqual(1);
-      expect<string>(response.features[0].getProperties().state_name).toEqual('Colorado');
-    });
+    return executeAgsQuery(states, type, request).then(
+      (response: IQueryFeatureTypeResponse | IQueryUntypedResponse) => {
+        if ('features' in response === false) {
+          throw new Error('Response should contain features');
+        }
+        expect<number>(response.features.length).toEqual(1);
+        expect<string>(response.features[0].getProperties().state_name).toEqual('Colorado');
+      },
+    );
   });
 
   test('identify ags', () => {
@@ -98,13 +111,18 @@ describe('Ags', () => {
           [-11580733.168194728, 4880526.966432655],
         ],
       ]),
-      geometryProjection: getProjection('EPSG:3857'),
+      geometryProjection: getProjection('EPSG:3857') as Projection,
       queryType: 'identify',
     };
     const type: IFeatureType<number> = states.get('types')[0];
-    return executeAgsQuery(states, type, request).then((response: IQueryFeatureTypeResponse) => {
-      expect<number>(response.features.length).toEqual(1);
-      expect<string>(response.features[0].getProperties().STATE_NAME).toEqual('Colorado');
-    });
+    return executeAgsQuery(states, type, request).then(
+      (response: IQueryFeatureTypeResponse | IQueryUntypedResponse) => {
+        if ('features' in response === false) {
+          throw new Error('Response should contain features');
+        }
+        expect<number>(response.features.length).toEqual(1);
+        expect<string>(response.features[0].getProperties().STATE_NAME).toEqual('Colorado');
+      },
+    );
   });
 });

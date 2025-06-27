@@ -1,7 +1,7 @@
 function XMLSerializer() {
 }
 
-XMLSerializer.prototype.serializeToString = function(node) {
+XMLSerializer.prototype.serializeToString = function (node) {
   if (!node) {
     return '';
   }
@@ -13,12 +13,11 @@ XMLSerializer.prototype.serializeToString = function(node) {
     var tagName = tagNames[i];
     text = text.replace(
       new RegExp('(<|</)' + tagName.toLowerCase() + '\\b', 'g'),
-      function(match, start) {
+      function (match, start) {
         return start + tagName;
       }
     );
   }
   return text;
 };
-
 global.XMLSerializer = XMLSerializer;

@@ -4,7 +4,7 @@ exports[`Simple AgsQueryRequest: agsQueryRequest.distance 1`] = `undefined`;
 
 exports[`Simple AgsQueryRequest: agsQueryRequest.f 1`] = `"json"`;
 
-exports[`Simple AgsQueryRequest: agsQueryRequest.geometry 1`] = `"{\\"hasZ\\":false,\\"hasM\\":false,\\"rings\\":[[[-11580733.168194728,4880526.966432655],[-11580733.168194728,4964673.98309528],[-11496586.151532097,4964673.983095286],[-11496586.151532097,4880526.966432655],[-11580733.168194728,4880526.966432655]]]}"`;
+exports[`Simple AgsQueryRequest: agsQueryRequest.geometry 1`] = `"{"hasZ":false,"hasM":false,"rings":[[[-11580733.168194728,4880526.966432655],[-11580733.168194728,4964673.98309528],[-11496586.151532097,4964673.983095286],[-11496586.151532097,4880526.966432655],[-11580733.168194728,4880526.966432655]]]}"`;
 
 exports[`Simple AgsQueryRequest: agsQueryRequest.geometryPrecision 1`] = `"10"`;
 

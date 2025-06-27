@@ -36,9 +36,10 @@
     "husky": "^9.0.11",
     "jest": "^29.7.0",
     "jest-canvas-mock": "^2.5.2",
-    "ol": "^9.1.0",
+    "jest-environment-jsdom": "^30.0.2",
+    "ol": "^10.6.1",
     "prettier": "^3.2.5",
-    "proj4": "^2.11.0",
+    "proj4": "^2.19.4",
     "rimraf": "^5.0.5",
     "ts-jest": "^29.1.2",
     "typescript": "5.4.3"
@@ -51,8 +52,8 @@
     "simplepolygon": "^1.2.3"
   },
   "peerDependencies": {
-    "ol": "^9.1.0",
-    "proj4": "^2.11.0"
+    "ol": "^10.6.1",
+    "proj4": "^2.19.4"
   },
   "engines": {
     "node": ">= 18.20.1",

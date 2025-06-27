@@ -36,36 +36,37 @@ describe('aol.wmts', () => {
   test('provide ogc async', async () => {
     const sourceWmts = await WmtsProvider.provideAsync({
       layer: 'CADASTRALPARCELS.PARCELLAIRE_EXPRESS',
-      matrixSet: 'PM',
-      url: 'https://wxs.ign.fr/beta/geoportail/wmts',
+      matrixSet: 'PM_0_19',
+      url: 'https://data.geopf.fr/annexes/ressources/wmts/essentiels.xml',
     });
     expect(sourceWmts.getLayer()).toEqual('CADASTRALPARCELS.PARCELLAIRE_EXPRESS');
-    expect(sourceWmts.getMatrixSet()).toEqual('PM');
-    expect(sourceWmts.getUrls()).toEqual(['https://wxs.ign.fr/beta/geoportail/wmts?']);
+    expect(sourceWmts.getMatrixSet()).toEqual('PM_0_19');
+    expect(sourceWmts.getUrls()).toEqual(['https://data.geopf.fr/annexes/ressources/wmts/essentiels.xml?']);
   });
   test('provide ogc async with capabilitiesUrl', async () => {
     const sourceWmts = await WmtsProvider.provideAsync({
-      capabilitiesUrl: 'https://wxs.ign.fr/beta/geoportail/wmts?SERVICE=WMTS&REQUEST=GetCapabilities&VERSION=1.0.0',
+      capabilitiesUrl:
+        'https://data.geopf.fr/annexes/ressources/wmts/essentiels.xml?SERVICE=WMTS&REQUEST=GetCapabilities&VERSION=1.0.0',
       layer: 'CADASTRALPARCELS.PARCELLAIRE_EXPRESS',
-      matrixSet: 'PM',
-      url: 'https://wxs.ign.fr/beta/geoportail/wmts',
+      matrixSet: 'PM_0_19',
+      url: 'https://data.geopf.fr/annexes/ressources/wmts/essentiels.xml',
     });
     expect(sourceWmts.getLayer()).toEqual('CADASTRALPARCELS.PARCELLAIRE_EXPRESS');
-    expect(sourceWmts.getMatrixSet()).toEqual('PM');
-    expect(sourceWmts.getMatrixSet()).toEqual('PM');
-    expect(sourceWmts.getUrls()).toEqual(['https://wxs.ign.fr/beta/geoportail/wmts?']);
+    expect(sourceWmts.getMatrixSet()).toEqual('PM_0_19');
+    expect(sourceWmts.getUrls()).toEqual(['https://data.geopf.fr/annexes/ressources/wmts/essentiels.xml?']);
   });
 
   test('provide ogc async with proxyfied url', async () => {
     const sourceWmts = await WmtsProvider.provideAsync({
-      capabilitiesUrl: 'https://wxs.ign.fr/beta/geoportail/wmts?SERVICE=WMTS&REQUEST=GetCapabilities&VERSION=1.0.0',
+      capabilitiesUrl:
+        'https://data.geopf.fr/annexes/ressources/wmts/essentiels.xml?SERVICE=WMTS&REQUEST=GetCapabilities&VERSION=1.0.0',
       layer: 'CADASTRALPARCELS.PARCELLAIRE_EXPRESS',
-      matrixSet: 'PM',
+      matrixSet: 'PM_0_19',
       url: 'https://my-serveur/my-proxy',
       requestEncoding: 'KVP',
     });
     expect(sourceWmts.getLayer()).toEqual('CADASTRALPARCELS.PARCELLAIRE_EXPRESS');
-    expect(sourceWmts.getMatrixSet()).toEqual('PM');
+    expect(sourceWmts.getMatrixSet()).toEqual('PM_0_19');
     expect(sourceWmts.getUrls()).toEqual(['https://my-serveur/my-proxy?']);
   });
 

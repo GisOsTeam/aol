@@ -1,68 +1,8 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`AgsIdentifyRequest 2154 1`] = `"json"`;
-
-exports[`AgsIdentifyRequest 2154: agsQueryRequest.geometry 1`] = `"{\\"x\\":827008.83,\\"y\\":6506549.89}"`;
-
-exports[`AgsIdentifyRequest 2154: agsQueryRequest.geometryPrecision 1`] = `"10"`;
-
-exports[`AgsIdentifyRequest 2154: agsQueryRequest.geometryType 1`] = `"esriGeometryPoint"`;
-
-exports[`AgsIdentifyRequest 2154: agsQueryRequest.imageDisplay 1`] = `"1001,1001"`;
-
-exports[`AgsIdentifyRequest 2154: agsQueryRequest.layerDefs 1`] = `undefined`;
-
-exports[`AgsIdentifyRequest 2154: agsQueryRequest.layers 1`] = `"all:2"`;
-
-exports[`AgsIdentifyRequest 2154: agsQueryRequest.mapExtent 1`] = `"-38347885.41049226,-32668344.350492254,40001903.07049225,45681444.130492255"`;
-
-exports[`AgsIdentifyRequest 2154: agsQueryRequest.maxAllowableOffset 1`] = `undefined`;
-
-exports[`AgsIdentifyRequest 2154: agsQueryRequest.returnFieldName 1`] = `"true"`;
-
-exports[`AgsIdentifyRequest 2154: agsQueryRequest.returnGeometry 1`] = `"true"`;
-
-exports[`AgsIdentifyRequest 2154: agsQueryRequest.returnM 1`] = `undefined`;
-
-exports[`AgsIdentifyRequest 2154: agsQueryRequest.returnZ 1`] = `undefined`;
-
-exports[`AgsIdentifyRequest 2154: agsQueryRequest.sr 1`] = `"2154"`;
-
-exports[`AgsIdentifyRequest 2154: agsQueryRequest.tolerance 1`] = `"4"`;
-
-exports[`AgsIdentifyRequest 3296 1`] = `"json"`;
-
-exports[`AgsIdentifyRequest 3296: agsQueryRequest.geometry 1`] = `"{\\"x\\":632635.3571388097,\\"y\\":8180019.336045767}"`;
-
-exports[`AgsIdentifyRequest 3296: agsQueryRequest.geometryPrecision 1`] = `"20"`;
-
-exports[`AgsIdentifyRequest 3296: agsQueryRequest.geometryType 1`] = `"esriGeometryPoint"`;
-
-exports[`AgsIdentifyRequest 3296: agsQueryRequest.imageDisplay 1`] = `"1001,1001"`;
-
-exports[`AgsIdentifyRequest 3296: agsQueryRequest.layerDefs 1`] = `undefined`;
-
-exports[`AgsIdentifyRequest 3296: agsQueryRequest.layers 1`] = `"all:2"`;
-
-exports[`AgsIdentifyRequest 3296: agsQueryRequest.mapExtent 1`] = `"-38542258.88335344,-30994874.904446486,39807529.59763107,47354913.57653802"`;
-
-exports[`AgsIdentifyRequest 3296: agsQueryRequest.maxAllowableOffset 1`] = `undefined`;
-
-exports[`AgsIdentifyRequest 3296: agsQueryRequest.returnFieldName 1`] = `"true"`;
-
-exports[`AgsIdentifyRequest 3296: agsQueryRequest.returnGeometry 1`] = `"true"`;
-
-exports[`AgsIdentifyRequest 3296: agsQueryRequest.returnM 1`] = `undefined`;
-
-exports[`AgsIdentifyRequest 3296: agsQueryRequest.returnZ 1`] = `undefined`;
-
-exports[`AgsIdentifyRequest 3296: agsQueryRequest.sr 1`] = `"3296"`;
-
-exports[`AgsIdentifyRequest 3296: agsQueryRequest.tolerance 1`] = `"4"`;
-
 exports[`AgsIdentifyRequest default (3857) 1`] = `"json"`;
 
-exports[`AgsIdentifyRequest default (3857): agsQueryRequest.geometry 1`] = `"{\\"hasZ\\":false,\\"hasM\\":false,\\"rings\\":[[[-11580733.168194728,4880526.966432655],[-11580733.168194728,4964673.98309528],[-11496586.151532097,4964673.983095286],[-11496586.151532097,4880526.966432655],[-11580733.168194728,4880526.966432655]]]}"`;
+exports[`AgsIdentifyRequest default (3857): agsQueryRequest.geometry 1`] = `"{"hasZ":false,"hasM":false,"rings":[[[-11580733.168194728,4880526.966432655],[-11580733.168194728,4964673.98309528],[-11496586.151532097,4964673.983095286],[-11496586.151532097,4880526.966432655],[-11580733.168194728,4880526.966432655]]]}"`;
 
 exports[`AgsIdentifyRequest default (3857): agsQueryRequest.geometryPrecision 1`] = `"10"`;
 

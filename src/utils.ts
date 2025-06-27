@@ -101,7 +101,7 @@ export function toGeoJSONGeometry(geometry: Geometry): GeoJSONGeometry {
  * @return  {Feature} feature
  */
 export function toOpenLayersFeature(geoJSONFeature: GeoJSONFeature): Feature {
-  return geoJSONFormat.readFeature(geoJSONFeature);
+  return geoJSONFormat.readFeature(geoJSONFeature) as Feature;
 }
 
 /**
@@ -142,7 +142,7 @@ export function buffer(
     return turf.buffer(geoJsonFeatureSource as any, tolerance);
   }
   // Création d'une feature OpenLayers depuis la feature source GeoJSON
-  let tmpFeature: Feature = geoJSONFormat.readFeature(geoJsonFeatureSource);
+  let tmpFeature: Feature = toOpenLayersFeature(geoJsonFeatureSource);
   // Projection de la géométrie de la feature depuis projectionSource vers 'EPSG:4326'
   tmpFeature.setGeometry(tmpFeature.getGeometry().transform(projectionSource, 'EPSG:4326'));
   // Création d'une feature GeoJSON depuis la feature OpenLayers
@@ -150,7 +150,7 @@ export function buffer(
   // Application de la tolerance à la géométrie
   const wgs84BufferedFeature: GeoJSONFeature = turf.buffer(geoJsonFeature as any, tolerance);
   // Création d'une feature OpenLayers depuis la feature GeoJSON intégrant la tolérance
-  tmpFeature = geoJSONFormat.readFeature(wgs84BufferedFeature);
+  tmpFeature = toOpenLayersFeature(wgs84BufferedFeature);
   // Projection de la géométrie de la feature depuis 'EPSG:4326' vers projectionSource
   tmpFeature.setGeometry(tmpFeature.getGeometry().transform('EPSG:4326', projectionSource));
   // Retour d'une feature GeoJSON

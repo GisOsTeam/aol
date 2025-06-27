@@ -3,7 +3,7 @@ import OlView from 'ol/View';
 import { ImageArcGISRest } from '../../../../source';
 import { IFeatureType, IIdentifyRequest } from '../../../../source/IExtended';
 import Polygon from 'ol/geom/Polygon';
-import { get as getProjection } from 'ol/proj';
+import { get as getProjection, Projection } from 'ol/proj';
 import { AgsIdentifyRequest } from '../../../../source/query/model/AgsIdentifyRequest';
 
 const states = new ImageArcGISRest({
@@ -31,7 +31,7 @@ describe('AgsIdentifyRequest', () => {
           [-11580733.168194728, 4880526.966432655],
         ],
       ]),
-      geometryProjection: getProjection('EPSG:3857'),
+      geometryProjection: getProjection('EPSG:3857') as Projection,
       queryType: 'identify',
       returnGeometry: true,
       returnFieldName: true,

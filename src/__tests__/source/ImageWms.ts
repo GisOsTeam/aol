@@ -12,10 +12,10 @@ Date.now = jest.fn(() => 1487076708000); //14.02.2017
 describe('aol.source.imageWms', () => {
   describe('Geoserver', () => {
     describe('Single Types', () => {
-      const url = 'https://demo.geo-solutions.it/geoserver/geosolutions/wms';
+      const url = 'https://data.geopf.fr/wms-r/wms?VERSION=1.3.0';
       const sourceOptions = {
         url,
-        types: [{ id: 'geosolutions:regioni' }],
+        types: [{ id: 'CADASTRALPARCELS.PARCELLAIRE_EXPRESS' }],
         ratio: 1,
         params: { TRANSPARENT: true },
       };

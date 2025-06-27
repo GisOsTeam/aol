@@ -11,11 +11,12 @@ import {
 } from './IExtended';
 import { transformExtent } from 'ol/proj';
 import { Options } from 'ol/source/VectorTile';
-import VectorTileTile from 'ol/VectorTile';
+import OlVectorTile from 'ol/VectorTile';
 import { loadWfsFeaturesOnBBOX, loadWfsFeatureDescription, executeWfsQuery, retrieveWfsFeature } from './query/wfs';
 import Projection from 'ol/proj/Projection';
 import { Feature } from 'ol';
 import { TileCoord } from 'ol/tilecoord';
+import { Extent } from 'ol/extent';
 
 export interface ITileWfsOptions extends ISnapshotOptions, Options<any> {
   url: string;
@@ -47,8 +48,8 @@ export class TileWfs extends VectorTile implements IInitSource, IQuerySource {
       tileUrlFunction: (tileCoord: TileCoord) => {
         return tileCoord == null ? undefined : `z${tileCoord[0]}|x${tileCoord[1]}|y${tileCoord[2]}`;
       },
-      tileLoadFunction: (tile: VectorTileTile, url: string) => {
-        tile.setLoader((extent, resolution, projection) => {
+      tileLoadFunction: (tile: OlVectorTile<Feature>, url: string) => {
+        tile.setLoader((extent: Extent, resolution: any, projection: { getCode: () => any }) => {
           const projectionCode = projection.getCode();
 
           const mapExtent = transformExtent(extent, projectionCode, this.options.requestProjectionCode);
