@@ -11,10 +11,11 @@ import {
   IQueryUntypedResponse,
 } from '../IExtended';
 import Projection from 'ol/proj/Projection';
-import { Engine, IResponse } from 'bhreq';
+import { IResponse } from 'bhreq';
 import { AgsIdentifyRequest } from './model/AgsIdentifyRequest';
 import { AgsQueryRequest } from './model/AgsQueryRequest';
 import { getQueryId } from '../../utils';
+import { HttpEngine, IHttpResponse } from '../../HttpEngine';
 
 const format = new EsriJSON();
 
@@ -37,7 +38,7 @@ export function executeAgsIdentify(
 
   const identifyTypes = request.types || types;
   const body = new AgsIdentifyRequest(source, identifyTypes, request);
-  const httpEngine = Engine.getInstance();
+  const httpEngine = HttpEngine.getInstance();
   return httpEngine
     .send({
       url,
@@ -84,7 +85,7 @@ export function executeAgsQuery(
       break;
   }
 
-  return Engine.getInstance()
+  return HttpEngine.getInstance()
     .send({
       url,
       body,
@@ -199,7 +200,7 @@ export function retrieveAgsFeature(
   body.returnFieldName = 'true';
   body.returnGeometry = 'true';
   body.f = 'json';
-  return Engine.getInstance()
+  return HttpEngine.getInstance()
     .send({
       url,
       body,
@@ -208,7 +209,7 @@ export function retrieveAgsFeature(
       responseType: 'json',
     })
     .then(
-      (res) => {
+      (res: IHttpResponse): Feature => {
         // Read features
         let feature = null;
         const jsonQueryRes = res.body;
@@ -245,7 +246,7 @@ export function loadAgsFeatureDescription(source: IExtended, type: IFeatureType<
     url = (source as any).getUrls()[0];
   }
   url += `/${getQueryId<number>(type)}?f=json`;
-  return Engine.getInstance()
+  return HttpEngine.getInstance()
     .send({
       url,
       responseType: 'json',

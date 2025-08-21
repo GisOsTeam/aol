@@ -1,7 +1,7 @@
 import {
-  IRequest,
-  IResponse,
-  Engine,
+  IRequest as IBhreqRequest,
+  IResponse as IBhreqResponse,
+  Engine as BhreqEngine,
   BeforeSendInterceptor as BhreqBeforeSendInterceptor,
   AfterReceivedInterceptor as BhreqAfterReceivedInterceptor,
 } from 'bhreq';
@@ -9,18 +9,30 @@ import {
 export type BeforeSendInterceptor = BhreqBeforeSendInterceptor;
 export type AfterReceivedInterceptor = BhreqAfterReceivedInterceptor;
 
+export type IHttpRequest = IBhreqRequest;
+export type IHttpResponse = IBhreqResponse;
+
+export interface IHttpEngine {
+  send(request: IHttpRequest): Promise<IHttpResponse>;
+}
+
 /**
- * @deprecated use Engine of bhreq
+ * Engine for HTTP requests.
+ * Defaults to bhreq engine.
  */
 export class HttpEngine {
-  public beforeSendInterceptors: BeforeSendInterceptor[] = Engine.getInstance().beforeSendInterceptors;
-  public afterReceivedInterceptors: AfterReceivedInterceptor[] = Engine.getInstance().afterReceivedInterceptors;
+  private static _instance: IHttpEngine;
 
   static getInstance() {
-    Engine.getInstance();
+    if (!this._instance) {
+      // Default to bhreq engine
+      this._instance = BhreqEngine.getInstance();
+    }
+
+    return this._instance;
   }
 
-  public send(rawRequest: IRequest): Promise<IResponse> {
-    return Engine.getInstance().send(rawRequest);
+  static setInstance(engine: IHttpEngine) {
+    this._instance = engine;
   }
 }

@@ -11,10 +11,10 @@ import {
 import { buffer, disjoint, getQueryId, toGeoJSONFeature, toGeoJSONGeometry, toOpenLayersGeometry } from '../../utils';
 import { Extent } from 'ol/extent';
 import Geometry from 'ol/geom/Geometry';
-import { Engine } from 'bhreq';
 import Projection from 'ol/proj/Projection';
 import { readFeatures } from '../../utils/featuresRead';
 import { calculateGeoExtent } from '../../utils/extent';
+import { HttpEngine, IHttpResponse } from '../../HttpEngine';
 
 export const DEFAULT_TOLERANCE = 4;
 
@@ -57,14 +57,14 @@ export function loadWfsFeaturesOnBBOX(options: {
     params.CQL_FILTER = options.cql;
   }
 
-  return Engine.getInstance()
+  return HttpEngine.getInstance()
     .send({
       url: options.url,
       params,
       responseType: 'text',
     })
     .then(
-      (res) => {
+      (res: IHttpResponse) => {
         if (res.status !== 200) {
           throw new Error('WFS request error ' + res.status);
         }
