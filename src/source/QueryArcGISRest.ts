@@ -4,7 +4,7 @@ import { SourceType, SourceTypeEnum } from './types/sourceType';
 import { LayerType, LayerTypeEnum } from './types/layerType';
 import { ISnapshotOptions } from './IExtended';
 import { Options } from 'ol/source/Vector';
-import { Engine } from 'bhreq';
+import { HttpEngine } from '../HttpEngine';
 
 export interface IQueryArcGISRestOptions extends ISnapshotOptions, Options<any> {}
 
@@ -64,7 +64,7 @@ export class QueryArcGISRest extends ExternalVector {
     if (this.options.where) {
       url += `&where=${this.options.where}`;
     }
-    return Engine.getInstance()
+    return HttpEngine.getInstance()
       .send({ url, contentType: 'application/json' })
       .then(
         (response) => this.esriJSONFormat.readFeatures(response.body),

@@ -12,10 +12,10 @@ import { buffer, disjoint, getQueryId, toGeoJSONFeature, toGeoJSONGeometry, toOp
 import { Extent, getCenter, getForViewAndSize } from 'ol/extent';
 import Projection from 'ol/proj/Projection';
 import Geometry from 'ol/geom/Geometry';
-import { Engine } from 'bhreq';
 import { readFeatures } from '../../utils/featuresRead';
 import { calculateGeoExtent } from '../../utils/extent';
 import { DEFAULT_TOLERANCE } from './wfs';
+import { HttpEngine } from '../../HttpEngine';
 
 function loadWmsFeaturesOnBBOX(options: {
   url: string;
@@ -86,7 +86,7 @@ function loadWmsFeaturesOnBBOX(options: {
 
   let promise = null;
   if (options.method == 'POST') {
-    promise = Engine.getInstance().send({
+    promise = HttpEngine.getInstance().send({
       url: options.url,
       body: params,
       method: 'POST',
@@ -94,7 +94,7 @@ function loadWmsFeaturesOnBBOX(options: {
       responseType: 'text',
     });
   } else {
-    promise = Engine.getInstance().send({
+    promise = HttpEngine.getInstance().send({
       url: options.url,
       params,
       responseType: 'text',

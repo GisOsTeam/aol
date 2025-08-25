@@ -48,7 +48,7 @@ export class TileWfs extends VectorTile implements IInitSource, IQuerySource {
       tileUrlFunction: (tileCoord: TileCoord) => {
         return tileCoord == null ? undefined : `z${tileCoord[0]}|x${tileCoord[1]}|y${tileCoord[2]}`;
       },
-      tileLoadFunction: (tile: OlVectorTile<Feature>, url: string) => {
+      tileLoadFunction: (tile: OlVectorTile, url: string) => {
         tile.setLoader((extent: Extent, resolution: any, projection: { getCode: () => any }) => {
           const projectionCode = projection.getCode();
 
