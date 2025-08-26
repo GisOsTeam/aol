@@ -459,19 +459,23 @@ export const exportLegendToImage = (
           (res: ILegendRecord) => {
             let width = 0;
             let height = 0;
+            const legendRec: ILegendRecord = {};
             for (const key in res) {
-              const legends = res[key];
-              for (const legend of legends) {
-                if (legend.width > width) {
-                  width = legend.width;
-                  if (legend.label != null && legend.label.length > 0) {
-                    width += labelSizeRatio * textSize * legend.label.length;
+              if (!source.includeLayers || source.includeLayers.includes(key.toString())) {
+                legendRec[key] = res[key];
+                const legends = res[key];
+                for (const legend of legends) {
+                  if (legend.width > width) {
+                    width = legend.width;
+                    if (legend.label != null && legend.label.length > 0) {
+                      width += labelSizeRatio * textSize * legend.label.length;
+                    }
                   }
+                  height += legend.height;
                 }
-                height += legend.height;
               }
             }
-            return [width, height, res];
+            return [width, height, legendRec];
           },
           () => {
             return [0, 0, {}];
