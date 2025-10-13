@@ -314,7 +314,7 @@ export async function loadImageUrlWithHttpEngine(originalImageUrl: string): Prom
   return (
     HttpEngine.getInstance()
       // Request image
-      .send({ url: originalImageUrl, responseType: 'blob' })
+      .send({ method: 'GET', url: originalImageUrl, responseType: 'blob' })
       // Retrieve image blob from response
       .then((response: IHttpResponse) => response.body)
       // Create URL from image blob
