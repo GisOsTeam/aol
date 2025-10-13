@@ -65,7 +65,7 @@ export interface ILayerLegend {
 export type ILegendRecord = Record<number | string, ILayerLegend[]>;
 
 export interface ILegendSource {
-  fetchLegend(): Promise<ILegendRecord>;
+  fetchLegend(options?: { forceLoadWithHttpEngine?: boolean; refresh?: boolean }): Promise<ILegendRecord>;
 }
 
 export interface IExtended extends IInitSource, IQuerySource, ILegendSource {}

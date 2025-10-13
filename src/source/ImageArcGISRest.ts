@@ -9,7 +9,7 @@ import {
   ISnapshotOptions,
   IQueryUntypedResponse,
 } from './IExtended';
-import { getAgsLayersFromTypes } from '../utils';
+import { getAgsLayersFromTypes, loadImageUrlWithHttpEngine } from '../utils';
 import { LayerType, LayerTypeEnum, SourceType, SourceTypeEnum } from './types';
 import { executeAgsIdentify, executeAgsQuery, loadAgsFeatureDescription, retrieveAgsFeature } from './query';
 import Feature from 'ol/Feature';
@@ -17,17 +17,23 @@ import Projection from 'ol/proj/Projection';
 import { FilterBuilder, FilterBuilderTypeEnum } from '../filter';
 import { IPredicate } from '../filter/predicate';
 import { loadLegendAgs } from './legend/ags';
+import { Image as OlImage } from 'ol';
+import { ImageLike } from 'ol/DataTile';
+import { LoadFunction as OlImageLoadFunction } from 'ol/Image';
 
 export interface IImageArcGISRestOptions extends ISnapshotOptions, Options {
   types: IFeatureType<number>[];
 
   layersPrefix?: 'all' | 'top' | 'visible';
+
+  loadImagesWithHttpEngine?: boolean;
 }
 
 export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
   protected options: IImageArcGISRestOptions;
   protected legendByLayer: Record<string, ILayerLegend[]>;
   protected defaultTypePredicateAsMap: Map<number, IPredicate>;
+  private defaultImageLoadFunction: OlImageLoadFunction | undefined;
 
   constructor(options: IImageArcGISRestOptions) {
     super({ crossOrigin: 'anonymous', ...options });
@@ -102,6 +108,27 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
     }
     if (layerDefsAsObject) {
       params.LAYERDEFS = JSON.stringify(layerDefsAsObject);
+    }
+
+    if (options.loadImagesWithHttpEngine) {
+      // Save default OL function
+      if (this.defaultImageLoadFunction === undefined) {
+        this.defaultImageLoadFunction = this.getImageLoadFunction();
+      }
+
+      // Register custom tile load funtion with HttpEngine use
+      this.setImageLoadFunction(async (olImage: OlImage, src: string) => {
+        const image: ImageLike = olImage.getImage();
+        if ('src' in image) {
+          image.src = await loadImageUrlWithHttpEngine(src);
+        } else {
+          console.error('Property src missing from image element', image);
+        }
+      });
+    } else if (this.defaultImageLoadFunction !== undefined) {
+      // There was a custom function : unregister it and restore default OL function
+      this.setImageLoadFunction(this.defaultImageLoadFunction);
+      this.defaultImageLoadFunction = undefined;
     }
 
     this.updateParams(params);

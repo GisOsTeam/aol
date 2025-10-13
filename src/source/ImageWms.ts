@@ -8,7 +8,7 @@ import {
   IExtended,
   ILayerLegend,
 } from './IExtended';
-import { getWmsLayersFromTypes } from '../utils';
+import { getWmsLayersFromTypes, loadImageUrlWithHttpEngine } from '../utils';
 import { executeWmsQuery, retrieveWmsFeature, loadWmsFeatureDescription } from './query/wms';
 import { LayerType, LayerTypeEnum } from './types/layerType';
 import { SourceType, SourceTypeEnum } from './types/sourceType';
@@ -19,6 +19,9 @@ import { loadLegendWms } from './legend/wms';
 import { executeWfsQuery, loadWfsFeatureDescription, retrieveWfsFeature } from './query';
 import { FilterBuilder, FilterBuilderTypeEnum } from '../filter';
 import { IPredicate } from '../filter/predicate';
+import { Image as OlImage } from 'ol';
+import { ImageLike } from 'ol/DataTile';
+import { LoadFunction as OlImageLoadFunction } from 'ol/Image';
 
 export interface IImageWmsOptions extends ISnapshotOptions, Options {
   types: IFeatureType<string>[];
@@ -30,6 +33,7 @@ export interface IImageWmsOptions extends ISnapshotOptions, Options {
   swapXYBBOXRequest?: boolean;
   swapLonLatGeometryResult?: boolean;
   limit?: number;
+  loadImagesWithHttpEngine?: boolean;
 }
 
 export class ImageWms extends OlImageWMS implements IExtended {
@@ -43,6 +47,7 @@ export class ImageWms extends OlImageWMS implements IExtended {
     | 'swapXYBBOXRequest'
     | 'swapLonLatGeometryResult'
     | 'limit'
+    | 'loadImagesWithHttpEngine'
   > = {
     queryMethod: 'GET',
     queryFormat: 'text/xml; subtype=gml/3.1.1', // 'application/json',
@@ -51,10 +56,13 @@ export class ImageWms extends OlImageWMS implements IExtended {
     swapXYBBOXRequest: false,
     swapLonLatGeometryResult: false,
     limit: 10000,
+    loadImagesWithHttpEngine: false,
   };
   protected legendByLayer: Record<string, ILayerLegend[]>;
 
   protected defaultTypePredicateAsMap: Map<string, IPredicate>;
+
+  private defaultImageLoadFunction: OlImageLoadFunction | undefined;
 
   constructor(options: IImageWmsOptions) {
     super({ crossOrigin: 'anonymous', ...options });
@@ -130,6 +138,27 @@ export class ImageWms extends OlImageWMS implements IExtended {
     const cqlFilter = this.buildFilters();
     if (cqlFilter) {
       params.CQL_FILTER = cqlFilter;
+    }
+
+    if (options.loadImagesWithHttpEngine) {
+      // Save default OL function
+      if (this.defaultImageLoadFunction === undefined) {
+        this.defaultImageLoadFunction = this.getImageLoadFunction();
+      }
+
+      // Register custom tile load funtion with HttpEngine use
+      this.setImageLoadFunction(async (olImage: OlImage, src: string) => {
+        const image: ImageLike = olImage.getImage();
+        if ('src' in image) {
+          image.src = await loadImageUrlWithHttpEngine(src);
+        } else {
+          console.error('Property src missing from image element', image);
+        }
+      });
+    } else if (this.defaultImageLoadFunction !== undefined) {
+      // There was a custom function : unregister it and restore default OL function
+      this.setImageLoadFunction(this.defaultImageLoadFunction);
+      this.defaultImageLoadFunction = undefined;
     }
 
     this.updateParams(params);
@@ -260,11 +289,26 @@ export class ImageWms extends OlImageWMS implements IExtended {
     }
   };
 
-  public fetchLegend(options: { refresh: boolean } = { refresh: false }): Promise<Record<string, ILayerLegend[]>> {
+  public fetchLegend(options?: {
+    forceLoadWithHttpEngine?: boolean;
+    refresh?: boolean;
+  }): Promise<Record<string, ILayerLegend[]>> {
+    // Default options if needed
+    if (!options) {
+      options = {};
+    }
+    let loadWithHttpEngine = this.options.loadImagesWithHttpEngine;
+    if (options.forceLoadWithHttpEngine != null) {
+      loadWithHttpEngine = options.forceLoadWithHttpEngine;
+    }
+    if (!options.refresh) {
+      options.refresh = false;
+    }
+
     if (this.legendByLayer && options.refresh == false) {
       return Promise.resolve(this.legendByLayer);
     }
-    return loadLegendWms(this).then((res) => {
+    return loadLegendWms(this, { loadWithHttpEngine }).then((res) => {
       this.legendByLayer = res;
       return res;
     });

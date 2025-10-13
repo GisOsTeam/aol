@@ -14,6 +14,7 @@ import Map from 'ol/Map';
 import { ProjectionLike } from 'ol/proj';
 import View from 'ol/View';
 import { IFeatureType, ILegendRecord, ILegendSource } from './source/IExtended';
+import { HttpEngine, IHttpResponse } from './HttpEngine';
 
 const geoJSONFormat = new GeoJSON();
 
@@ -301,6 +302,24 @@ export function srcToImage(
     }, options.timeout);
     img.src = dataUrl;
   });
+}
+
+/**
+ * Load an image with HttpEngine and return it's URL as a local blob.
+ *
+ * @param originalImageUrl URL to load image
+ * @returns Local blob URL
+ */
+export async function loadImageUrlWithHttpEngine(originalImageUrl: string): Promise<string> {
+  return (
+    HttpEngine.getInstance()
+      // Request image
+      .send({ url: originalImageUrl, responseType: 'blob' })
+      // Retrieve image blob from response
+      .then((response: IHttpResponse) => response.body)
+      // Create URL from image blob
+      .then((imageBlob: Blob) => URL.createObjectURL(imageBlob))
+  );
 }
 
 /**

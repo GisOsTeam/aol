@@ -30,6 +30,7 @@ export interface ITileWmsOptions extends ISnapshotOptions, Options {
   swapXYBBOXRequest?: boolean;
   swapLonLatGeometryResult?: boolean;
   limit?: number;
+  loadImagesWithHttpEngine?: boolean;
 }
 
 export class TileWms extends OlTileWMS implements IExtended {
@@ -43,6 +44,7 @@ export class TileWms extends OlTileWMS implements IExtended {
     | 'swapXYBBOXRequest'
     | 'swapLonLatGeometryResult'
     | 'limit'
+    | 'loadImagesWithHttpEngine'
   > = {
     queryMethod: 'GET',
     queryFormat: 'text/xml; subtype=gml/3.1.1', // 'application/json',
@@ -51,6 +53,7 @@ export class TileWms extends OlTileWMS implements IExtended {
     swapXYBBOXRequest: false,
     swapLonLatGeometryResult: false,
     limit: 10000,
+    loadImagesWithHttpEngine: false,
   };
   protected legendByLayer: Record<string, ILayerLegend[]>;
 
@@ -259,11 +262,26 @@ export class TileWms extends OlTileWMS implements IExtended {
     }
   };
 
-  public fetchLegend(options: { refresh: boolean } = { refresh: false }): Promise<Record<string, ILayerLegend[]>> {
+  public fetchLegend(options?: {
+    forceLoadWithHttpEngine?: boolean;
+    refresh?: boolean;
+  }): Promise<Record<string, ILayerLegend[]>> {
+    // Default options if needed
+    if (options == null) {
+      options = {};
+    }
+    let loadWithHttpEngine = this.options.loadImagesWithHttpEngine;
+    if (options.forceLoadWithHttpEngine != null) {
+      loadWithHttpEngine = options.forceLoadWithHttpEngine;
+    }
+    if (options.refresh == null) {
+      options.refresh = false;
+    }
+
     if (this.legendByLayer && options.refresh == false) {
       return Promise.resolve(this.legendByLayer);
     }
-    return loadLegendWms(this).then((res) => {
+    return loadLegendWms(this, { loadWithHttpEngine }).then((res) => {
       this.legendByLayer = res;
       return res;
     });
