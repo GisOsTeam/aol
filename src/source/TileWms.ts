@@ -7,6 +7,7 @@ import {
   IFeatureType,
   IExtended,
   ILayerLegend,
+  IFetchLegendOptions,
 } from './IExtended';
 import { getWmsLayersFromTypes } from '../utils';
 import { executeWmsQuery, retrieveWmsFeature, loadWmsFeatureDescription } from './query/wms';
@@ -262,10 +263,7 @@ export class TileWms extends OlTileWMS implements IExtended {
     }
   };
 
-  public fetchLegend(options?: {
-    forceLoadWithHttpEngine?: boolean;
-    refresh?: boolean;
-  }): Promise<Record<string, ILayerLegend[]>> {
+  public async fetchLegend(options?: IFetchLegendOptions): Promise<Record<string, ILayerLegend[]>> {
     // Default options if needed
     if (options == null) {
       options = {};

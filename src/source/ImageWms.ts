@@ -7,6 +7,7 @@ import {
   IFeatureType,
   IExtended,
   ILayerLegend,
+  IFetchLegendOptions,
 } from './IExtended';
 import { getWmsLayersFromTypes, loadImageUrlWithHttpEngine } from '../utils';
 import { executeWmsQuery, retrieveWmsFeature, loadWmsFeatureDescription } from './query/wms';
@@ -289,10 +290,7 @@ export class ImageWms extends OlImageWMS implements IExtended {
     }
   };
 
-  public fetchLegend(options?: {
-    forceLoadWithHttpEngine?: boolean;
-    refresh?: boolean;
-  }): Promise<Record<string, ILayerLegend[]>> {
+  public async fetchLegend(options?: IFetchLegendOptions): Promise<Record<string, ILayerLegend[]>> {
     // Default options if needed
     if (!options) {
       options = {};
