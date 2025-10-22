@@ -17,6 +17,7 @@ import Projection from 'ol/proj/Projection';
 import { Feature } from 'ol';
 import { TileCoord } from 'ol/tilecoord';
 import { Extent } from 'ol/extent';
+import { FeatureLike } from 'ol/Feature';
 
 export interface ITileWfsOptions extends ISnapshotOptions, Options<any> {
   url: string;
@@ -48,7 +49,7 @@ export class TileWfs extends VectorTile implements IInitSource, IQuerySource {
       tileUrlFunction: (tileCoord: TileCoord) => {
         return tileCoord == null ? undefined : `z${tileCoord[0]}|x${tileCoord[1]}|y${tileCoord[2]}`;
       },
-      tileLoadFunction: (tile: OlVectorTile, url: string) => {
+      tileLoadFunction: (tile: OlVectorTile<FeatureLike>, url: string) => {
         tile.setLoader((extent: Extent, resolution: any, projection: { getCode: () => any }) => {
           const projectionCode = projection.getCode();
 
