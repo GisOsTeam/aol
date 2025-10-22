@@ -9,7 +9,7 @@ import {
   ILayerLegend,
   IFetchLegendOptions,
 } from './IExtended';
-import { getWmsLayersFromTypes, loadImageUrlWithHttpEngine } from '../utils';
+import { getWmsLayersFromTypes } from '../utils';
 import { executeWmsQuery, retrieveWmsFeature, loadWmsFeatureDescription } from './query/wms';
 import { LayerType, LayerTypeEnum } from './types/layerType';
 import { SourceType, SourceTypeEnum } from './types/sourceType';
@@ -20,9 +20,8 @@ import { loadLegendWms } from './legend/wms';
 import { executeWfsQuery, loadWfsFeatureDescription, retrieveWfsFeature } from './query';
 import { FilterBuilder, FilterBuilderTypeEnum } from '../filter';
 import { IPredicate } from '../filter/predicate';
-import { Image as OlImage } from 'ol';
-import { ImageLike } from 'ol/DataTile';
 import { LoadFunction as OlImageLoadFunction } from 'ol/Image';
+import { imageLoadWithHttpEngineFunction } from '../utils/image-load-function.utils';
 
 export interface IImageWmsOptions extends ISnapshotOptions, Options {
   types: IFeatureType<string>[];
@@ -148,14 +147,7 @@ export class ImageWms extends OlImageWMS implements IExtended {
       }
 
       // Register custom tile load funtion with HttpEngine use
-      this.setImageLoadFunction(async (olImage: OlImage, src: string) => {
-        const image: ImageLike = olImage.getImage();
-        if ('src' in image) {
-          image.src = await loadImageUrlWithHttpEngine(src);
-        } else {
-          console.error('Property src missing from image element', image);
-        }
-      });
+      this.setImageLoadFunction(imageLoadWithHttpEngineFunction);
     } else if (this.defaultImageLoadFunction !== undefined) {
       // There was a custom function : unregister it and restore default OL function
       this.setImageLoadFunction(this.defaultImageLoadFunction);

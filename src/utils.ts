@@ -278,15 +278,41 @@ export function getQueryId<IDT>(type: IFeatureType<any>): IDT {
  */
 export function srcToImage(
   dataUrl: string,
-  options: { emptyImageOnError: boolean; timeout: number } = { emptyImageOnError: true, timeout: 10000 },
+  options?: {
+    emptyImageOnError?: boolean;
+    revokeDataUrlOnLoad?: boolean;
+    timeout?: number;
+  },
 ): Promise<HTMLImageElement> {
+  // Default options if needed
+  if (options == null) {
+    options = {};
+  }
+  if (options.emptyImageOnError == null) {
+    options.emptyImageOnError = true;
+  }
+  if (options.revokeDataUrlOnLoad == null) {
+    options.revokeDataUrlOnLoad = false;
+  }
+  if (options.timeout == null) {
+    options.timeout = 10000;
+  }
+
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.crossOrigin = 'anonymous';
+    img.src = dataUrl;
+
     img.onload = () => {
+      if (options.revokeDataUrlOnLoad === true) {
+        URL.revokeObjectURL(dataUrl);
+      }
       resolve(img);
     };
     img.onerror = () => {
+      if (options.revokeDataUrlOnLoad === true) {
+        URL.revokeObjectURL(dataUrl);
+      }
       if (options.emptyImageOnError === true) {
         resolve(new Image());
       } else {
@@ -300,7 +326,6 @@ export function srcToImage(
         reject(new Error('Error on image loading (timeout)'));
       }
     }, options.timeout);
-    img.src = dataUrl;
   });
 }
 

@@ -9,7 +9,7 @@ import {
   ISnapshotOptions,
   IQueryUntypedResponse,
 } from './IExtended';
-import { getAgsLayersFromTypes, loadImageUrlWithHttpEngine } from '../utils';
+import { getAgsLayersFromTypes } from '../utils';
 import { LayerType, LayerTypeEnum, SourceType, SourceTypeEnum } from './types';
 import { executeAgsIdentify, executeAgsQuery, loadAgsFeatureDescription, retrieveAgsFeature } from './query';
 import Feature from 'ol/Feature';
@@ -17,9 +17,8 @@ import Projection from 'ol/proj/Projection';
 import { FilterBuilder, FilterBuilderTypeEnum } from '../filter';
 import { IPredicate } from '../filter/predicate';
 import { loadLegendAgs } from './legend/ags';
-import { Image as OlImage } from 'ol';
-import { ImageLike } from 'ol/DataTile';
 import { LoadFunction as OlImageLoadFunction } from 'ol/Image';
+import { imageLoadWithHttpEngineFunction } from '../utils/image-load-function.utils';
 
 export interface IImageArcGISRestOptions extends ISnapshotOptions, Options {
   types: IFeatureType<number>[];
@@ -117,14 +116,7 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
       }
 
       // Register custom tile load funtion with HttpEngine use
-      this.setImageLoadFunction(async (olImage: OlImage, src: string) => {
-        const image: ImageLike = olImage.getImage();
-        if ('src' in image) {
-          image.src = await loadImageUrlWithHttpEngine(src);
-        } else {
-          console.error('Property src missing from image element', image);
-        }
-      });
+      this.setImageLoadFunction(imageLoadWithHttpEngineFunction);
     } else if (this.defaultImageLoadFunction !== undefined) {
       // There was a custom function : unregister it and restore default OL function
       this.setImageLoadFunction(this.defaultImageLoadFunction);

@@ -13,7 +13,11 @@ export async function loadLegendWms(
     }
 
     const key = getWmsLayersFromTypes((source as any).options.types);
-    return srcToImage(url).then((image) => {
+    return srcToImage(
+      url,
+      // Revoke the object URL when using http engine since it creates blob URL (avoid cache memory leak)
+      { revokeDataUrlOnLoad: loadWithHttpEngine },
+    ).then((image) => {
       return {
         [key]: [
           {
