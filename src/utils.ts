@@ -14,6 +14,7 @@ import Map from 'ol/Map';
 import { ProjectionLike } from 'ol/proj';
 import View from 'ol/View';
 import { IFeatureType, ILegendRecord, ILegendSource } from './source/IExtended';
+import { HttpEngine, IHttpResponse } from './HttpEngine';
 
 const geoJSONFormat = new GeoJSON();
 
@@ -277,15 +278,41 @@ export function getQueryId<IDT>(type: IFeatureType<any>): IDT {
  */
 export function srcToImage(
   dataUrl: string,
-  options: { emptyImageOnError: boolean; timeout: number } = { emptyImageOnError: true, timeout: 10000 },
+  options?: {
+    emptyImageOnError?: boolean;
+    revokeDataUrlOnLoad?: boolean;
+    timeout?: number;
+  },
 ): Promise<HTMLImageElement> {
+  // Default options if needed
+  if (options == null) {
+    options = {};
+  }
+  if (options.emptyImageOnError == null) {
+    options.emptyImageOnError = true;
+  }
+  if (options.revokeDataUrlOnLoad == null) {
+    options.revokeDataUrlOnLoad = false;
+  }
+  if (options.timeout == null) {
+    options.timeout = 10000;
+  }
+
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.crossOrigin = 'anonymous';
+    img.src = dataUrl;
+
     img.onload = () => {
+      if (options.revokeDataUrlOnLoad === true) {
+        URL.revokeObjectURL(dataUrl);
+      }
       resolve(img);
     };
     img.onerror = () => {
+      if (options.revokeDataUrlOnLoad === true) {
+        URL.revokeObjectURL(dataUrl);
+      }
       if (options.emptyImageOnError === true) {
         resolve(new Image());
       } else {
@@ -299,8 +326,25 @@ export function srcToImage(
         reject(new Error('Error on image loading (timeout)'));
       }
     }, options.timeout);
-    img.src = dataUrl;
   });
+}
+
+/**
+ * Load an image with HttpEngine and return it's URL as a local blob.
+ *
+ * @param originalImageUrl URL to load image
+ * @returns Local blob URL
+ */
+export async function loadImageUrlWithHttpEngine(originalImageUrl: string): Promise<string> {
+  return (
+    HttpEngine.getInstance()
+      // Request image
+      .send({ method: 'GET', url: originalImageUrl, responseType: 'blob' })
+      // Retrieve image blob from response
+      .then((response: IHttpResponse) => response.body)
+      // Create URL from image blob
+      .then((imageBlob: Blob) => URL.createObjectURL(imageBlob))
+  );
 }
 
 /**

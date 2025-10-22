@@ -7,6 +7,7 @@ import {
   IFeatureType,
   IExtended,
   ILayerLegend,
+  IFetchLegendOptions,
 } from './IExtended';
 import { getWmsLayersFromTypes } from '../utils';
 import { executeWmsQuery, retrieveWmsFeature, loadWmsFeatureDescription } from './query/wms';
@@ -15,10 +16,12 @@ import { SourceType, SourceTypeEnum } from './types/sourceType';
 import { Options } from 'ol/source/TileWMS';
 import Feature from 'ol/Feature';
 import Projection from 'ol/proj/Projection';
+import { LoadFunction as OlTileLoadFunction } from 'ol/Tile';
 import { loadLegendWms } from './legend/wms';
 import { executeWfsQuery, loadWfsFeatureDescription, retrieveWfsFeature } from './query';
 import { FilterBuilder, FilterBuilderTypeEnum } from '../filter';
 import { IPredicate } from '../filter/predicate';
+import { tileLoadWithHttpEngineFunction } from '../utils/image-load-function.utils';
 
 export interface ITileWmsOptions extends ISnapshotOptions, Options {
   types: IFeatureType<string>[];
@@ -30,6 +33,7 @@ export interface ITileWmsOptions extends ISnapshotOptions, Options {
   swapXYBBOXRequest?: boolean;
   swapLonLatGeometryResult?: boolean;
   limit?: number;
+  loadImagesWithHttpEngine?: boolean;
 }
 
 export class TileWms extends OlTileWMS implements IExtended {
@@ -43,6 +47,7 @@ export class TileWms extends OlTileWMS implements IExtended {
     | 'swapXYBBOXRequest'
     | 'swapLonLatGeometryResult'
     | 'limit'
+    | 'loadImagesWithHttpEngine'
   > = {
     queryMethod: 'GET',
     queryFormat: 'text/xml; subtype=gml/3.1.1', // 'application/json',
@@ -51,10 +56,13 @@ export class TileWms extends OlTileWMS implements IExtended {
     swapXYBBOXRequest: false,
     swapLonLatGeometryResult: false,
     limit: 10000,
+    loadImagesWithHttpEngine: false,
   };
   protected legendByLayer: Record<string, ILayerLegend[]>;
 
   protected defaultTypePredicateAsMap: Map<string, IPredicate>;
+
+  private defaultTileLoadFunction: OlTileLoadFunction | undefined;
 
   constructor(options: ITileWmsOptions) {
     super({ crossOrigin: 'anonymous', ...options });
@@ -129,6 +137,20 @@ export class TileWms extends OlTileWMS implements IExtended {
     const cqlFilter = this.buildFilters();
     if (cqlFilter) {
       params.CQL_FILTER = cqlFilter;
+    }
+
+    if (options.loadImagesWithHttpEngine) {
+      // Save default OL function
+      if (this.defaultTileLoadFunction === undefined) {
+        this.defaultTileLoadFunction = this.getTileLoadFunction();
+      }
+
+      // Register custom tile load funtion with HttpEngine use
+      this.setTileLoadFunction(tileLoadWithHttpEngineFunction);
+    } else if (this.defaultTileLoadFunction !== undefined) {
+      // There was a custom function : unregister it and restore default OL function
+      this.setTileLoadFunction(this.defaultTileLoadFunction);
+      this.defaultTileLoadFunction = undefined;
     }
 
     this.updateParams(params);
@@ -259,11 +281,23 @@ export class TileWms extends OlTileWMS implements IExtended {
     }
   };
 
-  public fetchLegend(options: { refresh: boolean } = { refresh: false }): Promise<Record<string, ILayerLegend[]>> {
+  public async fetchLegend(options?: IFetchLegendOptions): Promise<Record<string, ILayerLegend[]>> {
+    // Default options if needed
+    if (options == null) {
+      options = {};
+    }
+    let loadWithHttpEngine = this.options.loadImagesWithHttpEngine;
+    if (options.forceLoadWithHttpEngine != null) {
+      loadWithHttpEngine = options.forceLoadWithHttpEngine;
+    }
+    if (options.refresh == null) {
+      options.refresh = false;
+    }
+
     if (this.legendByLayer && options.refresh == false) {
       return Promise.resolve(this.legendByLayer);
     }
-    return loadLegendWms(this).then((res) => {
+    return loadLegendWms(this, { loadWithHttpEngine }).then((res) => {
       this.legendByLayer = res;
       return res;
     });
