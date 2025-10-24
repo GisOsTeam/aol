@@ -1,4 +1,4 @@
-import { srcToImage, getWmsLayersFromTypes, loadImageUrlWithHttpEngine } from '../../utils';
+import { srcToImage, getWmsLayersFromTypes, loadImageAsDataUrlWithHttpEngine } from '../../utils';
 import { ILegendRecord, ILegendSource } from '../IExtended';
 
 export async function loadLegendWms(
@@ -9,15 +9,11 @@ export async function loadLegendWms(
     let url = (source as any).getLegendUrl(undefined, { TRANSPARENT: true, SLD_VERSION: '1.1.0' });
 
     if (loadWithHttpEngine) {
-      url = await loadImageUrlWithHttpEngine(url);
+      url = await loadImageAsDataUrlWithHttpEngine(url);
     }
 
     const key = getWmsLayersFromTypes((source as any).options.types);
-    return srcToImage(
-      url,
-      // Revoke the object URL when using http engine since it creates blob URL (avoid cache memory leak)
-      { revokeDataUrlOnLoad: loadWithHttpEngine },
-    ).then((image) => {
+    return srcToImage(url).then((image) => {
       return {
         [key]: [
           {

@@ -280,7 +280,6 @@ export function srcToImage(
   dataUrl: string,
   options?: {
     emptyImageOnError?: boolean;
-    revokeDataUrlOnLoad?: boolean;
     timeout?: number;
   },
 ): Promise<HTMLImageElement> {
@@ -291,28 +290,20 @@ export function srcToImage(
   if (options.emptyImageOnError == null) {
     options.emptyImageOnError = true;
   }
-  if (options.revokeDataUrlOnLoad == null) {
-    options.revokeDataUrlOnLoad = false;
-  }
   if (options.timeout == null) {
     options.timeout = 10000;
   }
 
   return new Promise((resolve, reject) => {
     const img = new Image();
+
     img.crossOrigin = 'anonymous';
     img.src = dataUrl;
 
     img.onload = () => {
-      if (options.revokeDataUrlOnLoad === true) {
-        URL.revokeObjectURL(dataUrl);
-      }
       resolve(img);
     };
     img.onerror = () => {
-      if (options.revokeDataUrlOnLoad === true) {
-        URL.revokeObjectURL(dataUrl);
-      }
       if (options.emptyImageOnError === true) {
         resolve(new Image());
       } else {
@@ -333,9 +324,9 @@ export function srcToImage(
  * Load an image with HttpEngine and return it's URL as a local blob.
  *
  * @param originalImageUrl URL to load image
- * @returns Local blob URL
+ * @returns Local blob URL of image
  */
-export async function loadImageUrlWithHttpEngine(originalImageUrl: string): Promise<string> {
+export async function loadImageAsObjectUrlWithHttpEngine(originalImageUrl: string): Promise<string> {
   return (
     HttpEngine.getInstance()
       // Request image
@@ -344,6 +335,32 @@ export async function loadImageUrlWithHttpEngine(originalImageUrl: string): Prom
       .then((response: IHttpResponse) => response.body)
       // Create URL from image blob
       .then((imageBlob: Blob) => URL.createObjectURL(imageBlob))
+  );
+}
+
+/**
+ * Load an image with HttpEngine and return it's data URL.
+ *
+ * @param originalImageUrl URL to load image
+ * @returns Data URL of image
+ */
+export async function loadImageAsDataUrlWithHttpEngine(originalImageUrl: string): Promise<string> {
+  return (
+    HttpEngine.getInstance()
+      // Request image
+      .send({ method: 'GET', url: originalImageUrl, responseType: 'blob' })
+      // Retrieve image blob from response
+      .then((response: IHttpResponse) => response.body)
+      // Create URL from image blob
+      .then((imageBlob: Blob) => {
+        return new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = (_e) => resolve(reader.result as string);
+          reader.onerror = (_e) => reject(reader.error);
+          reader.onabort = (_e) => reject(new Error('Image blob read aborted'));
+          reader.readAsDataURL(imageBlob);
+        });
+      })
   );
 }
 
