@@ -1,4 +1,4 @@
-import { loadImageUrlWithHttpEngine } from '../utils';
+import { loadImageAsObjectUrlWithHttpEngine } from '../utils';
 import { Image as OlImage, Tile as OlTile } from 'ol';
 import { ImageLike } from 'ol/DataTile';
 import { LoadFunction as OlImageLoadFunction } from 'ol/Image';
@@ -10,7 +10,7 @@ export const imageLoadWithHttpEngineFunction: OlImageLoadFunction = async (olIma
 
   if ('src' in image) {
     try {
-      const url = await loadImageUrlWithHttpEngine(src);
+      const url = await loadImageAsObjectUrlWithHttpEngine(src);
       image.src = url;
 
       const savedOnload = image.onload;
@@ -44,7 +44,7 @@ export const tileLoadWithHttpEngineFunction: OlTileLoadFunction = async (olTile:
       try {
         olTile.setState(TileState.LOADING);
 
-        const url = await loadImageUrlWithHttpEngine(src);
+        const url = await loadImageAsObjectUrlWithHttpEngine(src);
         image.src = url;
 
         const savedOnload = image.onload;
