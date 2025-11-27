@@ -150,12 +150,7 @@ function processAgsResponse(
             dataProjection: `EPSG:${srId}`,
             featureProjection: mapProjection,
           }) as Feature;
-
-          if (feature.getId() == null && type && type.identifierAttribute != null) {
-            // Search id
-            const properties = feature.getProperties();
-            feature.setId(properties[type.identifierAttribute.key]);
-          }
+          processFeatureId(feature, type.identifierAttribute);
           const oldArray = featuresByType.get(type) || [];
           if (limit == undefined || oldArray.length < limit) {
             oldArray.push(feature);
@@ -221,11 +216,7 @@ export function retrieveAgsFeature(
                 dataProjection: 'EPSG:' + srId,
                 featureProjection,
               }) as Feature;
-              if (feature.getId() == null && type.identifierAttribute != null) {
-                // Search id
-                const properties = feature.getProperties();
-                feature.setId(properties[type.identifierAttribute.key]);
-              }
+              processFeatureId(feature, type.identifierAttribute);
             });
           }
         }
@@ -291,4 +282,18 @@ export function loadAgsFeatureDescription(source: IExtended, type: IFeatureType<
         return err;
       },
     );
+}
+
+export function processFeatureId(feature: Feature, identifierAttribute: IAttribute) {
+  if (feature.getId() != null || identifierAttribute == null) {
+    return;
+  }
+  const properties = feature.getProperties();
+  let id = properties[identifierAttribute.key];
+  if (id == null && identifierAttribute.name != null) {
+    id = properties[identifierAttribute.name];
+  }
+  if (id != null) {
+    feature.setId(id);
+  }
 }
