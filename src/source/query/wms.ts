@@ -16,6 +16,7 @@ import { readFeatures } from '../../utils/featuresRead';
 import { calculateGeoExtent } from '../../utils/extent';
 import { DEFAULT_TOLERANCE } from './wfs';
 import { HttpEngine } from '../../HttpEngine';
+import { FilterBuilderTypeEnum } from '../../filter';
 
 function loadWmsFeaturesOnBBOX(options: {
   url: string;
@@ -33,7 +34,7 @@ function loadWmsFeaturesOnBBOX(options: {
   swapXYBBOXRequest?: boolean;
   swapLonLatGeometryResult?: boolean;
   id?: number | string;
-  cql?: string;
+  cql?: string; // Override type predicate CQL if provided
 }): Promise<Feature[]> {
   const params: { [id: string]: string } = {};
   params.SERVICE = 'WMS';
@@ -73,6 +74,12 @@ function loadWmsFeaturesOnBBOX(options: {
   params.FI_LINE_TOLERANCE = toleranceStr; // QGis Server
   params.FI_POLYGON_TOLERANCE = toleranceStr; // QGis Server
   params.WITH_GEOMETRY = 'true'; // QGis Server
+
+  if (options.type?.predicate != null) {
+    params.CQL_FILTER = options.type.predicate.toString(FilterBuilderTypeEnum.CQL);
+  }
+
+  // Override params.CQL_FILTER if provided directly in options
   if (options.cql != null && options.cql !== '') {
     params.CQL_FILTER = options.cql;
   }
