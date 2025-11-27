@@ -15,6 +15,7 @@ import Projection from 'ol/proj/Projection';
 import { readFeatures } from '../../utils/featuresRead';
 import { calculateGeoExtent } from '../../utils/extent';
 import { HttpEngine, IHttpResponse } from '../../HttpEngine';
+import { FilterBuilderTypeEnum } from '../../filter';
 
 export const DEFAULT_TOLERANCE = 4;
 
@@ -31,7 +32,7 @@ export function loadWfsFeaturesOnBBOX(options: {
   swapXYBBOXRequest?: boolean;
   swapLonLatGeometryResult?: boolean;
   id?: number | string;
-  cql?: string;
+  cql?: string; // Override type predicate CQL if provided
 }): Promise<Feature[]> {
   const params: { [id: string]: string } = {};
   params.SERVICE = 'WFS';
@@ -53,6 +54,12 @@ export function loadWfsFeaturesOnBBOX(options: {
     // ?? // MapServer
     // ?? // ArcGIS WFS
   }
+
+  if (options.type?.predicate != null) {
+    params.CQL_FILTER = options.type.predicate.toString(FilterBuilderTypeEnum.CQL);
+  }
+
+  // Override params.CQL_FILTER if provided directly in options
   if (options.cql != null && options.cql !== '') {
     params.CQL_FILTER = options.cql;
   }
