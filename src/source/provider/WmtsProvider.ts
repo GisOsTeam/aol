@@ -20,6 +20,7 @@ export class WmtsProvider {
     const request = {
       url: wmtsCapabilitiesOptions.capabilitiesUrl,
       method: 'GET',
+      responseType: 'text',
     };
     return HttpEngine.getInstance()
       .send(request)
