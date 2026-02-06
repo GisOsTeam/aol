@@ -8,14 +8,14 @@ export class WmtsProvider {
     source: Document | Element | string,
     wmtsCapabilitiesOptions: IWmtsCapabilitiesOptions,
   ): Wmts {
-    return WmtsFactory.create(source, this.sanetizeWmtsCapabilitiesOptions(wmtsCapabilitiesOptions));
+    return WmtsFactory.create(source, this.sanitizeWmtsCapabilitiesOptions(wmtsCapabilitiesOptions));
   }
 
   public static provideAsync(wmtsCapabilitiesOptions: IWmtsCapabilitiesOptions): Promise<Wmts> {
-    const _sanetizedOptions = this.sanetizeWmtsCapabilitiesOptions(wmtsCapabilitiesOptions);
+    const _sanitizedOptions = this.sanitizeWmtsCapabilitiesOptions(wmtsCapabilitiesOptions);
 
     const request: IHttpRequest = {
-      url: _sanetizedOptions.capabilitiesUrl,
+      url: _sanitizedOptions.capabilitiesUrl,
       method: 'GET',
       responseType: 'text',
     };
@@ -28,23 +28,23 @@ export class WmtsProvider {
         capabilitiesTxt = capabilitiesTxt.replace(/urn:ogc:def:crs:EPSG:[0-9.]*:([0-9]+)/gi, 'EPSG:$1');
         capabilitiesTxt = capabilitiesTxt.replace(/urn:ogc:def:crs:OGC:[0-9.]*:(CRS)?([0-9]+)/gi, 'CRS:$2');
         // FIN HACK
-        return WmtsFactory.create(capabilitiesTxt, _sanetizedOptions);
+        return WmtsFactory.create(capabilitiesTxt, _sanitizedOptions);
       });
   }
 
-  private static sanetizeWmtsCapabilitiesOptions(
+  private static sanitizeWmtsCapabilitiesOptions(
     wmtsCapabilitiesOptions: IWmtsCapabilitiesOptions,
   ): IWmtsCapabilitiesOptions {
-    const _sanetizedOptions = { ...wmtsCapabilitiesOptions };
+    const _sanitizedOptions = { ...wmtsCapabilitiesOptions };
     if (!wmtsCapabilitiesOptions.layer) {
       throw new Error(`WmtsCapabilitiesOptions.layer is mandatory to provide wmts.`);
     }
     if (!wmtsCapabilitiesOptions.version) {
-      _sanetizedOptions.version = '1.0.0';
+      _sanitizedOptions.version = '1.0.0';
     }
     if (!wmtsCapabilitiesOptions.capabilitiesUrl) {
-      _sanetizedOptions.capabilitiesUrl = `${wmtsCapabilitiesOptions.url}?SERVICE=WMTS&REQUEST=GetCapabilities&VERSION=${_sanetizedOptions.version}`;
+      _sanitizedOptions.capabilitiesUrl = `${wmtsCapabilitiesOptions.url}?SERVICE=WMTS&REQUEST=GetCapabilities&VERSION=${_sanitizedOptions.version}`;
     }
-    return _sanetizedOptions;
+    return _sanitizedOptions;
   }
 }
