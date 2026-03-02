@@ -89,8 +89,8 @@ export function identify(
 }
 
 /**
- * Function to check if a layer is visible, 
- * it checks for the presence of an isVisible method (used in some custom layers) 
+ * Function to check if a layer is visible,
+ * it checks for the presence of an isVisible method (used in some custom layers)
  * and falls back to the standard ol/View getVisible method if not present.
  * @param layer - ol/layer/Base layer object
  * @param view - ol/View view object
