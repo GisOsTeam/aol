@@ -60,7 +60,7 @@ export function identify(
     queryRequest.layersPrefix = layersPrefix;
 
     walk(map, (layer: OlBaseLayer) => {
-      if (layer.getVisible() && 'getSource' in layer) {
+      if (isVisible(layer, map.getView()) && 'getSource' in layer) {
         const source = (layer as Layer).getSource();
         if (source && 'query' in source) {
           const extended = source as IQuerySource;
@@ -86,4 +86,19 @@ export function identify(
 
     return Promise.all(promises);
   }
+}
+
+/**
+ * Function to check if a layer is visible, 
+ * it checks for the presence of an isVisible method (used in some custom layers) 
+ * and falls back to the standard ol/View getVisible method if not present.
+ * @param layer - ol/layer/Base layer object
+ * @param view - ol/View view object
+ * @returns boolean indicating if the layer is visible
+ */
+function isVisible(layer: OlBaseLayer, view: any): boolean {
+  if ('isVisible' in layer && typeof layer['isVisible'] === 'function') {
+    return layer.isVisible(view);
+  }
+  return layer.getVisible();
 }
