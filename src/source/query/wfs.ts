@@ -379,7 +379,11 @@ function buildDefaultWfsRequestParams(options: ILoadWfsFeatureOptions): { [id: s
 
 function buildBBOXParameter(options: ILoadWfsFeatureOptions): { [id: string]: string } {
   const params: { [id: string]: string } = {};
-  if (options.bbox != null && options.bbox.length === 4 && !(options.type?.predicate != null || options.cql != null)) {
+  if (
+    options.bbox != null &&
+    options.bbox.length === 4 &&
+    !(options.type?.predicate != null || options.cql != null || options.filters != null)
+  ) {
     if (options.swapXYBBOXRequest === true) {
       params.BBOX = `${options.bbox[1]},${options.bbox[0]},${options.bbox[3]},${options.bbox[2]},${options.requestProjectionCode}`;
     } else {
@@ -398,21 +402,36 @@ function buildCQLFilterParameter(options: ILoadWfsFeatureOptions): { [id: string
     return params;
   }
 
-  let predicate = options.type?.predicate;
+  const filterBuilder = new FilterBuilder();
 
+  if (options.filters) {
+    filterBuilder.from(options.filters);
+  }
+
+  const predicate = options.type?.predicate;
   if (predicate != null) {
-    // Si on a une bbox dans les options, on ajoute un predicate de type spatial en AND à la predicate existante
+    filterBuilder.from(predicate);
+  }
+
+  if (filterBuilder.predicate) {
     if (options.bbox != null && options.bbox.length === 4) {
+      let bboxString: string;
+      if (options.swapXYBBOXRequest === true) {
+        bboxString = `${options.bbox[1]},${options.bbox[0]},${options.bbox[3]},${options.bbox[2]},'${options.requestProjectionCode}'`;
+      } else {
+        bboxString = `${options.bbox.join(',')},'${options.requestProjectionCode}'`;
+      }
       const geometryName = options.type?.geometryAttribute?.key ?? 'the_geom';
       const bboxPredicate = new SpatialPre(
         { key: geometryName, type: FieldTypeEnum.Geometry },
-        `${options.bbox.join(',')},'${options.requestProjectionCode}'`,
+        bboxString,
         SpatialPre.buildOperator(OperatorEnum.BBOX),
       );
-      predicate = new FilterBuilder(predicate).and(bboxPredicate).predicate;
+      filterBuilder.and(bboxPredicate);
     }
+
     // Transformation de la predicate en CQL_FILTER
-    params.CQL_FILTER = predicate.toString(FilterBuilderTypeEnum.CQL);
+    params.CQL_FILTER = filterBuilder.build(FilterBuilderTypeEnum.CQL);
   }
 
   return params;
