@@ -20,6 +20,11 @@ export enum OperatorEnum {
   lowerOrEqualThan = 'lowerOrEqualThan',
   null = 'null',
   or = 'or',
+  BBOX = 'BBOX',
+  Disjoint = 'Disjoint',
+  Intersects = 'Intersects',
+  Within = 'Within',
+  Contains = 'Contains',
 }
 
 export type OperatorType =
@@ -29,4 +34,9 @@ export type OperatorType =
   | OperatorEnum.in
   | OperatorEnum.like
   | OperatorEnum.or
+  | OperatorEnum.BBOX
+  | OperatorEnum.Disjoint
+  | OperatorEnum.Intersects
+  | OperatorEnum.Within
+  | OperatorEnum.Contains
   | string;
