@@ -18,7 +18,12 @@ export class FilterBuilder {
   }
 
   public and<RP extends IPredicate>(rightPredicate: RP): FilterBuilder {
-    return new FilterBuilder(new AndPre(this.predicate, rightPredicate));
+    if (!this.predicate) {
+      this.predicate = rightPredicate;
+      return this;
+    }
+    this.predicate = new AndPre(this.predicate, rightPredicate);
+    return this;
   }
 
   public build(type: FilterBuilderType): string {
@@ -32,10 +37,18 @@ export class FilterBuilder {
     if (this.predicate) {
       return this.and(predicate);
     }
-    return new FilterBuilder(predicate);
+
+    this.predicate = predicate;
+
+    return this;
   }
 
   public or<RP extends IPredicate>(rightPredicate: RP): FilterBuilder {
-    return new FilterBuilder(new Or<any, RP>(this.predicate, rightPredicate));
+    if (!this.predicate) {
+      this.predicate = rightPredicate;
+      return this;
+    }
+    this.predicate = new Or<any, RP>(this.predicate, rightPredicate);
+    return this;
   }
 }
