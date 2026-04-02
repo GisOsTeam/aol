@@ -4,8 +4,10 @@ import { AndPre, IPredicate, Or } from './predicate';
 export class FilterBuilder {
   public predicate: IPredicate;
 
-  constructor(predicate: IPredicate) {
-    this.predicate = predicate;
+  constructor(predicate?: IPredicate) {
+    if (predicate) {
+      this.predicate = predicate;
+    }
   }
 
   public static build(predicate: IPredicate, type: FilterBuilderType): string {
