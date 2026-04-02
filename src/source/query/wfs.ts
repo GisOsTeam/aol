@@ -17,7 +17,7 @@ import { readFeatures } from '../../utils/featuresRead';
 import { calculateGeoExtent } from '../../utils/extent';
 import { HttpEngine, IHttpResponse } from '../../HttpEngine';
 import { FieldTypeEnum, FilterBuilder, FilterBuilderTypeEnum } from '../../filter';
-import { SpatialPre } from '../../filter/predicate';
+import { IPredicate, SpatialPre } from '../../filter/predicate';
 import { OperatorEnum } from '../../filter/operator';
 
 export type WfsVersion = '1.0.0' | '1.1.0' | '2.0.0'; // On conserve pour ne pas apporter de breaking change
@@ -38,6 +38,7 @@ export interface ILoadWfsFeatureOptions {
   bbox: number[];
   cql?: string; // Override type predicate CQL if provided
   featureProjectionCode: string;
+  filters?: IPredicate;
   id?: number | string;
   limit: number;
   outputFormat: string;
@@ -74,15 +75,12 @@ export const DEFAULT_LIMIT = 1000;
 export const DEFAULT_RESOLUTION = 1;
 export const DEFAULT_TOLERANCE = 1;
 
-interface IRetrieveWfsFeaturesWithGeometryOptions {
+interface IRetrieveWfsFeaturesDefaultOptions {
   featureProjection: Projection;
-  geometry: Geometry;
-  geometryProjection: Projection;
-  identifyTolerance: number;
+  filters: IPredicate;
   limit: number;
-  mapResolution: number;
   outputFormat: string;
-  queryType: QueryType;
+  overrideFilters: IPredicate;
   requestProjectionCode: string;
   swapLonLatGeometryResult: boolean;
   swapXYBBOXRequest: boolean;
@@ -91,17 +89,15 @@ interface IRetrieveWfsFeaturesWithGeometryOptions {
   version: WfsVersion;
 }
 
-interface IRetrieveWfsFeaturesWithoutGeometryOptions {
-  featureProjection: Projection;
-  limit: number;
-  outputFormat: string;
-  requestProjectionCode: string;
-  swapLonLatGeometryResult: boolean;
-  swapXYBBOXRequest: boolean;
-  type: IFeatureType<string>;
-  url: string;
-  version: WfsVersion;
+interface IRetrieveWfsFeaturesWithGeometryOptions extends IRetrieveWfsFeaturesDefaultOptions {
+  geometry: Geometry;
+  geometryProjection: Projection;
+  identifyTolerance: number;
+  mapResolution: number;
+  queryType: QueryType;
 }
+
+interface IRetrieveWfsFeaturesWithoutGeometryOptions extends IRetrieveWfsFeaturesDefaultOptions { }
 
 export async function executeWfsQuery(options: IExecuteWfsQueryOptions): Promise<IQueryFeatureTypeResponse> {
   const { geometry } = options.request;
@@ -212,6 +208,7 @@ function retrieveWfsFeaturesWithBBOXFromGeometry(options: IRetrieveWfsFeaturesWi
   const extentFinal = transformExtent(extentTmp, options.geometryProjection, options.requestProjectionCode);
 
   return loadWfsFeaturesOnBBOX({
+    cql: options.overrideFilters ? options.overrideFilters.toString(FilterBuilderTypeEnum.CQL) : undefined,
     url: options.url,
     type: options.type,
     queryType: 'query',
@@ -228,6 +225,7 @@ function retrieveWfsFeaturesWithBBOXFromGeometry(options: IRetrieveWfsFeaturesWi
 
 function retrieveWfsFeaturesWithoutGeometry(options: IRetrieveWfsFeaturesWithoutGeometryOptions): Promise<Feature[]> {
   return loadWfsFeaturesOnBBOX({
+    cql: options.overrideFilters ? options.overrideFilters.toString(FilterBuilderTypeEnum.CQL) : undefined,
     url: options.url,
     type: options.type,
     queryType: 'query',
@@ -263,8 +261,10 @@ function ewqoToRwfwogoTransformer(options: IExecuteWfsQueryOptions): IRetrieveWf
   return {
     // request: options.request,
     featureProjection: options.request.olMap.getView().getProjection(),
+    filters: (options.request.filters as IPredicate) ?? undefined,
     limit: options.request.limit ?? DEFAULT_LIMIT,
     outputFormat: options.outputFormat,
+    overrideFilters: options.request.overrideFilters ?? undefined,
     requestProjectionCode: options.requestProjectionCode,
     swapXYBBOXRequest: options.swapXYBBOXRequest,
     swapLonLatGeometryResult: options.swapLonLatGeometryResult,
@@ -300,12 +300,14 @@ function ewqoToRwfwgoTransformer(options: IExecuteWfsQueryOptions): IRetrieveWfs
   // Sanitize options to be compatible with IRetrieveWfsFeaturesWithGeometryOptions
   return {
     featureProjection: options.request.olMap.getView().getProjection(),
+    filters: (options.request.filters as IPredicate) ?? undefined,
     geometry: options.request.geometry.clone() as Geometry,
     geometryProjection: options.request.geometryProjection as Projection,
     identifyTolerance: identifyTolerance,
     limit: options.request.limit ?? DEFAULT_LIMIT,
     mapResolution: options.request.olMap.getView().getResolution() ?? DEFAULT_RESOLUTION,
     outputFormat: options.outputFormat,
+    overrideFilters: options.request.overrideFilters ?? undefined,
     queryType: options.request.queryType,
     requestProjectionCode: options.requestProjectionCode,
     swapXYBBOXRequest: options.swapXYBBOXRequest,
