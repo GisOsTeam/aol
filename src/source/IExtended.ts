@@ -7,6 +7,12 @@ import { SourceType } from './types/sourceType';
 import { LayerType } from './types/layerType';
 import { IPredicate } from '../filter/predicate';
 
+export type QueryType = 'query' | 'identify' | string; // On conserve pour ne pas apporter de breaking change
+export enum QueryTypeEnum {
+  QUERY = 'query',
+  IDENTIFY = 'identify',
+}
+
 export interface ISnapshotOptions extends Options {
   snapshotable?: boolean;
   listable?: boolean;
@@ -77,7 +83,7 @@ export interface IExtended extends IInitSource, IQuerySource, ILegendSource {}
 
 export type IGisRequest = IQueryRequest | IIdentifyRequest;
 
-export interface IAbstractRequest<T extends string> {
+export interface IAbstractRequest<T extends QueryType> {
   olMap: OlMap;
   queryType: T;
   limit?: number;
@@ -137,6 +143,7 @@ export interface IFeatureType<IDT extends number | string> {
   hide?: boolean;
   name?: string;
   identifierAttribute?: IAttribute;
+  geometryAttribute?: IAttribute;
   attributes?: IAttribute[];
   predicate?: IPredicate;
 }
