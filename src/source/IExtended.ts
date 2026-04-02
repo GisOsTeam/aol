@@ -90,6 +90,7 @@ export interface IAbstractRequest<T extends QueryType> {
   returnGeometry?: boolean;
   srId?: string;
   formatResponse?: boolean;
+  overrideFilters?: IPredicate;
 }
 
 export interface IQueryRequest extends IAbstractRequest<'query'> {
@@ -110,7 +111,6 @@ export interface IIdentifyRequest extends IAbstractRequest<'identify'> {
   returnGeometry?: boolean;
   srId?: string;
   filters?: Record<number, IPredicate>;
-
   types?: IFeatureType<any>[];
 }
 
