@@ -15,6 +15,10 @@ export class FilterBuilder {
     return predicate.toString(type);
   }
 
+  public and<RP extends IPredicate>(rightPredicate: RP): FilterBuilder {
+    return new FilterBuilder(new AndPre(this.predicate, rightPredicate));
+  }
+
   public build(type: FilterBuilderType): string {
     if (!this.predicate) {
       return 'INCLUDE';
@@ -22,8 +26,11 @@ export class FilterBuilder {
     return this.predicate.toString(type);
   }
 
-  public and<RP extends IPredicate>(rightPredicate: RP): FilterBuilder {
-    return new FilterBuilder(new AndPre(this.predicate, rightPredicate));
+  public from(predicate: IPredicate): FilterBuilder {
+    if (this.predicate) {
+      return this.and(predicate);
+    }
+    return new FilterBuilder(predicate);
   }
 
   public or<RP extends IPredicate>(rightPredicate: RP): FilterBuilder {
