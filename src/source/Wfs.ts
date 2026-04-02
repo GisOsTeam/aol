@@ -1,19 +1,12 @@
 import { ExternalVector } from './ExternalVector';
 import { LayerType, LayerTypeEnum, SourceType, SourceTypeEnum } from './types';
-import {
-  IGisRequest,
-  IQueryResponse,
-  ISnapshotOptions,
-  IFeatureType,
-  IInitSource,
-  IQuerySource,
-  IQueryFeatureTypeResponse,
-} from './IExtended';
+import { IGisRequest, IQueryResponse, ISnapshotOptions, IFeatureType, IInitSource, IQuerySource } from './IExtended';
 import { transformExtent } from 'ol/proj';
 import { Options } from 'ol/source/Vector';
-import { loadWfsFeaturesOnBBOX, loadWfsFeatureDescription, executeWfsQuery, retrieveWfsFeature } from './query/wfs';
+import { loadWfsFeaturesOnBBOX } from './query/wfs';
 import Projection from 'ol/proj/Projection';
 import { Feature } from 'ol';
+import { WFSInit, WFSQuery, WFSRetrieveFeature } from './communs/wfs';
 
 export interface IWfsOptions extends ISnapshotOptions, Options<any> {
   url: string;
@@ -77,13 +70,7 @@ export class Wfs extends ExternalVector implements IInitSource, IQuerySource {
   }
 
   public init(): Promise<void> {
-    return loadWfsFeatureDescription({
-      url: 'getUrl' in this ? (this as any).getUrl() : (this as any).getUrls()[0],
-      type: this.options.type,
-      version: this.options.version,
-      outputFormat: this.options.outputFormat,
-      requestProjectionCode: this.options.requestProjectionCode,
-    });
+    return WFSInit(this.options);
   }
 
   public getSourceType(): SourceType {
@@ -115,35 +102,10 @@ export class Wfs extends ExternalVector implements IInitSource, IQuerySource {
   }
 
   public query(request: IGisRequest, onlyVisible = false): Promise<IQueryResponse> {
-    return executeWfsQuery({
-      source: this,
-      url: 'getUrl' in this ? (this as any).getUrl() : (this as any).getUrls()[0],
-      type: this.options.type,
-      request,
-      version: this.options.version,
-      outputFormat: this.options.outputFormat,
-      requestProjectionCode: this.options.requestProjectionCode,
-      swapXYBBOXRequest: this.options.swapXYBBOXRequest,
-      swapLonLatGeometryResult: this.options.swapLonLatGeometryResult,
-    }).then((featureTypeResponse: IQueryFeatureTypeResponse) => {
-      return {
-        request,
-        featureTypeResponses: [featureTypeResponse],
-      };
-    });
+    return WFSQuery(request, onlyVisible);
   }
 
   public retrieveFeature(id: number | string, projection: Projection): Promise<Feature> {
-    return retrieveWfsFeature({
-      url: 'getUrl' in this ? (this as any).getUrl() : (this as any).getUrls()[0],
-      type: this.options.type,
-      id,
-      requestProjectionCode: this.options.requestProjectionCode,
-      featureProjection: projection,
-      version: this.options.version,
-      outputFormat: this.options.outputFormat,
-      swapXYBBOXRequest: this.options.swapXYBBOXRequest,
-      swapLonLatGeometryResult: this.options.swapLonLatGeometryResult,
-    });
+    return WFSRetrieveFeature(id, projection);
   }
 }
