@@ -13,7 +13,9 @@ import { BeforeSendInterceptor as BhreqBeforeSendInterceptor, Engine, IRequest }
 import {
   __testing__,
   IExecuteWfsQueryOptions,
+  ILoadWfsFeatureDescriptionOptions,
   ILoadWfsFeatureOptions,
+  loadWfsFeatureDescription,
   IRetrieveWfsFeaturesOptions,
   loadWfsFeaturesOnBBOX,
   retrieveWfsFeature,
@@ -190,7 +192,7 @@ describe('WFS', () => {
   });
 
   describe('buildCQLFilterParameter', () => {
-    test('utilise uniquement le CQL_FILTER fourni dans les options', () => {
+    test("construit correctement le paramètre CQL_FILTER uniquement sur la base d'options.cql", () => {
       const options = {
         type: {
           ...type,
@@ -202,7 +204,7 @@ describe('WFS', () => {
       expect(params.CQL_FILTER).toBe('population > 1000');
     });
 
-    test("construit correctement le paramètre CQL_FILTER à partir d'un prédicat simple", () => {
+    test("construit correctement le paramètre CQL_FILTER à partir des filtres issu d'un type", () => {
       const options = {
         type: {
           ...type,
@@ -215,7 +217,21 @@ describe('WFS', () => {
       );
     });
 
-    test("construit correctement le paramètre CQL_FILTER à partir d'un prédicat et d'une bbox", () => {
+    test('construit correctement le paramètre CQL_FILTER à partir des filtres issu des options', () => {
+      const filter = new FilterBuilder().from(
+        new LowerOrEqualThan({ key: 'date_debut', type: FieldTypeEnum.String }, '2018-04-09'),
+      ).predicate;
+      const options = {
+        type: {
+          ...type,
+        },
+        filters: filter,
+      } as ILoadWfsFeatureOptions;
+      const params = __testing__.buildCQLFilterParameter(options);
+      expect(params.CQL_FILTER).toBe(`(Concatenate(date_debut) <= '2018-04-09')`);
+    });
+
+    test("construit correctement le paramètre CQL_FILTER à partir des filtres issu d'un type et d'une bbox", () => {
       const options = {
         type: {
           ...type,
@@ -227,6 +243,60 @@ describe('WFS', () => {
       const params = __testing__.buildCQLFilterParameter(options);
       expect(params.CQL_FILTER).toBe(
         `(((Concatenate(date_debut) <= '2018-04-09') AND (Concatenate(numero) = '${numero}')) AND (BBOX(the_geom,${bboxAsString},'EPSG:3857')))`,
+      );
+    });
+
+    test("construit correctement le paramètre CQL_FILTER à partir des filtres issu d'un type et des options", () => {
+      const filterFromOptions = new FilterBuilder().from(
+        new EqualPre({ key: 'statut', type: FieldTypeEnum.String }, new Equal(), 'actif'),
+      ).predicate;
+      const options = {
+        type: {
+          ...type,
+          predicate: predicate,
+        },
+        filters: filterFromOptions,
+      } as ILoadWfsFeatureOptions;
+      const params = __testing__.buildCQLFilterParameter(options);
+      expect(params.CQL_FILTER).toBe(
+        `((Concatenate(statut) = 'actif') AND ((Concatenate(date_debut) <= '2018-04-09') AND (Concatenate(numero) = '${numero}')))`,
+      );
+    });
+
+    test("construit correctement le paramètre CQL_FILTER à partir des filtres issu des options et d'une bbox", () => {
+      const filter = new FilterBuilder().from(
+        new LowerOrEqualThan({ key: 'date_debut', type: FieldTypeEnum.String }, '2018-04-09'),
+      ).predicate;
+      const options = {
+        type: {
+          ...type,
+        },
+        filters: filter,
+        bbox: bbox,
+        requestProjectionCode: projectionCode,
+      } as ILoadWfsFeatureOptions;
+      const params = __testing__.buildCQLFilterParameter(options);
+      expect(params.CQL_FILTER).toBe(
+        `((Concatenate(date_debut) <= '2018-04-09') AND (BBOX(the_geom,${bboxAsString},'EPSG:3857')))`,
+      );
+    });
+
+    test("construit correctement le paramètre CQL_FILTER à partir des filtres issu d'un type et des options, et d'une bbox", () => {
+      const filterFromOptions = new FilterBuilder().from(
+        new EqualPre({ key: 'statut', type: FieldTypeEnum.String }, new Equal(), 'actif'),
+      ).predicate;
+      const options = {
+        type: {
+          ...type,
+          predicate: predicate,
+        },
+        filters: filterFromOptions,
+        bbox: bbox,
+        requestProjectionCode: projectionCode,
+      } as ILoadWfsFeatureOptions;
+      const params = __testing__.buildCQLFilterParameter(options);
+      expect(params.CQL_FILTER).toBe(
+        `(((Concatenate(statut) = 'actif') AND ((Concatenate(date_debut) <= '2018-04-09') AND (Concatenate(numero) = '${numero}'))) AND (BBOX(the_geom,${bboxAsString},'EPSG:3857')))`,
       );
     });
 
