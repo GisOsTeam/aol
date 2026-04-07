@@ -6,7 +6,7 @@ import { Options } from 'ol/source/Vector';
 import { loadWfsFeaturesOnBBOX } from './query/wfs';
 import Projection from 'ol/proj/Projection';
 import { Feature } from 'ol';
-import { WFSInit, WFSQuery, WFSRetrieveFeature } from './communs/wfs';
+import { WFSInit, WFSQuery, WFSRetrieveFeature } from './common/wfs';
 
 export interface IWfsOptions extends ISnapshotOptions, Options<any> {
   url: string;
@@ -25,13 +25,13 @@ export class Wfs extends ExternalVector implements IInitSource, IQuerySource {
     IWfsOptions,
     'outputFormat' | 'version' | 'requestProjectionCode' | 'swapXYBBOXRequest' | 'swapLonLatGeometryResult' | 'limit'
   > = {
-    outputFormat: 'text/xml; subtype=gml/3.1.1', // 'application/json',
-    version: '1.1.0',
-    requestProjectionCode: 'EPSG:3857',
-    swapXYBBOXRequest: false,
-    swapLonLatGeometryResult: false,
-    limit: 10000,
-  };
+      outputFormat: 'text/xml; subtype=gml/3.1.1', // 'application/json',
+      version: '1.1.0',
+      requestProjectionCode: 'EPSG:3857',
+      swapXYBBOXRequest: false,
+      swapLonLatGeometryResult: false,
+      limit: 10000,
+    };
   constructor(options: IWfsOptions) {
     super({
       ...options,
@@ -102,10 +102,10 @@ export class Wfs extends ExternalVector implements IInitSource, IQuerySource {
   }
 
   public query(request: IGisRequest, onlyVisible = false): Promise<IQueryResponse> {
-    return WFSQuery(request, onlyVisible);
+    return WFSQuery(this, request, this.options, onlyVisible);
   }
 
   public retrieveFeature(id: number | string, projection: Projection): Promise<Feature> {
-    return WFSRetrieveFeature(id, projection);
+    return WFSRetrieveFeature(id, projection, this.options);
   }
 }

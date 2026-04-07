@@ -10,7 +10,7 @@ import { Feature } from 'ol';
 import { TileCoord } from 'ol/tilecoord';
 import { Extent } from 'ol/extent';
 import { FeatureLike } from 'ol/Feature';
-import { WFSInit, WFSQuery, WFSRetrieveFeature } from './communs/wfs';
+import { WFSInit, WFSQuery, WFSRetrieveFeature } from './common/wfs';
 
 export interface ITileWfsOptions extends ISnapshotOptions, Options<any> {
   url: string;
@@ -29,13 +29,13 @@ export class TileWfs extends VectorTile implements IInitSource, IQuerySource {
     ITileWfsOptions,
     'outputFormat' | 'version' | 'requestProjectionCode' | 'swapXYBBOXRequest' | 'swapLonLatGeometryResult' | 'limit'
   > = {
-    outputFormat: 'text/xml; subtype=gml/3.1.1', // 'application/json',
-    version: '1.1.0',
-    requestProjectionCode: 'EPSG:3857',
-    swapXYBBOXRequest: false,
-    swapLonLatGeometryResult: false,
-    limit: 10000,
-  };
+      outputFormat: 'text/xml; subtype=gml/3.1.1', // 'application/json',
+      version: '1.1.0',
+      requestProjectionCode: 'EPSG:3857',
+      swapXYBBOXRequest: false,
+      swapLonLatGeometryResult: false,
+      limit: 10000,
+    };
   constructor(options: ITileWfsOptions) {
     super({
       ...options,
@@ -115,10 +115,10 @@ export class TileWfs extends VectorTile implements IInitSource, IQuerySource {
   }
 
   public query(request: IGisRequest, onlyVisible = false): Promise<IQueryResponse> {
-    return WFSQuery(request, onlyVisible);
+    return WFSQuery(this, request, this.options, onlyVisible);
   }
 
   public retrieveFeature(id: number | string, projection: Projection): Promise<Feature> {
-    return WFSRetrieveFeature(id, projection);
+    return WFSRetrieveFeature(id, projection, this.options);
   }
 }

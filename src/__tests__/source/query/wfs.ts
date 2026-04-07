@@ -19,11 +19,11 @@ import {
   IRetrieveWfsFeaturesOptions,
   loadWfsFeaturesOnBBOX,
   retrieveWfsFeature,
-  WfsVersion,
 } from '../../../source/query/wfs';
 
 import { register as registerProj4IntoOl } from 'ol/proj/proj4';
 import * as pj4 from 'proj4';
+import { WfsVersionEnum } from '../../../source/common';
 
 pj4.defs(
   'EPSG:2154',
@@ -85,7 +85,7 @@ describe('WFS', () => {
       swapLonLatGeometryResult: false,
       swapXYBBOXRequest: false,
       url: wfsSource.getUrl() as string,
-      version: '1.1.0' as WfsVersion,
+      version: WfsVersionEnum.V1_1_0,
     };
 
     const testDefaultOptions = (params: { [id: string]: string }) => {
@@ -449,7 +449,7 @@ describe('WFS', () => {
       swapXYBBOXRequest: false,
       type,
       url: wfsSource.getUrl() as string,
-      version: '1.1.0' as WfsVersion,
+      version: WfsVersionEnum.V1_1_0,
     };
     test('charge les entités correspondant à une BBOX', async () => {
       const options = {
@@ -484,10 +484,34 @@ describe('WFS', () => {
       expect(feature?.getId()).toBe(featureId);
     });
   });
+
+  describe('loadWfsFeatureDescription', () => {
+    const defaultOptions: ILoadWfsFeatureDescriptionOptions = {
+      url: wfsSource.getUrl() as string,
+      type,
+      version: '1.1.0',
+      outputFormat: 'application/json',
+      requestProjectionCode: projectionCode,
+    };
+    test("charge la description d'un type de feature", async () => {
+      const options = {
+        ...defaultOptions,
+      };
+      await loadWfsFeatureDescription(options);
+
+      console.log('Description du type après chargement :', options.type);
+
+      // Après le chargement de la description, le type doit avoir ses attributs renseignés
+      expect(options.type.attributes).toBeDefined();
+      expect(options.type.attributes?.length).toBeGreaterThan(0);
+      expect(options.type.geometryAttribute).toBeDefined();
+    });
+  });
 });
 
 function setupHttpEngine() {
   const engine = Engine.getInstance();
+  console.log('HttpEngine instance for tests', { engine });
   const interceptor = (request: IRequest) => {
     if (!request.timeout) {
       request.timeout = 30000; // 30 secondes par défaut

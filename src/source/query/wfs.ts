@@ -19,8 +19,9 @@ import { HttpEngine, IHttpResponse } from '../../HttpEngine';
 import { FieldTypeEnum, FilterBuilder, FilterBuilderTypeEnum } from '../../filter';
 import { IPredicate, SpatialPre } from '../../filter/predicate';
 import { OperatorEnum } from '../../filter/operator';
+import { DEFAULT_VERSION, WfsVersion } from '../common';
+import { parseDescribeFeatureType } from '../parser/wfs-describe-feature-type.parser';
 
-export type WfsVersion = '1.0.0' | '1.1.0' | '2.0.0'; // On conserve pour ne pas apporter de breaking change
 
 export interface IExecuteWfsQueryOptions {
   outputFormat: string;
@@ -80,7 +81,7 @@ interface IRetrieveWfsFeaturesDefaultOptions {
   filters: IPredicate;
   limit: number;
   outputFormat: string;
-  overrideFilters: IPredicate;
+  overrideFilters: IPredicate | undefined;
   requestProjectionCode: string;
   swapLonLatGeometryResult: boolean;
   swapXYBBOXRequest: boolean;
@@ -138,8 +139,8 @@ export function loadWfsFeaturesOnBBOX(options: ILoadWfsFeatureOptions): Promise<
     );
 }
 
-export function retrieveWfsFeature(options: IRetrieveWfsFeaturesOptions): Promise<Feature> {
-  return loadWfsFeaturesOnBBOX({
+export async function retrieveWfsFeature(options: IRetrieveWfsFeaturesOptions): Promise<Feature | undefined> {
+  const allFeatures = await loadWfsFeaturesOnBBOX({
     url: options.url,
     type: options.type,
     queryType: 'query',
@@ -151,17 +152,17 @@ export function retrieveWfsFeature(options: IRetrieveWfsFeaturesOptions): Promis
     outputFormat: options.outputFormat,
     swapLonLatGeometryResult: options.swapLonLatGeometryResult,
     id: options.id,
-  }).then((allFeatures) => {
-    let feature = null;
-    if (allFeatures != null && allFeatures.length > 0) {
-      feature = allFeatures[0];
-    }
-    return feature;
   });
+
+  let feature;
+  if (allFeatures != null && allFeatures.length > 0) {
+    feature = allFeatures[0];
+  }
+  return feature;
 }
 
-export function loadWfsFeatureDescription(options: ILoadWfsFeatureDescriptionOptions): Promise<void> {
-  return loadWfsFeaturesOnBBOX({
+export async function loadWfsFeatureDescription(options: ILoadWfsFeatureDescriptionOptions): Promise<void> {
+  const allFeatures = await loadWfsFeaturesOnBBOX({
     url: options.url,
     type: options.type,
     queryType: 'query',
@@ -171,29 +172,67 @@ export function loadWfsFeatureDescription(options: ILoadWfsFeatureDescriptionOpt
     limit: 1,
     version: options.version,
     outputFormat: options.outputFormat,
-  }).then((allFeatures) => {
-    let feature = null;
-    if (allFeatures != null && allFeatures.length > 0) {
-      options.type.attributes = [];
-      feature = allFeatures[0];
-      const properties = feature.getProperties();
-      Object.keys(properties).forEach((key) => {
-        const attribute: IAttribute = {
-          key,
-          type: 'Unknown',
-        };
-        const value = properties[key];
-        if (value != null) {
-          if (typeof value === 'string') {
-            attribute.type = 'String';
-          } else if (typeof value === 'object') {
-            attribute.type = 'Geometry';
-          }
-        }
-        options.type.attributes.push(attribute);
-      });
-    }
   });
+
+  let feature = null;
+  if (allFeatures == null || allFeatures.length === 0) {
+    console.warn('No features found for type ' + getQueryId<string>(options.type) + ' at url ' + options.url);
+    return;
+  }
+
+  options.type.attributes = [];
+  feature = allFeatures[0];
+  const properties = feature.getProperties();
+  Object.keys(properties).forEach((key) => {
+    const attribute: IAttribute = {
+      key,
+      type: 'Unknown',
+    };
+    const value = properties[key];
+
+    if (value != null) {
+      if (typeof value === 'string') {
+        attribute.type = 'String';
+      } else if (typeof value === 'object') {
+        try {
+          // Try to instantiate geometry to check if it's a geometry attribute
+          if (value instanceof Geometry) {
+            attribute.type = 'Geometry';
+            options.type.geometryAttribute = attribute;
+          }
+        } catch (e) {
+          console.warn(`Attribute ${key} is of type object but could not be parsed as geometry.`);
+        }
+      }
+    }
+    options.type.attributes?.push(attribute);
+  });
+}
+
+export async function loadDescribeFeatureType(options: ILoadWfsFeatureDescriptionOptions): Promise<boolean> {
+  let success = false;
+  const response = await HttpEngine.getInstance()
+    .send({
+      method: 'GET',
+      url: options.url,
+      params: {
+        service: 'WFS',
+        version: options.version ?? DEFAULT_VERSION,
+        request: 'DescribeFeatureType',
+        typeNames: options.type.id
+      },
+    });
+  if (response.status === 200) {
+    const wfsFeatureTypes = parseDescribeFeatureType(response.text);
+    for (const featureType of wfsFeatureTypes) {
+      if (featureType.id === options.type.id) {
+        Object.assign(options.type, featureType);
+        success = true;
+        break;
+      }
+    }
+  }
+  return success;
 }
 
 function retrieveWfsFeaturesWithBBOXFromGeometry(options: IRetrieveWfsFeaturesWithGeometryOptions): Promise<Feature[]> {
@@ -334,10 +373,7 @@ function filterFeaturesByGeometry(features: Feature[], options: IRetrieveWfsFeat
   return features.filter((feature) => {
     const featureGeom = feature.getGeometry();
     if (featureGeom) {
-      const filterableGeom = feature
-        .getGeometry()
-        .clone()
-        .transform(options.featureProjection, options.geometryProjection);
+      const filterableGeom = featureGeom.clone().transform(options.featureProjection, options.geometryProjection);
       // Si en mode identify et la géométrie source et de type point (ou multi point)
       // Ou si la géométrie de la feature intersecte la géométrie de la requête
       // Alors on ajoute la feature aux features à retourner
