@@ -42,7 +42,8 @@
   "customizations": {
     "vscode": {
       "extensions": [
-        "donjayamanne.githistory"
+        "donjayamanne.githistory",
+        "eamodio.gitlens"
       ]
     }
   },
