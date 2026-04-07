@@ -216,9 +216,9 @@ export class DescribeFeatureTypeParser {
     // Chercher xsd:complexType, xs:complexType, ou complexType (sans namespace)
     // Utiliser getElementsByTagNameNS avec namespaces courants XSD
     const namespaces = [
-      'http://www.w3.org/2001/XMLSchema',  // xs / xsd standard
-      'http://www.w3.org/1999/XMLSchema',  // ancien standard
-      '',                                  // pas de namespace
+      'http://www.w3.org/2001/XMLSchema', // xs / xsd standard
+      'http://www.w3.org/1999/XMLSchema', // ancien standard
+      '', // pas de namespace
     ];
 
     for (const ns of namespaces) {

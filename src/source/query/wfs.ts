@@ -22,7 +22,6 @@ import { OperatorEnum } from '../../filter/operator';
 import { DEFAULT_VERSION, WfsVersion } from '../common';
 import { parseDescribeFeatureType } from '../parser/wfs-describe-feature-type.parser';
 
-
 export interface IExecuteWfsQueryOptions {
   outputFormat: string;
   request: IGisRequest;
@@ -98,7 +97,7 @@ interface IRetrieveWfsFeaturesWithGeometryOptions extends IRetrieveWfsFeaturesDe
   queryType: QueryType;
 }
 
-interface IRetrieveWfsFeaturesWithoutGeometryOptions extends IRetrieveWfsFeaturesDefaultOptions { }
+interface IRetrieveWfsFeaturesWithoutGeometryOptions extends IRetrieveWfsFeaturesDefaultOptions {}
 
 export async function executeWfsQuery(options: IExecuteWfsQueryOptions): Promise<IQueryFeatureTypeResponse> {
   const { geometry } = options.request;
@@ -211,17 +210,16 @@ export async function loadWfsFeatureDescription(options: ILoadWfsFeatureDescript
 
 export async function loadDescribeFeatureType(options: ILoadWfsFeatureDescriptionOptions): Promise<boolean> {
   let success = false;
-  const response = await HttpEngine.getInstance()
-    .send({
-      method: 'GET',
-      url: options.url,
-      params: {
-        service: 'WFS',
-        version: options.version ?? DEFAULT_VERSION,
-        request: 'DescribeFeatureType',
-        typeNames: options.type.id
-      },
-    });
+  const response = await HttpEngine.getInstance().send({
+    method: 'GET',
+    url: options.url,
+    params: {
+      service: 'WFS',
+      version: options.version ?? DEFAULT_VERSION,
+      request: 'DescribeFeatureType',
+      typeNames: options.type.id,
+    },
+  });
   if (response.status === 200) {
     const wfsFeatureTypes = parseDescribeFeatureType(response.text);
     for (const featureType of wfsFeatureTypes) {

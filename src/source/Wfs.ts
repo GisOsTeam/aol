@@ -25,13 +25,13 @@ export class Wfs extends ExternalVector implements IInitSource, IQuerySource {
     IWfsOptions,
     'outputFormat' | 'version' | 'requestProjectionCode' | 'swapXYBBOXRequest' | 'swapLonLatGeometryResult' | 'limit'
   > = {
-      outputFormat: 'text/xml; subtype=gml/3.1.1', // 'application/json',
-      version: '1.1.0',
-      requestProjectionCode: 'EPSG:3857',
-      swapXYBBOXRequest: false,
-      swapLonLatGeometryResult: false,
-      limit: 10000,
-    };
+    outputFormat: 'text/xml; subtype=gml/3.1.1', // 'application/json',
+    version: '1.1.0',
+    requestProjectionCode: 'EPSG:3857',
+    swapXYBBOXRequest: false,
+    swapLonLatGeometryResult: false,
+    limit: 10000,
+  };
   constructor(options: IWfsOptions) {
     super({
       ...options,

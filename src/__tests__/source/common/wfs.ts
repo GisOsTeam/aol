@@ -1,10 +1,14 @@
-import { DEFAULT_OUTPUT_FORMAT, DEFAULT_PROJECTION_CODE, WFSLoadDescription, WfsVersionEnum } from '../../../source/common/wfs';
+import {
+  DEFAULT_OUTPUT_FORMAT,
+  DEFAULT_PROJECTION_CODE,
+  WFSLoadDescription,
+  WfsVersionEnum,
+} from '../../../source/common/wfs';
 import { HttpEngine, IHttpEngine } from '../../../HttpEngine';
 import { IFeatureType } from '../../../source/IExtended';
 import * as wfsQuery from '../../../source/query/wfs';
 
 jest.mock('../../../HttpEngine');
-
 
 describe('WFSLoadDescription', () => {
   let mockSend: jest.Mock;
@@ -21,7 +25,6 @@ describe('WFSLoadDescription', () => {
 
     (HttpEngine.getInstance as jest.Mock).mockReturnValue(mockHttpEngineInstance);
     mockLoadDescribeFeatureType = jest.spyOn(wfsQuery, 'loadDescribeFeatureType');
-
   });
 
   it('devrait charger la description WFS depuis le XSD et mettre à jour le type avec attributes parsés', async () => {
@@ -81,7 +84,7 @@ describe('WFSLoadDescription', () => {
 
     // Assert
     expect(mockSend).toHaveBeenCalled();
-    const callArgs = (mockSend.mock.calls[0][0] as any);
+    const callArgs = mockSend.mock.calls[0][0] as any;
     expect(callArgs.method).toBe('GET');
     expect(callArgs.url).toBe('http://example.com/wfs');
     expect(callArgs.params.typeNames).toBe('lyv_lyvia.lyvhistoriqueType');
@@ -96,7 +99,7 @@ describe('WFSLoadDescription', () => {
     expect(options.type.geometryAttribute?.key).toBe('the_geom');
   });
 
-  test('devrait mettre à jour le type si DescribeFeatureType n\'est pas supporté mais loadWfsFeatureDescription réussit', async () => {
+  test("devrait mettre à jour le type si DescribeFeatureType n'est pas supporté mais loadWfsFeatureDescription réussit", async () => {
     // Arrange
     const type: IFeatureType<string> = {
       id: 'lyv_lyvia.lyvhistoriqueType',
@@ -135,7 +138,7 @@ describe('WFSLoadDescription', () => {
     expect(options.type.geometryAttribute?.key).toBe('geometry');
   });
 
-  test('devrait ne pas mettre à jour le type si DescribeFeatureType n\'est pas supporté et loadWfsFeatureDescription échoue', async () => {
+  test("devrait ne pas mettre à jour le type si DescribeFeatureType n'est pas supporté et loadWfsFeatureDescription échoue", async () => {
     // Arrange
     const type: IFeatureType<string> = {
       id: 'lyv_lyvia.lyvhistoriqueType',
