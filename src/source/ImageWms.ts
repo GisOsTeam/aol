@@ -17,11 +17,12 @@ import { Options } from 'ol/source/ImageWMS';
 import Feature from 'ol/Feature';
 import Projection from 'ol/proj/Projection';
 import { loadLegendWms } from './legend/wms';
-import { executeWfsQuery, loadWfsFeatureDescription, retrieveWfsFeature } from './query';
+import { executeWfsQuery, retrieveWfsFeature } from './query';
 import { FilterBuilder, FilterBuilderTypeEnum } from '../filter';
 import { IPredicate } from '../filter/predicate';
 import { LoadFunction as OlImageLoadFunction } from 'ol/Image';
 import { imageLoadWithHttpEngineFunction } from '../utils/image-load-function.utils';
+import { WFSInit } from './common';
 
 export interface IImageWmsOptions extends ISnapshotOptions, Options {
   types: IFeatureType<string>[];
@@ -87,12 +88,14 @@ export class ImageWms extends OlImageWMS implements IExtended {
     for (const type of this.options.types) {
       if (this.options.queryWfsUrl != null) {
         promises.push(
-          loadWfsFeatureDescription({
+          WFSInit({
             url: this.options.queryWfsUrl,
             type,
             version: '1.1.0', // Do not use version option !
             outputFormat: this.options.queryFormat,
             requestProjectionCode: this.options.requestProjectionCode,
+            swapXYBBOXRequest: this.options.swapXYBBOXRequest,
+            swapLonLatGeometryResult: this.options.swapLonLatGeometryResult,
           }),
         );
       } else {
