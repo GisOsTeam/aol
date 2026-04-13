@@ -1,6 +1,6 @@
 import { VectorTile } from './VectorTile';
 import { LayerType, LayerTypeEnum, SourceType, SourceTypeEnum } from './types';
-import { IGisRequest, IQueryResponse, ISnapshotOptions, IFeatureType, IInitSource, IQuerySource } from './IExtended';
+import { IGisRequest, IQueryResponse, IInitSource, IQuerySource } from './IExtended';
 import { transformExtent } from 'ol/proj';
 import { Options } from 'ol/source/VectorTile';
 import OlVectorTile from 'ol/VectorTile';
@@ -10,32 +10,20 @@ import { Feature } from 'ol';
 import { TileCoord } from 'ol/tilecoord';
 import { Extent } from 'ol/extent';
 import { FeatureLike } from 'ol/Feature';
-import { WFSInit, WFSQuery, WFSRetrieveFeature } from './common/wfs';
+import {
+  ICommonWfsOptions,
+  WFSInit,
+  WFSInitializeOptions,
+  WFSMergeOptions,
+  WFSQuery,
+  WFSRetrieveFeature,
+} from './common/wfs';
 
-export interface ITileWfsOptions extends ISnapshotOptions, Options<any> {
-  url: string;
-  type: IFeatureType<string>;
-  outputFormat?: string;
-  requestProjectionCode?: string;
-  version?: '1.0.0' | '1.1.0' | '2.0.0';
-  swapXYBBOXRequest?: boolean;
-  swapLonLatGeometryResult?: boolean;
-  limit?: number;
-}
+export interface ITileWfsOptions extends ICommonWfsOptions, Omit<Options, 'url'> {}
 
 export class TileWfs extends VectorTile implements IInitSource, IQuerySource {
-  protected options: ITileWfsOptions;
-  private readonly defaultOptions: Pick<
-    ITileWfsOptions,
-    'outputFormat' | 'version' | 'requestProjectionCode' | 'swapXYBBOXRequest' | 'swapLonLatGeometryResult' | 'limit'
-  > = {
-    outputFormat: 'text/xml; subtype=gml/3.1.1', // 'application/json',
-    version: '1.1.0',
-    requestProjectionCode: 'EPSG:3857',
-    swapXYBBOXRequest: false,
-    swapLonLatGeometryResult: false,
-    limit: 10000,
-  };
+  protected options: Required<ITileWfsOptions>;
+
   constructor(options: ITileWfsOptions) {
     super({
       ...options,
@@ -66,16 +54,7 @@ export class TileWfs extends VectorTile implements IInitSource, IQuerySource {
         });
       },
     });
-    this.options = { ...this.defaultOptions, ...options };
-    if (this.options.snapshotable != false) {
-      this.options.snapshotable = true;
-    }
-    if (this.options.listable != false) {
-      this.options.listable = true;
-    }
-    if (this.options.removable != false) {
-      this.options.removable = true;
-    }
+    this.options = WFSInitializeOptions<ITileWfsOptions>(options);
   }
 
   public init(): Promise<void> {
@@ -91,7 +70,7 @@ export class TileWfs extends VectorTile implements IInitSource, IQuerySource {
   }
 
   public setSourceOptions(options: ITileWfsOptions): void {
-    this.options = { ...options };
+    this.options = WFSMergeOptions<ITileWfsOptions>(this.options, options);
   }
 
   public getLayerType(): LayerType {
@@ -118,7 +97,7 @@ export class TileWfs extends VectorTile implements IInitSource, IQuerySource {
     return WFSQuery(this, request, this.options, onlyVisible);
   }
 
-  public retrieveFeature(id: number | string, projection: Projection): Promise<Feature> {
+  public retrieveFeature(id: number | string, projection: Projection): Promise<Feature | undefined> {
     return WFSRetrieveFeature(id, projection, this.options);
   }
 }

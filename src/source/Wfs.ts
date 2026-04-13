@@ -1,37 +1,24 @@
 import { ExternalVector } from './ExternalVector';
 import { LayerType, LayerTypeEnum, SourceType, SourceTypeEnum } from './types';
-import { IGisRequest, IQueryResponse, ISnapshotOptions, IFeatureType, IInitSource, IQuerySource } from './IExtended';
+import { IGisRequest, IQueryResponse, IInitSource, IQuerySource } from './IExtended';
 import { transformExtent } from 'ol/proj';
 import { Options } from 'ol/source/Vector';
 import { loadWfsFeaturesOnBBOX } from './query/wfs';
 import Projection from 'ol/proj/Projection';
 import { Feature } from 'ol';
-import { WFSInit, WFSQuery, WFSRetrieveFeature } from './common/wfs';
+import {
+  ICommonWfsOptions,
+  WFSInit,
+  WFSInitializeOptions,
+  WFSMergeOptions,
+  WFSQuery,
+  WFSRetrieveFeature,
+} from './common/wfs';
 
-export interface IWfsOptions extends ISnapshotOptions, Options<any> {
-  url: string;
-  type: IFeatureType<string>;
-  outputFormat?: string;
-  requestProjectionCode?: string;
-  version?: '1.0.0' | '1.1.0' | '2.0.0';
-  swapXYBBOXRequest?: boolean;
-  swapLonLatGeometryResult?: boolean;
-  limit?: number;
-}
+export interface IWfsOptions extends ICommonWfsOptions, Omit<Options, 'url'> {}
 
 export class Wfs extends ExternalVector implements IInitSource, IQuerySource {
-  protected options: IWfsOptions;
-  private readonly defaultOptions: Pick<
-    IWfsOptions,
-    'outputFormat' | 'version' | 'requestProjectionCode' | 'swapXYBBOXRequest' | 'swapLonLatGeometryResult' | 'limit'
-  > = {
-    outputFormat: 'text/xml; subtype=gml/3.1.1', // 'application/json',
-    version: '1.1.0',
-    requestProjectionCode: 'EPSG:3857',
-    swapXYBBOXRequest: false,
-    swapLonLatGeometryResult: false,
-    limit: 10000,
-  };
+  protected options: Required<IWfsOptions>;
   constructor(options: IWfsOptions) {
     super({
       ...options,
@@ -57,16 +44,7 @@ export class Wfs extends ExternalVector implements IInitSource, IQuerySource {
           .catch(() => this.removeLoadedExtent(extent));
       },
     });
-    this.options = { ...this.defaultOptions, ...options };
-    if (this.options.snapshotable != false) {
-      this.options.snapshotable = true;
-    }
-    if (this.options.listable != false) {
-      this.options.listable = true;
-    }
-    if (this.options.removable != false) {
-      this.options.removable = true;
-    }
+    this.options = WFSInitializeOptions<IWfsOptions>(options);
   }
 
   public init(): Promise<void> {
@@ -82,7 +60,7 @@ export class Wfs extends ExternalVector implements IInitSource, IQuerySource {
   }
 
   public setSourceOptions(options: IWfsOptions): void {
-    this.options = { ...options };
+    this.options = WFSMergeOptions<IWfsOptions>(this.options, options);
   }
 
   public getLayerType(): LayerType {

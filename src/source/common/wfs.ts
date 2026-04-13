@@ -1,9 +1,18 @@
 import { Projection } from 'ol/proj';
-import { IGisRequest, IQueryResponse, IQuerySource } from '../IExtended';
+import { IFeatureType, IGisRequest, IQueryResponse, IQuerySource, ISnapshotOptions } from '../IExtended';
 import { executeWfsQuery, loadDescribeFeatureType, loadWfsFeatureDescription, retrieveWfsFeature } from '../query';
 import { Feature } from 'ol';
-import { ITileWfsOptions } from '../TileWfs';
-import { IWfsOptions } from '../Wfs';
+
+export interface ICommonWfsOptions extends ISnapshotOptions {
+  url: string;
+  type: IFeatureType<string>;
+  outputFormat?: string;
+  requestProjectionCode?: string;
+  version?: WfsVersion;
+  swapXYBBOXRequest?: boolean;
+  swapLonLatGeometryResult?: boolean;
+  limit?: number;
+}
 
 export enum WfsVersionEnum {
   V1_0_0 = '1.0.0',
@@ -15,21 +24,63 @@ export type WfsVersion = '1.0.0' | '1.1.0' | '2.0.0' | WfsVersionEnum;
 
 export const DEFAULT_VERSION: WfsVersion = WfsVersionEnum.V1_1_0;
 export const DEFAULT_OUTPUT_FORMAT = 'text/xml; subtype=gml/3.1.1';
-export const DEFAULT_PROJECTION_CODE = 'EPSG:4326';
+export const DEFAULT_PROJECTION_CODE = 'EPSG:3857';
+export const DEFAULT_LIMIT = 10000;
+export const DEFAULT_OPTIONS: Pick<
+  ICommonWfsOptions,
+  'outputFormat' | 'version' | 'requestProjectionCode' | 'swapXYBBOXRequest' | 'swapLonLatGeometryResult' | 'limit'
+> = {
+  outputFormat: DEFAULT_OUTPUT_FORMAT, // 'application/json',
+  version: DEFAULT_VERSION,
+  requestProjectionCode: DEFAULT_PROJECTION_CODE,
+  swapXYBBOXRequest: false,
+  swapLonLatGeometryResult: false,
+  limit: DEFAULT_LIMIT,
+};
 
 /**
- * Surcharge le type en lui ajoutant ses attributs depuis une feature
+ * Initialise les options d'une source WFS (TileWfs ou Wfs) :
+ *  - merge les options passées en paramètre avec les options par défaut
+ *  - définit snapshotable, listable et removable à true si elles ne sont pas définies ou à false
  * @param options
  * @returns
  */
-export function WFSInit(options: ITileWfsOptions | IWfsOptions): Promise<void> {
-  return loadWfsFeatureDescription({
-    url: options.url,
-    type: options.type,
-    version: options.version ?? DEFAULT_VERSION,
-    outputFormat: options.outputFormat ?? DEFAULT_OUTPUT_FORMAT,
-    requestProjectionCode: options.requestProjectionCode ?? DEFAULT_PROJECTION_CODE,
-  });
+export function WFSInitializeOptions<T extends ICommonWfsOptions>(options: T): Required<T> {
+  const mergedOptions = WFSMergeOptions<T>(DEFAULT_OPTIONS as Partial<T>, options);
+  if (mergedOptions.snapshotable != false) {
+    mergedOptions.snapshotable = true;
+  }
+  if (mergedOptions.listable != false) {
+    mergedOptions.listable = true;
+  }
+  if (mergedOptions.removable != false) {
+    mergedOptions.removable = true;
+  }
+  return mergedOptions;
+}
+
+/**
+ * Merge les options d'une source WFS (TileWfs ou Wfs) :
+ *  - merge les options passées en paramètre avec les options existantes
+ * @param newOptions
+ * @param options
+ * @returns
+ */
+export function WFSMergeOptions<T extends ICommonWfsOptions>(newOptions: Partial<T>, options: Partial<T>): Required<T> {
+  return {
+    ...newOptions,
+    ...options,
+  } as Required<T>;
+}
+
+/**
+ * Fonction d'initialisation d'une source WFS (TileWfs ou Wfs) :
+ *  - charge la description de la feature et la stocke dans la source
+ * @param options
+ * @returns
+ */
+export async function WFSInit(options: ICommonWfsOptions): Promise<void> {
+  await WFSLoadDescription(options);
 }
 
 /**
@@ -39,7 +90,7 @@ export function WFSInit(options: ITileWfsOptions | IWfsOptions): Promise<void> {
  * @param options
  * @returns
  */
-export async function WFSLoadDescription(options: ITileWfsOptions | IWfsOptions): Promise<void> {
+export async function WFSLoadDescription(options: ICommonWfsOptions): Promise<void> {
   const internalOptions = {
     url: options.url,
     type: options.type,
@@ -66,7 +117,7 @@ export async function WFSLoadDescription(options: ITileWfsOptions | IWfsOptions)
 export async function WFSQuery(
   source: IQuerySource,
   request: IGisRequest,
-  options: ITileWfsOptions | IWfsOptions,
+  options: ICommonWfsOptions,
   onlyVisible = false,
 ): Promise<IQueryResponse> {
   const featureTypeResponse = await executeWfsQuery({
@@ -96,8 +147,8 @@ export async function WFSQuery(
 export function WFSRetrieveFeature(
   id: number | string,
   projection: Projection,
-  options: ITileWfsOptions | IWfsOptions,
-): Promise<Feature> {
+  options: ICommonWfsOptions,
+): Promise<Feature | undefined> {
   return retrieveWfsFeature({
     url: options.url,
     type: options.type,
