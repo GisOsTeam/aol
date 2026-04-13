@@ -499,8 +499,6 @@ describe('WFS', () => {
       };
       await loadWfsFeatureDescription(options);
 
-      console.log('Description du type après chargement :', options.type);
-
       // Après le chargement de la description, le type doit avoir ses attributs renseignés
       expect(options.type.attributes).toBeDefined();
       expect(options.type.attributes?.length).toBeGreaterThan(0);
@@ -511,7 +509,6 @@ describe('WFS', () => {
 
 function setupHttpEngine() {
   const engine = Engine.getInstance();
-  console.log('HttpEngine instance for tests', { engine });
   const interceptor = (request: IRequest) => {
     if (!request.timeout) {
       request.timeout = 30000; // 30 secondes par défaut
