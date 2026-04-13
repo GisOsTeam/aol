@@ -66,47 +66,51 @@ let identifyRequest: IIdentifyRequest;
 let queryRequest: IQueryRequest;
 const featureId = 'lyv_lyvia.lyvhistorique.66176';
 const numero = '201800671';
-const predicate = new FilterBuilder()
-  .from(new LowerOrEqualThan({ key: 'date_debut', type: FieldTypeEnum.String }, '2018-04-09'))
-  .and(new EqualPre({ key: 'numero', type: FieldTypeEnum.String }, new Equal(), numero)).predicate;
+const dateDebutPredicate = new LowerOrEqualThan({ key: 'date_debut', type: FieldTypeEnum.String }, '2018-04-09');
+const numeroPredicate = new EqualPre({ key: 'numero', type: FieldTypeEnum.String }, new Equal(), numero);
+const andPredicate = new FilterBuilder().from(dateDebutPredicate).and(numeroPredicate).predicate;
 describe('WFS', () => {
   beforeAll(() => {
     setupHttpEngine();
   });
   describe('buildWfsRequestParams', () => {
-    const defaultOptions = {
-      featureProjectionCode: projectionCode,
-      limit: 100,
-      outputFormat: 'application/json', // 'application/json',
-      queryType: 'query' as QueryType,
-      request: queryRequest,
-      requestProjectionCode: projectionCode,
-      source: wfsSource,
-      swapLonLatGeometryResult: false,
-      swapXYBBOXRequest: false,
-      url: wfsSource.getUrl() as string,
-      version: WfsVersionEnum.V1_1_0,
-    };
+    let defaultOptions: ILoadWfsFeatureOptions;
+    let testDefaultOptions: (params: { [id: string]: string }) => void;
+    beforeEach(() => {
+      defaultOptions = {
+        bbox: bbox,
+        featureProjectionCode: projectionCode,
+        limit: 100,
+        outputFormat: 'application/json', // 'application/json',
+        queryType: 'query' as QueryType,
+        requestProjectionCode: projectionCode,
+        swapLonLatGeometryResult: false,
+        swapXYBBOXRequest: false,
+        type: {
+          ...type,
+        },
+        url: wfsSource.getUrl() as string,
+        version: WfsVersionEnum.V1_1_0,
+      };
 
-    const testDefaultOptions = (params: { [id: string]: string }) => {
-      expect(params.SERVICE).toBe('WFS');
-      expect(params.VERSION).toBe(defaultOptions.version);
-      expect(params.REQUEST).toBe('GetFeature');
-      expect(params.TYPENAME).toBe(type.id);
-      expect(params.MAXFEATURES).toBe(`${defaultOptions.limit}`);
-      expect(params.OUTPUTFORMAT).toBe(defaultOptions.outputFormat);
-      expect(params.SRSNAME).toBe(defaultOptions.requestProjectionCode);
-    };
+      testDefaultOptions = (params: { [id: string]: string }) => {
+        expect(params.SERVICE).toBe('WFS');
+        expect(params.VERSION).toBe(defaultOptions.version);
+        expect(params.REQUEST).toBe('GetFeature');
+        expect(params.TYPENAME).toBe(type.id);
+        expect(params.MAXFEATURES).toBe(`${defaultOptions.limit}`);
+        expect(params.OUTPUTFORMAT).toBe(defaultOptions.outputFormat);
+        expect(params.SRSNAME).toBe(defaultOptions.requestProjectionCode);
+      };
+    });
 
     test('construit correctement les paramètres de requête WFS avec un prédicat et BBOX', () => {
       const options = {
         ...defaultOptions,
-        bbox: bbox,
-        type: {
-          ...type,
-          predicate: predicate,
-        },
       };
+
+      options.type.predicate = andPredicate;
+
       const params = __testing__.buildWfsRequestParams(options);
       testDefaultOptions(params);
       expect(params.CQL_FILTER).toBe(
@@ -117,10 +121,6 @@ describe('WFS', () => {
     test('construit correctement les paramètres de requête WFS avec uniquement une BBOX', () => {
       const options = {
         ...defaultOptions,
-        bbox: bbox,
-        type: {
-          ...type,
-        },
       };
       const params = __testing__.buildWfsRequestParams(options);
       testDefaultOptions(params);
@@ -160,7 +160,7 @@ describe('WFS', () => {
       const options = {
         type: {
           ...type,
-          predicate: predicate,
+          predicate: andPredicate,
         },
         bbox: bbox,
         requestProjectionCode: projectionCode,
@@ -196,7 +196,7 @@ describe('WFS', () => {
       const options = {
         type: {
           ...type,
-          predicate: predicate,
+          predicate: andPredicate,
         },
         cql: 'population > 1000',
       } as ILoadWfsFeatureOptions;
@@ -208,7 +208,7 @@ describe('WFS', () => {
       const options = {
         type: {
           ...type,
-          predicate: predicate,
+          predicate: andPredicate,
         },
       } as ILoadWfsFeatureOptions;
       const params = __testing__.buildCQLFilterParameter(options);
@@ -235,7 +235,7 @@ describe('WFS', () => {
       const options = {
         type: {
           ...type,
-          predicate: predicate,
+          predicate: andPredicate,
         },
         bbox: bbox,
         requestProjectionCode: projectionCode,
@@ -253,7 +253,7 @@ describe('WFS', () => {
       const options = {
         type: {
           ...type,
-          predicate: predicate,
+          predicate: andPredicate,
         },
         filters: filterFromOptions,
       } as ILoadWfsFeatureOptions;
@@ -288,7 +288,7 @@ describe('WFS', () => {
       const options = {
         type: {
           ...type,
-          predicate: predicate,
+          predicate: andPredicate,
         },
         filters: filterFromOptions,
         bbox: bbox,
@@ -325,25 +325,28 @@ describe('WFS', () => {
 
   describe('executeWfsQuery', () => {
     describe('identify', () => {
-      identifyRequest = {
-        limit: 100,
-        olMap: olMap,
-        geometry: polygonFromBbox.clone(),
-        geometryProjection: geometryProjection,
-        queryType: 'identify',
-      };
+      let defaultOptions: IExecuteWfsQueryOptions;
+      beforeEach(() => {
+        identifyRequest = {
+          limit: 100,
+          olMap: olMap,
+          geometry: polygonFromBbox.clone(),
+          geometryProjection: geometryProjection,
+          queryType: 'identify',
+        };
 
-      const defaultOptions: IExecuteWfsQueryOptions = {
-        url: wfsSource.getUrl() as string,
-        outputFormat: 'application/json', // 'application/json',
-        request: { ...identifyRequest },
-        requestProjectionCode: projectionCode,
-        source: wfsSource,
-        swapLonLatGeometryResult: false,
-        swapXYBBOXRequest: false,
-        type: { ...type },
-        version: '1.1.0',
-      };
+        defaultOptions = {
+          url: wfsSource.getUrl() as string,
+          outputFormat: 'application/json', // 'application/json',
+          request: { ...identifyRequest },
+          requestProjectionCode: projectionCode,
+          source: wfsSource,
+          swapLonLatGeometryResult: false,
+          swapXYBBOXRequest: false,
+          type: { ...type },
+          version: '1.1.0',
+        };
+      });
 
       test('avec géométrie retourne la première entité attendue', async () => {
         const options = {
@@ -362,7 +365,7 @@ describe('WFS', () => {
         };
 
         // On ajoute une predicate pour filtrer les résultats sur la date de début
-        options.type.predicate = predicate;
+        options.type.predicate = andPredicate;
 
         const response = await executeWfsQuery(options);
 
@@ -372,23 +375,26 @@ describe('WFS', () => {
     });
 
     describe('query', () => {
-      queryRequest = {
-        limit: 100,
-        olMap: olMap,
-        queryType: 'query',
-      };
+      let defaultOptions: IExecuteWfsQueryOptions;
+      beforeEach(() => {
+        queryRequest = {
+          limit: 100,
+          olMap: olMap,
+          queryType: 'query',
+        };
 
-      const defaultOptions: IExecuteWfsQueryOptions = {
-        source: wfsSource,
-        url: wfsSource.getUrl() as string,
-        type: { ...type },
-        request: { ...queryRequest },
-        outputFormat: 'application/json', // 'application/json',
-        version: '1.1.0',
-        requestProjectionCode: projectionCode,
-        swapXYBBOXRequest: false,
-        swapLonLatGeometryResult: false,
-      };
+        defaultOptions = {
+          source: wfsSource,
+          url: wfsSource.getUrl() as string,
+          type: { ...type },
+          request: { ...queryRequest },
+          outputFormat: 'application/json', // 'application/json',
+          version: '1.1.0',
+          requestProjectionCode: projectionCode,
+          swapXYBBOXRequest: false,
+          swapLonLatGeometryResult: false,
+        };
+      });
 
       test('avec géométrie retourne la première entité attendue', async () => {
         const options = {
@@ -410,7 +416,7 @@ describe('WFS', () => {
           ...defaultOptions,
         };
         // On ajoute une predicate pour filtrer les résultats sur la date de début
-        options.type.predicate = predicate;
+        options.type.predicate = andPredicate;
 
         // Ajout de la géométrie pour le test de query
         options.request.geometry = polygonFromBbox.clone();
@@ -427,30 +433,76 @@ describe('WFS', () => {
           ...defaultOptions,
         };
         // On ajoute une predicate pour filtrer les résultats sur la date de début
-        options.type.predicate = predicate;
+        options.type.predicate = andPredicate;
 
         const response = await executeWfsQuery(options);
 
         expect<number>(response.features?.length).toBe(1);
         expect<string>(response.features?.[0].get('numero')).toBe(numero);
       });
+
+      test('avec filters dans les options retourne la première entité attendue', async () => {
+        const options: IExecuteWfsQueryOptions = {
+          ...defaultOptions,
+        };
+        options.request.filters = andPredicate;
+
+        const response = await executeWfsQuery(options);
+
+        expect<number>(response.features?.length).toBe(1);
+        expect<string>(response.features?.[0].get('numero')).toBe(numero);
+      });
+
+      test('avec filters dans les options et prédicat dans le type retourne la première entité attendue', async () => {
+        const options: IExecuteWfsQueryOptions = {
+          ...defaultOptions,
+        };
+        options.request.filters = dateDebutPredicate;
+        options.type.predicate = numeroPredicate;
+
+        const response = await executeWfsQuery(options);
+
+        expect<number>(response.features?.length).toBe(1);
+        expect<string>(response.features?.[0].get('numero')).toBe(numero);
+      });
+
+      test('avec filters, prédicat dans le type et overrideFilters retourne les 2 premières entités', async () => {
+        const options: IExecuteWfsQueryOptions = {
+          ...defaultOptions,
+        };
+        options.request.limit = 2;
+        options.request.overrideFilters = new FilterBuilder().from(
+          new EqualPre({ key: '1', type: FieldTypeEnum.String }, new Equal(), '1'),
+        ).predicate;
+        options.request.filters = dateDebutPredicate;
+        options.type.predicate = numeroPredicate;
+
+        const response = await executeWfsQuery(options);
+
+        expect<number>(response.features?.length).toBe(2);
+      });
     });
   });
 
   describe('loadWfsFeaturesOnBBOX', () => {
-    const defaultOptions = {
-      bbox: bbox,
-      featureProjectionCode: projectionCode,
-      limit: 100,
-      outputFormat: 'application/json', // 'application/json',
-      queryType: 'query' as QueryType,
-      requestProjectionCode: projectionCode,
-      swapLonLatGeometryResult: false,
-      swapXYBBOXRequest: false,
-      type,
-      url: wfsSource.getUrl() as string,
-      version: WfsVersionEnum.V1_1_0,
-    };
+    let defaultOptions: ILoadWfsFeatureOptions;
+
+    beforeEach(() => {
+      defaultOptions = {
+        bbox: bbox,
+        featureProjectionCode: projectionCode,
+        limit: 100,
+        outputFormat: 'application/json', // 'application/json',
+        queryType: 'query' as QueryType,
+        requestProjectionCode: projectionCode,
+        swapLonLatGeometryResult: false,
+        swapXYBBOXRequest: false,
+        type,
+        url: wfsSource.getUrl() as string,
+        version: WfsVersionEnum.V1_1_0,
+      };
+    });
+
     test('charge les entités correspondant à une BBOX', async () => {
       const options = {
         ...defaultOptions,
@@ -464,17 +516,21 @@ describe('WFS', () => {
   });
 
   describe('retrieveWfsFeature', () => {
-    const defaultOptions: IRetrieveWfsFeaturesOptions = {
-      featureProjection: getProjection(projectionCode) as Projection,
-      id: featureId,
-      outputFormat: 'application/json', // 'application/json',
-      requestProjectionCode: projectionCode,
-      swapLonLatGeometryResult: false,
-      swapXYBBOXRequest: false,
-      type,
-      url: wfsSource.getUrl() as string,
-      version: '1.1.0',
-    };
+    let defaultOptions: IRetrieveWfsFeaturesOptions;
+
+    beforeEach(() => {
+      defaultOptions = {
+        featureProjection: getProjection(projectionCode) as Projection,
+        id: featureId,
+        outputFormat: 'application/json', // 'application/json',
+        requestProjectionCode: projectionCode,
+        swapLonLatGeometryResult: false,
+        swapXYBBOXRequest: false,
+        type,
+        url: wfsSource.getUrl() as string,
+        version: '1.1.0',
+      };
+    });
     test('récupère une entité spécifique à partir de son ID', async () => {
       const options = {
         ...defaultOptions,
@@ -486,13 +542,18 @@ describe('WFS', () => {
   });
 
   describe('loadWfsFeatureDescription', () => {
-    const defaultOptions: ILoadWfsFeatureDescriptionOptions = {
-      url: wfsSource.getUrl() as string,
-      type,
-      version: '1.1.0',
-      outputFormat: 'application/json',
-      requestProjectionCode: projectionCode,
-    };
+    let defaultOptions: ILoadWfsFeatureDescriptionOptions;
+
+    beforeEach(() => {
+      defaultOptions = {
+        url: wfsSource.getUrl() as string,
+        type,
+        version: '1.1.0',
+        outputFormat: 'application/json',
+        requestProjectionCode: projectionCode,
+      };
+    });
+
     test("charge la description d'un type de feature", async () => {
       const options = {
         ...defaultOptions,

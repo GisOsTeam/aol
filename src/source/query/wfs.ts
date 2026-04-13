@@ -246,6 +246,7 @@ function retrieveWfsFeaturesWithBBOXFromGeometry(options: IRetrieveWfsFeaturesWi
 
   return loadWfsFeaturesOnBBOX({
     cql: options.overrideFilters ? options.overrideFilters.toString(FilterBuilderTypeEnum.CQL) : undefined,
+    filters: options.filters ?? undefined,
     url: options.url,
     type: options.type,
     queryType: 'query',
@@ -263,6 +264,7 @@ function retrieveWfsFeaturesWithBBOXFromGeometry(options: IRetrieveWfsFeaturesWi
 function retrieveWfsFeaturesWithoutGeometry(options: IRetrieveWfsFeaturesWithoutGeometryOptions): Promise<Feature[]> {
   return loadWfsFeaturesOnBBOX({
     cql: options.overrideFilters ? options.overrideFilters.toString(FilterBuilderTypeEnum.CQL) : undefined,
+    filters: options.filters ?? undefined,
     url: options.url,
     type: options.type,
     queryType: 'query',
