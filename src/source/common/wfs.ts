@@ -62,14 +62,17 @@ export function WFSInitializeOptions<T extends ICommonWfsOptions>(options: T): R
 /**
  * Merge les options d'une source WFS (TileWfs ou Wfs) :
  *  - merge les options passées en paramètre avec les options existantes
+ * @param oldOptions
  * @param newOptions
- * @param options
  * @returns
  */
-export function WFSMergeOptions<T extends ICommonWfsOptions>(newOptions: Partial<T>, options: Partial<T>): Required<T> {
+export function WFSMergeOptions<T extends ICommonWfsOptions>(
+  oldOptions: Partial<T>,
+  newOptions: Partial<T>,
+): Required<T> {
   return {
+    ...oldOptions,
     ...newOptions,
-    ...options,
   } as Required<T>;
 }
 
