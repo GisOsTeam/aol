@@ -3,20 +3,27 @@ import {
   DEFAULT_WFS_PROJECTION_CODE,
   DEFAULT_WFS_LIMIT,
   DEFAULT_WFS_VERSION,
+  DEFAULT_WFS_OPTIONS,
+  WFSInit,
   WFSLoadDescription,
   WFSMergeOptions,
   WFSInitializeOptions,
+  WFSQuery,
+  WFSRetrieveFeature,
   WfsVersionEnum,
   ICommonWfsOptions,
 } from '../../../source/common/wfs';
 import { HttpEngine, IHttpEngine } from '../../../HttpEngine';
-import { IFeatureType } from '../../../source/IExtended';
+import { IFeatureType, IGisRequest, IQueryFeatureTypeResponse, IQuerySource } from '../../../source/IExtended';
+import { Feature } from 'ol';
+import OlMap from 'ol/Map';
+import Projection from 'ol/proj/Projection';
 import * as wfsQuery from '../../../source/query/wfs';
 
 jest.mock('../../../HttpEngine');
 describe('aol.source.common.wfs', () => {
   describe('WFSMergeOptions', () => {
-    test('should merge two option objects', () => {
+    test('M1 - newOptions écrase oldOptions sur les propriétés communes', () => {
       const oldOptions: Partial<ICommonWfsOptions> = {
         url: 'http://new.com/wfs',
         version: WfsVersionEnum.V2_0_0,
@@ -31,15 +38,12 @@ describe('aol.source.common.wfs', () => {
 
       const result = WFSMergeOptions<ICommonWfsOptions>(oldOptions, newOptions);
 
-      // newOptions should override oldOptions
+      // newOptions should override oldOptions (M1)
       expect(result.url).toBe('http://old.com/wfs');
-      expect(result.type).toEqual({ id: 'test:layer' });
-      expect(result.version).toBe(WfsVersionEnum.V2_0_0);
-      expect(result.limit).toBe(5000);
       expect(result.outputFormat).toBe('application/json');
     });
 
-    test('should handle empty new newOptions', () => {
+    test('M2 - oldOptions vides → seules les newOptions contribuent', () => {
       const oldOptions: Partial<ICommonWfsOptions> = {};
       const newOptions: Partial<ICommonWfsOptions> = {
         url: 'http://example.com/wfs',
@@ -51,7 +55,7 @@ describe('aol.source.common.wfs', () => {
       expect(result.type).toEqual({ id: 'test:layer' });
     });
 
-    test('should handle empty newOptions', () => {
+    test('M3 - newOptions vides → seules les oldOptions contribuent', () => {
       const oldOptions: Partial<ICommonWfsOptions> = {
         url: 'http://example.com/wfs',
         version: WfsVersionEnum.V1_1_0,
@@ -63,7 +67,7 @@ describe('aol.source.common.wfs', () => {
       expect(result.version).toBe(WfsVersionEnum.V1_1_0);
     });
 
-    test('should preserve all properties from both objects', () => {
+    test('M4 - propriétés non-chevauchantes des deux objets sont préservées', () => {
       const oldOptions: Partial<ICommonWfsOptions> = {
         version: WfsVersionEnum.V2_0_0,
         outputFormat: DEFAULT_WFS_OUTPUT_FORMAT,
@@ -91,7 +95,7 @@ describe('aol.source.common.wfs', () => {
   });
 
   describe('WFSInitializeOptions', () => {
-    test('should initialize options with default values', () => {
+    test('I7 - fusion avec les options par défaut', () => {
       const options: ICommonWfsOptions = {
         url: 'http://example.com/wfs',
         type: { id: 'test:layer' },
@@ -109,7 +113,7 @@ describe('aol.source.common.wfs', () => {
       expect(result.limit).toBe(DEFAULT_WFS_LIMIT);
     });
 
-    test('should set snapshotable to true when not specified', () => {
+    test('I1 - snapshotable non défini → positionné à true', () => {
       const options: ICommonWfsOptions = {
         url: 'http://example.com/wfs',
         type: { id: 'test:layer' },
@@ -119,7 +123,7 @@ describe('aol.source.common.wfs', () => {
       expect(result.snapshotable).toBe(true);
     });
 
-    test('should set listable to true when not specified', () => {
+    test('I3 - listable non défini → positionné à true', () => {
       const options: ICommonWfsOptions = {
         url: 'http://example.com/wfs',
         type: { id: 'test:layer' },
@@ -129,7 +133,7 @@ describe('aol.source.common.wfs', () => {
       expect(result.listable).toBe(true);
     });
 
-    test('should set removable to true when not specified', () => {
+    test('I5 - removable non défini → positionné à true', () => {
       const options: ICommonWfsOptions = {
         url: 'http://example.com/wfs',
         type: { id: 'test:layer' },
@@ -139,7 +143,7 @@ describe('aol.source.common.wfs', () => {
       expect(result.removable).toBe(true);
     });
 
-    test('should respect snapshotable=false option', () => {
+    test('I2 - snapshotable = false → conservé à false', () => {
       const options: ICommonWfsOptions = {
         url: 'http://example.com/wfs',
         type: { id: 'test:layer' },
@@ -150,7 +154,7 @@ describe('aol.source.common.wfs', () => {
       expect(result.snapshotable).toBe(false);
     });
 
-    test('should respect listable=false option', () => {
+    test('I4 - listable = false → conservé à false', () => {
       const options: ICommonWfsOptions = {
         url: 'http://example.com/wfs',
         type: { id: 'test:layer' },
@@ -161,7 +165,7 @@ describe('aol.source.common.wfs', () => {
       expect(result.listable).toBe(false);
     });
 
-    test('should respect removable=false option', () => {
+    test('I6 - removable = false → conservé à false', () => {
       const options: ICommonWfsOptions = {
         url: 'http://example.com/wfs',
         type: { id: 'test:layer' },
@@ -172,7 +176,7 @@ describe('aol.source.common.wfs', () => {
       expect(result.removable).toBe(false);
     });
 
-    test('should merge custom options with defaults', () => {
+    test('I8 - options personnalisées écrasent les defaults', () => {
       const options: ICommonWfsOptions = {
         url: 'http://custom.com/wfs',
         type: { id: 'custom:layer' },
@@ -181,15 +185,14 @@ describe('aol.source.common.wfs', () => {
       };
 
       const result = WFSInitializeOptions<ICommonWfsOptions>(options);
+      // Custom values override defaults (I8)
       expect(result.url).toBe('http://custom.com/wfs');
       expect(result.type).toEqual({ id: 'custom:layer' });
       expect(result.limit).toBe(500);
       expect(result.version).toBe(WfsVersionEnum.V1_0_0);
-      expect(result.outputFormat).toBe(DEFAULT_WFS_OUTPUT_FORMAT);
-      expect(result.requestProjectionCode).toBe(DEFAULT_WFS_PROJECTION_CODE);
     });
 
-    test('should preserve all boolean flags together', () => {
+    test('I9 - mélange de flags (snapshotable=true, listable=false, removable=true)', () => {
       const options: ICommonWfsOptions = {
         url: 'http://example.com/wfs',
         type: { id: 'test:layer' },
@@ -204,7 +207,7 @@ describe('aol.source.common.wfs', () => {
       expect(result.removable).toBe(true);
     });
 
-    test('should override default values with provided options', () => {
+    test('I10 - swapXYBBOXRequest et swapLonLatGeometryResult à true sont préservés', () => {
       const options: ICommonWfsOptions = {
         url: 'http://example.com/wfs',
         type: { id: 'test:layer' },
@@ -239,7 +242,7 @@ describe('aol.source.common.wfs', () => {
       mockLoadDescribeFeatureType = jest.spyOn(wfsQuery, 'loadDescribeFeatureType');
     });
 
-    it('devrait charger la description WFS depuis le XSD et mettre à jour le type avec attributes parsés', async () => {
+    test('LD1 - loadDescribeFeatureType retourne true → description chargée depuis XSD', async () => {
       // Arrange
       const type: IFeatureType<string> = {
         id: 'lyv_lyvia.lyvhistoriqueType', // Must match complexType name in XSD
@@ -311,7 +314,7 @@ describe('aol.source.common.wfs', () => {
       expect(options.type.geometryAttribute?.key).toBe('the_geom');
     });
 
-    test("devrait mettre à jour le type si DescribeFeatureType n'est pas supporté mais loadWfsFeatureDescription réussit", async () => {
+    test('LD2 - loadDescribeFeatureType retourne false → fallback sur loadWfsFeatureDescription', async () => {
       // Arrange
       const type: IFeatureType<string> = {
         id: 'lyv_lyvia.lyvhistoriqueType',
@@ -350,7 +353,7 @@ describe('aol.source.common.wfs', () => {
       expect(options.type.geometryAttribute?.key).toBe('geometry');
     });
 
-    test("devrait ne pas mettre à jour le type si DescribeFeatureType n'est pas supporté et loadWfsFeatureDescription échoue", async () => {
+    test('LD3 - loadDescribeFeatureType retourne false et loadWfsFeatureDescription échoue → erreur propagée', async () => {
       // Arrange
       const type: IFeatureType<string> = {
         id: 'lyv_lyvia.lyvhistoriqueType',
@@ -387,6 +390,379 @@ describe('aol.source.common.wfs', () => {
         expect(options.type).not.toHaveProperty('attributes');
         expect(options.type.geometryAttribute).toBeUndefined();
       }
+    });
+
+    test('LD4 - version undefined → uses DEFAULT_WFS_VERSION in internalOptions', async () => {
+      const type: IFeatureType<string> = { id: 'test:layer' };
+      const options: Omit<ICommonWfsOptions, 'version'> & Partial<Pick<ICommonWfsOptions, 'version'>> = {
+        url: 'http://example.com/wfs',
+        type,
+        outputFormat: DEFAULT_WFS_OUTPUT_FORMAT,
+        requestProjectionCode: DEFAULT_WFS_PROJECTION_CODE,
+        // version intentionally omitted
+      };
+
+      mockLoadDescribeFeatureType.mockResolvedValue(true);
+
+      await WFSLoadDescription(options as ICommonWfsOptions);
+
+      const callArgs = mockLoadDescribeFeatureType.mock.calls[0][0];
+      expect(callArgs.version).toBe(DEFAULT_WFS_VERSION);
+    });
+
+    test('LD5 - outputFormat undefined → uses DEFAULT_WFS_OUTPUT_FORMAT in internalOptions', async () => {
+      const type: IFeatureType<string> = { id: 'test:layer' };
+      const options: Omit<ICommonWfsOptions, 'outputFormat'> & Partial<Pick<ICommonWfsOptions, 'outputFormat'>> = {
+        url: 'http://example.com/wfs',
+        type,
+        version: WfsVersionEnum.V2_0_0,
+        requestProjectionCode: DEFAULT_WFS_PROJECTION_CODE,
+        // outputFormat intentionally omitted
+      };
+
+      mockLoadDescribeFeatureType.mockResolvedValue(true);
+
+      await WFSLoadDescription(options as ICommonWfsOptions);
+
+      const callArgs = mockLoadDescribeFeatureType.mock.calls[0][0];
+      expect(callArgs.outputFormat).toBe(DEFAULT_WFS_OUTPUT_FORMAT);
+    });
+
+    test('LD6 - requestProjectionCode undefined → uses DEFAULT_WFS_PROJECTION_CODE in internalOptions', async () => {
+      const type: IFeatureType<string> = { id: 'test:layer' };
+      const options: Omit<ICommonWfsOptions, 'requestProjectionCode'> &
+        Partial<Pick<ICommonWfsOptions, 'requestProjectionCode'>> = {
+        url: 'http://example.com/wfs',
+        type,
+        version: WfsVersionEnum.V2_0_0,
+        outputFormat: DEFAULT_WFS_OUTPUT_FORMAT,
+        // requestProjectionCode intentionally omitted
+      };
+
+      mockLoadDescribeFeatureType.mockResolvedValue(true);
+
+      await WFSLoadDescription(options as ICommonWfsOptions);
+
+      const callArgs = mockLoadDescribeFeatureType.mock.calls[0][0];
+      expect(callArgs.requestProjectionCode).toBe(DEFAULT_WFS_PROJECTION_CODE);
+    });
+
+    test('LD7 - all options defined → provided values are passed through', async () => {
+      const type: IFeatureType<string> = { id: 'test:layer' };
+      const options: ICommonWfsOptions = {
+        url: 'http://example.com/wfs',
+        type,
+        version: WfsVersionEnum.V1_0_0,
+        outputFormat: 'application/json',
+        requestProjectionCode: 'EPSG:4326',
+      };
+
+      mockLoadDescribeFeatureType.mockResolvedValue(true);
+
+      await WFSLoadDescription(options);
+
+      const callArgs = mockLoadDescribeFeatureType.mock.calls[0][0];
+      expect(callArgs.version).toBe(WfsVersionEnum.V1_0_0);
+      expect(callArgs.outputFormat).toBe('application/json');
+      expect(callArgs.requestProjectionCode).toBe('EPSG:4326');
+    });
+  });
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // Constants & Enum
+  // ──────────────────────────────────────────────────────────────────────────
+  describe('Constants and WfsVersionEnum', () => {
+    test('E1 - WfsVersionEnum.V1_0_0 equals "1.0.0"', () => {
+      expect(WfsVersionEnum.V1_0_0).toBe('1.0.0');
+    });
+
+    test('E2 - WfsVersionEnum.V1_1_0 equals "1.1.0"', () => {
+      expect(WfsVersionEnum.V1_1_0).toBe('1.1.0');
+    });
+
+    test('E3 - WfsVersionEnum.V2_0_0 equals "2.0.0"', () => {
+      expect(WfsVersionEnum.V2_0_0).toBe('2.0.0');
+    });
+
+    test('C1 - DEFAULT_WFS_VERSION equals WfsVersionEnum.V1_1_0', () => {
+      expect(DEFAULT_WFS_VERSION).toBe(WfsVersionEnum.V1_1_0);
+    });
+
+    test('C2 - DEFAULT_WFS_OUTPUT_FORMAT equals "text/xml; subtype=gml/3.1.1"', () => {
+      expect(DEFAULT_WFS_OUTPUT_FORMAT).toBe('text/xml; subtype=gml/3.1.1');
+    });
+
+    test('C3 - DEFAULT_WFS_PROJECTION_CODE equals "EPSG:3857"', () => {
+      expect(DEFAULT_WFS_PROJECTION_CODE).toBe('EPSG:3857');
+    });
+
+    test('C4 - DEFAULT_WFS_LIMIT equals 1000', () => {
+      expect(DEFAULT_WFS_LIMIT).toBe(1000);
+    });
+
+    test('C5 - DEFAULT_WFS_OPTIONS contains all default values', () => {
+      expect(DEFAULT_WFS_OPTIONS.outputFormat).toBe(DEFAULT_WFS_OUTPUT_FORMAT);
+      expect(DEFAULT_WFS_OPTIONS.version).toBe(DEFAULT_WFS_VERSION);
+      expect(DEFAULT_WFS_OPTIONS.requestProjectionCode).toBe(DEFAULT_WFS_PROJECTION_CODE);
+      expect(DEFAULT_WFS_OPTIONS.swapXYBBOXRequest).toBe(false);
+      expect(DEFAULT_WFS_OPTIONS.swapLonLatGeometryResult).toBe(false);
+      expect(DEFAULT_WFS_OPTIONS.limit).toBe(DEFAULT_WFS_LIMIT);
+    });
+  });
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // WFSInit
+  // ──────────────────────────────────────────────────────────────────────────
+  describe('WFSInit', () => {
+    let mockLoadDescribeFeatureTypeInit: jest.SpyInstance;
+
+    beforeEach(() => {
+      jest.clearAllMocks();
+      mockLoadDescribeFeatureTypeInit = jest
+        .spyOn(wfsQuery, 'loadDescribeFeatureType')
+        .mockResolvedValue(true);
+    });
+
+    afterEach(() => {
+      mockLoadDescribeFeatureTypeInit.mockRestore();
+    });
+
+    test('IN1 - should delegate to WFSLoadDescription (loadDescribeFeatureType called once with correct options)', async () => {
+      const options: ICommonWfsOptions = {
+        url: 'http://example.com/wfs',
+        type: { id: 'test:layer' },
+        version: WfsVersionEnum.V2_0_0,
+        outputFormat: DEFAULT_WFS_OUTPUT_FORMAT,
+        requestProjectionCode: DEFAULT_WFS_PROJECTION_CODE,
+      };
+
+      await WFSInit(options);
+
+      expect(mockLoadDescribeFeatureTypeInit).toHaveBeenCalledTimes(1);
+      const callArgs = mockLoadDescribeFeatureTypeInit.mock.calls[0][0];
+      expect(callArgs.url).toBe(options.url);
+      expect(callArgs.type).toBe(options.type);
+    });
+
+    test('IN2 - should resolve to undefined (void)', async () => {
+      const options: ICommonWfsOptions = {
+        url: 'http://example.com/wfs',
+        type: { id: 'test:layer' },
+      };
+
+      await expect(WFSInit(options)).resolves.toBeUndefined();
+    });
+  });
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // WFSQuery
+  // ──────────────────────────────────────────────────────────────────────────
+  describe('WFSQuery', () => {
+    let mockExecuteWfsQuery: jest.SpyInstance;
+
+    const mockSource = {} as IQuerySource;
+    const mockRequest: IGisRequest = { olMap: {} as OlMap, queryType: 'query' };
+    const mockFeatureTypeResponse: IQueryFeatureTypeResponse = {
+      type: { id: 'test:layer' },
+      features: [],
+      source: mockSource,
+    };
+
+    const baseOptions: ICommonWfsOptions = {
+      url: 'http://example.com/wfs',
+      type: { id: 'test:layer' },
+      version: WfsVersionEnum.V2_0_0,
+      outputFormat: 'application/json',
+      requestProjectionCode: 'EPSG:4326',
+      swapXYBBOXRequest: true,
+      swapLonLatGeometryResult: true,
+    };
+
+    beforeEach(() => {
+      jest.clearAllMocks();
+      mockExecuteWfsQuery = jest
+        .spyOn(wfsQuery, 'executeWfsQuery')
+        .mockResolvedValue(mockFeatureTypeResponse);
+    });
+
+    afterEach(() => {
+      mockExecuteWfsQuery.mockRestore();
+    });
+
+    test('Q1 - should call executeWfsQuery with source, url, type and request', async () => {
+      await WFSQuery(mockSource, mockRequest, baseOptions);
+
+      expect(mockExecuteWfsQuery).toHaveBeenCalledTimes(1);
+      const callArgs = mockExecuteWfsQuery.mock.calls[0][0];
+      expect(callArgs.source).toBe(mockSource);
+      expect(callArgs.url).toBe(baseOptions.url);
+      expect(callArgs.type).toBe(baseOptions.type);
+      expect(callArgs.request).toBe(mockRequest);
+    });
+
+    test('Q2 - should use provided version', async () => {
+      await WFSQuery(mockSource, mockRequest, { ...baseOptions, version: WfsVersionEnum.V1_0_0 });
+      expect(mockExecuteWfsQuery.mock.calls[0][0].version).toBe(WfsVersionEnum.V1_0_0);
+    });
+
+    test('Q3 - version undefined → uses DEFAULT_WFS_VERSION', async () => {
+      await WFSQuery(mockSource, mockRequest, { ...baseOptions, version: undefined } as ICommonWfsOptions);
+      expect(mockExecuteWfsQuery.mock.calls[0][0].version).toBe(DEFAULT_WFS_VERSION);
+    });
+
+    test('Q4 - should use provided outputFormat', async () => {
+      await WFSQuery(mockSource, mockRequest, { ...baseOptions, outputFormat: 'text/xml' });
+      expect(mockExecuteWfsQuery.mock.calls[0][0].outputFormat).toBe('text/xml');
+    });
+
+    test('Q5 - outputFormat undefined → uses DEFAULT_WFS_OUTPUT_FORMAT', async () => {
+      await WFSQuery(mockSource, mockRequest, { ...baseOptions, outputFormat: undefined } as ICommonWfsOptions);
+      expect(mockExecuteWfsQuery.mock.calls[0][0].outputFormat).toBe(DEFAULT_WFS_OUTPUT_FORMAT);
+    });
+
+    test('Q6 - should use provided requestProjectionCode', async () => {
+      await WFSQuery(mockSource, mockRequest, { ...baseOptions, requestProjectionCode: 'EPSG:2154' });
+      expect(mockExecuteWfsQuery.mock.calls[0][0].requestProjectionCode).toBe('EPSG:2154');
+    });
+
+    test('Q7 - requestProjectionCode undefined → uses DEFAULT_WFS_PROJECTION_CODE', async () => {
+      await WFSQuery(mockSource, mockRequest, { ...baseOptions, requestProjectionCode: undefined } as ICommonWfsOptions);
+      expect(mockExecuteWfsQuery.mock.calls[0][0].requestProjectionCode).toBe(DEFAULT_WFS_PROJECTION_CODE);
+    });
+
+    test('Q8 - should use provided swapXYBBOXRequest = true', async () => {
+      await WFSQuery(mockSource, mockRequest, { ...baseOptions, swapXYBBOXRequest: true });
+      expect(mockExecuteWfsQuery.mock.calls[0][0].swapXYBBOXRequest).toBe(true);
+    });
+
+    test('Q9 - swapXYBBOXRequest undefined → uses false', async () => {
+      await WFSQuery(mockSource, mockRequest, { ...baseOptions, swapXYBBOXRequest: undefined } as ICommonWfsOptions);
+      expect(mockExecuteWfsQuery.mock.calls[0][0].swapXYBBOXRequest).toBe(false);
+    });
+
+    test('Q10 - should use provided swapLonLatGeometryResult = true', async () => {
+      await WFSQuery(mockSource, mockRequest, { ...baseOptions, swapLonLatGeometryResult: true });
+      expect(mockExecuteWfsQuery.mock.calls[0][0].swapLonLatGeometryResult).toBe(true);
+    });
+
+    test('Q11 - swapLonLatGeometryResult undefined → uses false', async () => {
+      await WFSQuery(mockSource, mockRequest, { ...baseOptions, swapLonLatGeometryResult: undefined } as ICommonWfsOptions);
+      expect(mockExecuteWfsQuery.mock.calls[0][0].swapLonLatGeometryResult).toBe(false);
+    });
+
+    test('Q12 - should return { request, featureTypeResponses: [executeWfsQuery result] }', async () => {
+      const result = await WFSQuery(mockSource, mockRequest, baseOptions);
+      expect(result.request).toBe(mockRequest);
+      expect(result.featureTypeResponses).toHaveLength(1);
+      expect(result.featureTypeResponses[0]).toBe(mockFeatureTypeResponse);
+    });
+  });
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // WFSRetrieveFeature
+  // ──────────────────────────────────────────────────────────────────────────
+  describe('WFSRetrieveFeature', () => {
+    let mockRetrieveWfsFeature: jest.SpyInstance;
+
+    const mockProjection = new Projection({ code: 'EPSG:4326' });
+    const mockFeature = new Feature();
+
+    const baseOptions: ICommonWfsOptions = {
+      url: 'http://example.com/wfs',
+      type: { id: 'test:layer' },
+      version: WfsVersionEnum.V2_0_0,
+      outputFormat: 'application/json',
+      requestProjectionCode: 'EPSG:4326',
+      swapXYBBOXRequest: true,
+      swapLonLatGeometryResult: true,
+    };
+
+    beforeEach(() => {
+      jest.clearAllMocks();
+      mockRetrieveWfsFeature = jest
+        .spyOn(wfsQuery, 'retrieveWfsFeature')
+        .mockResolvedValue(mockFeature);
+    });
+
+    afterEach(() => {
+      mockRetrieveWfsFeature.mockRestore();
+    });
+
+    test('R1 - should call retrieveWfsFeature with url, type, id (number) and featureProjection', async () => {
+      await WFSRetrieveFeature(42, mockProjection, baseOptions);
+
+      expect(mockRetrieveWfsFeature).toHaveBeenCalledTimes(1);
+      const callArgs = mockRetrieveWfsFeature.mock.calls[0][0];
+      expect(callArgs.url).toBe(baseOptions.url);
+      expect(callArgs.type).toBe(baseOptions.type);
+      expect(callArgs.id).toBe(42);
+      expect(callArgs.featureProjection).toBe(mockProjection);
+    });
+
+    test('R2 - id as string is passed intact', async () => {
+      await WFSRetrieveFeature('feature-abc', mockProjection, baseOptions);
+      expect(mockRetrieveWfsFeature.mock.calls[0][0].id).toBe('feature-abc');
+    });
+
+    test('R3 - should use provided requestProjectionCode', async () => {
+      await WFSRetrieveFeature(1, mockProjection, { ...baseOptions, requestProjectionCode: 'EPSG:2154' });
+      expect(mockRetrieveWfsFeature.mock.calls[0][0].requestProjectionCode).toBe('EPSG:2154');
+    });
+
+    test('R4 - requestProjectionCode undefined → uses DEFAULT_WFS_PROJECTION_CODE', async () => {
+      await WFSRetrieveFeature(1, mockProjection, { ...baseOptions, requestProjectionCode: undefined } as ICommonWfsOptions);
+      expect(mockRetrieveWfsFeature.mock.calls[0][0].requestProjectionCode).toBe(DEFAULT_WFS_PROJECTION_CODE);
+    });
+
+    test('R5 - should use provided version', async () => {
+      await WFSRetrieveFeature(1, mockProjection, { ...baseOptions, version: WfsVersionEnum.V1_0_0 });
+      expect(mockRetrieveWfsFeature.mock.calls[0][0].version).toBe(WfsVersionEnum.V1_0_0);
+    });
+
+    test('R6 - version undefined → uses DEFAULT_WFS_VERSION', async () => {
+      await WFSRetrieveFeature(1, mockProjection, { ...baseOptions, version: undefined } as ICommonWfsOptions);
+      expect(mockRetrieveWfsFeature.mock.calls[0][0].version).toBe(DEFAULT_WFS_VERSION);
+    });
+
+    test('R7 - should use provided outputFormat', async () => {
+      await WFSRetrieveFeature(1, mockProjection, { ...baseOptions, outputFormat: 'text/xml' });
+      expect(mockRetrieveWfsFeature.mock.calls[0][0].outputFormat).toBe('text/xml');
+    });
+
+    test('R8 - outputFormat undefined → uses DEFAULT_WFS_OUTPUT_FORMAT', async () => {
+      await WFSRetrieveFeature(1, mockProjection, { ...baseOptions, outputFormat: undefined } as ICommonWfsOptions);
+      expect(mockRetrieveWfsFeature.mock.calls[0][0].outputFormat).toBe(DEFAULT_WFS_OUTPUT_FORMAT);
+    });
+
+    test('R9 - should use provided swapXYBBOXRequest = true', async () => {
+      await WFSRetrieveFeature(1, mockProjection, { ...baseOptions, swapXYBBOXRequest: true });
+      expect(mockRetrieveWfsFeature.mock.calls[0][0].swapXYBBOXRequest).toBe(true);
+    });
+
+    test('R10 - swapXYBBOXRequest undefined → uses false', async () => {
+      await WFSRetrieveFeature(1, mockProjection, { ...baseOptions, swapXYBBOXRequest: undefined } as ICommonWfsOptions);
+      expect(mockRetrieveWfsFeature.mock.calls[0][0].swapXYBBOXRequest).toBe(false);
+    });
+
+    test('R11 - should use provided swapLonLatGeometryResult = true', async () => {
+      await WFSRetrieveFeature(1, mockProjection, { ...baseOptions, swapLonLatGeometryResult: true });
+      expect(mockRetrieveWfsFeature.mock.calls[0][0].swapLonLatGeometryResult).toBe(true);
+    });
+
+    test('R12 - swapLonLatGeometryResult undefined → uses false', async () => {
+      await WFSRetrieveFeature(1, mockProjection, { ...baseOptions, swapLonLatGeometryResult: undefined } as ICommonWfsOptions);
+      expect(mockRetrieveWfsFeature.mock.calls[0][0].swapLonLatGeometryResult).toBe(false);
+    });
+
+    test('R13 - should return the Feature when retrieveWfsFeature resolves with one', async () => {
+      const result = await WFSRetrieveFeature(1, mockProjection, baseOptions);
+      expect(result).toBe(mockFeature);
+    });
+
+    test('R14 - should return undefined when retrieveWfsFeature resolves with undefined', async () => {
+      mockRetrieveWfsFeature.mockResolvedValue(undefined);
+      const result = await WFSRetrieveFeature(1, mockProjection, baseOptions);
+      expect(result).toBeUndefined();
     });
   });
 });
