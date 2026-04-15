@@ -1,8 +1,8 @@
 import {
-  DEFAULT_OUTPUT_FORMAT,
-  DEFAULT_PROJECTION_CODE,
-  DEFAULT_LIMIT,
-  DEFAULT_VERSION,
+  DEFAULT_WFS_OUTPUT_FORMAT,
+  DEFAULT_WFS_PROJECTION_CODE,
+  DEFAULT_WFS_LIMIT,
+  DEFAULT_WFS_VERSION,
   WFSLoadDescription,
   WFSMergeOptions,
   WFSInitializeOptions,
@@ -66,11 +66,11 @@ describe('aol.source.common.wfs', () => {
     test('should preserve all properties from both objects', () => {
       const oldOptions: Partial<ICommonWfsOptions> = {
         version: WfsVersionEnum.V2_0_0,
-        outputFormat: DEFAULT_OUTPUT_FORMAT,
-        requestProjectionCode: DEFAULT_PROJECTION_CODE,
+        outputFormat: DEFAULT_WFS_OUTPUT_FORMAT,
+        requestProjectionCode: DEFAULT_WFS_PROJECTION_CODE,
         swapXYBBOXRequest: true,
         swapLonLatGeometryResult: false,
-        limit: DEFAULT_LIMIT,
+        limit: DEFAULT_WFS_LIMIT,
       };
 
       const newOptions: Partial<ICommonWfsOptions> = {
@@ -82,11 +82,11 @@ describe('aol.source.common.wfs', () => {
       expect(result.url).toBe('http://example.com/wfs');
       expect(result.type).toEqual({ id: 'test:layer' });
       expect(result.version).toBe(WfsVersionEnum.V2_0_0);
-      expect(result.outputFormat).toBe(DEFAULT_OUTPUT_FORMAT);
-      expect(result.requestProjectionCode).toBe(DEFAULT_PROJECTION_CODE);
+      expect(result.outputFormat).toBe(DEFAULT_WFS_OUTPUT_FORMAT);
+      expect(result.requestProjectionCode).toBe(DEFAULT_WFS_PROJECTION_CODE);
       expect(result.swapXYBBOXRequest).toBe(true);
       expect(result.swapLonLatGeometryResult).toBe(false);
-      expect(result.limit).toBe(DEFAULT_LIMIT);
+      expect(result.limit).toBe(DEFAULT_WFS_LIMIT);
     });
   });
 
@@ -101,12 +101,12 @@ describe('aol.source.common.wfs', () => {
 
       expect(result.url).toBe('http://example.com/wfs');
       expect(result.type).toEqual({ id: 'test:layer' });
-      expect(result.version).toBe(DEFAULT_VERSION);
-      expect(result.outputFormat).toBe(DEFAULT_OUTPUT_FORMAT);
-      expect(result.requestProjectionCode).toBe(DEFAULT_PROJECTION_CODE);
+      expect(result.version).toBe(DEFAULT_WFS_VERSION);
+      expect(result.outputFormat).toBe(DEFAULT_WFS_OUTPUT_FORMAT);
+      expect(result.requestProjectionCode).toBe(DEFAULT_WFS_PROJECTION_CODE);
       expect(result.swapXYBBOXRequest).toBe(false);
       expect(result.swapLonLatGeometryResult).toBe(false);
-      expect(result.limit).toBe(DEFAULT_LIMIT);
+      expect(result.limit).toBe(DEFAULT_WFS_LIMIT);
     });
 
     test('should set snapshotable to true when not specified', () => {
@@ -185,8 +185,8 @@ describe('aol.source.common.wfs', () => {
       expect(result.type).toEqual({ id: 'custom:layer' });
       expect(result.limit).toBe(500);
       expect(result.version).toBe(WfsVersionEnum.V1_0_0);
-      expect(result.outputFormat).toBe(DEFAULT_OUTPUT_FORMAT);
-      expect(result.requestProjectionCode).toBe(DEFAULT_PROJECTION_CODE);
+      expect(result.outputFormat).toBe(DEFAULT_WFS_OUTPUT_FORMAT);
+      expect(result.requestProjectionCode).toBe(DEFAULT_WFS_PROJECTION_CODE);
     });
 
     test('should preserve all boolean flags together', () => {
@@ -250,8 +250,8 @@ describe('aol.source.common.wfs', () => {
         url: 'http://example.com/wfs',
         version: WfsVersionEnum.V2_0_0,
         type: type,
-        outputFormat: DEFAULT_OUTPUT_FORMAT,
-        requestProjectionCode: DEFAULT_PROJECTION_CODE,
+        outputFormat: DEFAULT_WFS_OUTPUT_FORMAT,
+        requestProjectionCode: DEFAULT_WFS_PROJECTION_CODE,
         swapXYBBOXRequest: false,
         swapLonLatGeometryResult: false,
       };
@@ -361,8 +361,8 @@ describe('aol.source.common.wfs', () => {
         url: 'http://example.com/wfs',
         version: WfsVersionEnum.V2_0_0,
         type: type,
-        outputFormat: DEFAULT_OUTPUT_FORMAT,
-        requestProjectionCode: DEFAULT_PROJECTION_CODE,
+        outputFormat: DEFAULT_WFS_OUTPUT_FORMAT,
+        requestProjectionCode: DEFAULT_WFS_PROJECTION_CODE,
         swapXYBBOXRequest: false,
         swapLonLatGeometryResult: false,
       };

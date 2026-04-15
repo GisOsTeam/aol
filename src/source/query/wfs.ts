@@ -19,7 +19,7 @@ import { HttpEngine, IHttpResponse } from '../../HttpEngine';
 import { FieldTypeEnum, FilterBuilder, FilterBuilderTypeEnum } from '../../filter';
 import { IPredicate, SpatialPre } from '../../filter/predicate';
 import { OperatorEnum } from '../../filter/operator';
-import { DEFAULT_VERSION, WfsVersion } from '../common';
+import { DEFAULT_WFS_LIMIT, DEFAULT_WFS_VERSION, WfsVersion } from '../common';
 import { parseDescribeFeatureType } from '../parser/wfs-describe-feature-type.parser';
 
 export interface IExecuteWfsQueryOptions {
@@ -71,7 +71,6 @@ export interface ILoadWfsFeatureDescriptionOptions {
   requestProjectionCode: string;
 }
 
-export const DEFAULT_LIMIT = 1000;
 export const DEFAULT_RESOLUTION = 1;
 export const DEFAULT_TOLERANCE = 1;
 
@@ -215,7 +214,7 @@ export async function loadDescribeFeatureType(options: ILoadWfsFeatureDescriptio
     url: options.url,
     params: {
       service: 'WFS',
-      version: options.version ?? DEFAULT_VERSION,
+      version: options.version ?? DEFAULT_WFS_VERSION,
       request: 'DescribeFeatureType',
       typeNames: options.type.id,
     },
@@ -301,7 +300,7 @@ function ewqoToRwfwogoTransformer(options: IExecuteWfsQueryOptions): IRetrieveWf
     // request: options.request,
     featureProjection: options.request.olMap.getView().getProjection(),
     filters: (options.request.filters as IPredicate) ?? undefined,
-    limit: options.request.limit ?? DEFAULT_LIMIT,
+    limit: options.request.limit ?? DEFAULT_WFS_LIMIT,
     outputFormat: options.outputFormat,
     overrideFilters: options.request.overrideFilters ?? undefined,
     requestProjectionCode: options.requestProjectionCode,
@@ -309,7 +308,7 @@ function ewqoToRwfwogoTransformer(options: IExecuteWfsQueryOptions): IRetrieveWf
     swapLonLatGeometryResult: options.swapLonLatGeometryResult,
     type: options.type,
     url: options.url,
-    version: options.version as WfsVersion,
+    version: options.version ?? DEFAULT_WFS_VERSION,
   };
 }
 
@@ -343,7 +342,7 @@ function ewqoToRwfwgoTransformer(options: IExecuteWfsQueryOptions): IRetrieveWfs
     geometry: options.request.geometry.clone() as Geometry,
     geometryProjection: options.request.geometryProjection as Projection,
     identifyTolerance: identifyTolerance,
-    limit: options.request.limit ?? DEFAULT_LIMIT,
+    limit: options.request.limit ?? DEFAULT_WFS_LIMIT,
     mapResolution: options.request.olMap.getView().getResolution() ?? DEFAULT_RESOLUTION,
     outputFormat: options.outputFormat,
     overrideFilters: options.request.overrideFilters ?? undefined,

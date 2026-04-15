@@ -22,10 +22,10 @@ jest.mock('../../source/common/wfs', () => {
 
 // Import real constants after mocking
 import {
-  DEFAULT_LIMIT,
-  DEFAULT_OUTPUT_FORMAT,
-  DEFAULT_PROJECTION_CODE,
-  DEFAULT_VERSION,
+  DEFAULT_WFS_LIMIT,
+  DEFAULT_WFS_OUTPUT_FORMAT,
+  DEFAULT_WFS_PROJECTION_CODE,
+  DEFAULT_WFS_VERSION,
 } from '../../source/common/wfs';
 
 describe('aol.source.Wfs', () => {
@@ -43,12 +43,12 @@ describe('aol.source.Wfs', () => {
       const options = wfs.getSourceOptions();
       expect(options.url).toBe(defaultOptions.url);
       expect(options.type).toBe(defaultOptions.type);
-      expect(options.requestProjectionCode).toBe(DEFAULT_PROJECTION_CODE);
-      expect(options.version).toBe(DEFAULT_VERSION);
-      expect(options.outputFormat).toBe(DEFAULT_OUTPUT_FORMAT);
+      expect(options.requestProjectionCode).toBe(DEFAULT_WFS_PROJECTION_CODE);
+      expect(options.version).toBe(DEFAULT_WFS_VERSION);
+      expect(options.outputFormat).toBe(DEFAULT_WFS_OUTPUT_FORMAT);
       expect(options.swapXYBBOXRequest).toBe(false);
       expect(options.swapLonLatGeometryResult).toBe(false);
-      expect(options.limit).toBe(DEFAULT_LIMIT);
+      expect(options.limit).toBe(DEFAULT_WFS_LIMIT);
     });
 
     test('should set snapshotable to true when not specified', () => {
@@ -105,7 +105,7 @@ describe('aol.source.Wfs', () => {
       expect(options).toBeDefined();
       expect(options.url).toBe(defaultOptions.url);
       expect(options.type).toBe(defaultOptions.type);
-      expect(options.requestProjectionCode).toBe(DEFAULT_PROJECTION_CODE);
+      expect(options.requestProjectionCode).toBe(DEFAULT_WFS_PROJECTION_CODE);
     });
   });
 
@@ -143,9 +143,9 @@ describe('aol.source.Wfs', () => {
         expect.objectContaining({
           url: defaultOptions.url,
           type: defaultOptions.type,
-          version: DEFAULT_VERSION,
-          outputFormat: DEFAULT_OUTPUT_FORMAT,
-          requestProjectionCode: DEFAULT_PROJECTION_CODE,
+          version: DEFAULT_WFS_VERSION,
+          outputFormat: DEFAULT_WFS_OUTPUT_FORMAT,
+          requestProjectionCode: DEFAULT_WFS_PROJECTION_CODE,
         }),
       );
     });
@@ -166,9 +166,9 @@ describe('aol.source.Wfs', () => {
         expect.objectContaining({
           url: defaultOptions.url,
           type: defaultOptions.type,
-          version: DEFAULT_VERSION,
-          outputFormat: DEFAULT_OUTPUT_FORMAT,
-          requestProjectionCode: DEFAULT_PROJECTION_CODE,
+          version: DEFAULT_WFS_VERSION,
+          outputFormat: DEFAULT_WFS_OUTPUT_FORMAT,
+          requestProjectionCode: DEFAULT_WFS_PROJECTION_CODE,
         }),
         false,
       );

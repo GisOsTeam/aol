@@ -22,20 +22,20 @@ export enum WfsVersionEnum {
 // Type wfs version from enum, keep string union for backward compatibility with old versions of wfs module
 export type WfsVersion = '1.0.0' | '1.1.0' | '2.0.0' | WfsVersionEnum;
 
-export const DEFAULT_VERSION: WfsVersion = WfsVersionEnum.V1_1_0;
-export const DEFAULT_OUTPUT_FORMAT = 'text/xml; subtype=gml/3.1.1';
-export const DEFAULT_PROJECTION_CODE = 'EPSG:3857';
-export const DEFAULT_LIMIT = 10000;
-export const DEFAULT_OPTIONS: Pick<
+export const DEFAULT_WFS_VERSION: WfsVersion = WfsVersionEnum.V1_1_0;
+export const DEFAULT_WFS_OUTPUT_FORMAT = 'text/xml; subtype=gml/3.1.1';
+export const DEFAULT_WFS_PROJECTION_CODE = 'EPSG:3857';
+export const DEFAULT_WFS_LIMIT = 1000;
+export const DEFAULT_WFS_OPTIONS: Pick<
   ICommonWfsOptions,
   'outputFormat' | 'version' | 'requestProjectionCode' | 'swapXYBBOXRequest' | 'swapLonLatGeometryResult' | 'limit'
 > = {
-  outputFormat: DEFAULT_OUTPUT_FORMAT, // 'application/json',
-  version: DEFAULT_VERSION,
-  requestProjectionCode: DEFAULT_PROJECTION_CODE,
+  outputFormat: DEFAULT_WFS_OUTPUT_FORMAT, // 'application/json',
+  version: DEFAULT_WFS_VERSION,
+  requestProjectionCode: DEFAULT_WFS_PROJECTION_CODE,
   swapXYBBOXRequest: false,
   swapLonLatGeometryResult: false,
-  limit: DEFAULT_LIMIT,
+  limit: DEFAULT_WFS_LIMIT,
 };
 
 /**
@@ -46,7 +46,7 @@ export const DEFAULT_OPTIONS: Pick<
  * @returns
  */
 export function WFSInitializeOptions<T extends ICommonWfsOptions>(options: T): Required<T> {
-  const mergedOptions = WFSMergeOptions<T>(DEFAULT_OPTIONS as Partial<T>, options);
+  const mergedOptions = WFSMergeOptions<T>(DEFAULT_WFS_OPTIONS as Partial<T>, options);
   if (mergedOptions.snapshotable != false) {
     mergedOptions.snapshotable = true;
   }
@@ -97,9 +97,9 @@ export async function WFSLoadDescription(options: ICommonWfsOptions): Promise<vo
   const internalOptions = {
     url: options.url,
     type: options.type,
-    version: options.version ?? DEFAULT_VERSION,
-    outputFormat: options.outputFormat ?? DEFAULT_OUTPUT_FORMAT,
-    requestProjectionCode: options.requestProjectionCode ?? DEFAULT_PROJECTION_CODE,
+    version: options.version ?? DEFAULT_WFS_VERSION,
+    outputFormat: options.outputFormat ?? DEFAULT_WFS_OUTPUT_FORMAT,
+    requestProjectionCode: options.requestProjectionCode ?? DEFAULT_WFS_PROJECTION_CODE,
   };
   const describeFeatureTypeSuccess = await loadDescribeFeatureType(internalOptions);
 
@@ -128,9 +128,9 @@ export async function WFSQuery(
     url: options.url,
     type: options.type,
     request,
-    version: options.version ?? DEFAULT_VERSION,
-    outputFormat: options.outputFormat ?? DEFAULT_OUTPUT_FORMAT,
-    requestProjectionCode: options.requestProjectionCode ?? DEFAULT_PROJECTION_CODE,
+    version: options.version ?? DEFAULT_WFS_VERSION,
+    outputFormat: options.outputFormat ?? DEFAULT_WFS_OUTPUT_FORMAT,
+    requestProjectionCode: options.requestProjectionCode ?? DEFAULT_WFS_PROJECTION_CODE,
     swapXYBBOXRequest: options.swapXYBBOXRequest ?? false,
     swapLonLatGeometryResult: options.swapLonLatGeometryResult ?? false,
   });
@@ -156,10 +156,10 @@ export function WFSRetrieveFeature(
     url: options.url,
     type: options.type,
     id,
-    requestProjectionCode: options.requestProjectionCode ?? DEFAULT_PROJECTION_CODE,
+    requestProjectionCode: options.requestProjectionCode ?? DEFAULT_WFS_PROJECTION_CODE,
     featureProjection: projection,
-    version: options.version ?? DEFAULT_VERSION,
-    outputFormat: options.outputFormat ?? DEFAULT_OUTPUT_FORMAT,
+    version: options.version ?? DEFAULT_WFS_VERSION,
+    outputFormat: options.outputFormat ?? DEFAULT_WFS_OUTPUT_FORMAT,
     swapXYBBOXRequest: options.swapXYBBOXRequest ?? false,
     swapLonLatGeometryResult: options.swapLonLatGeometryResult ?? false,
   });
