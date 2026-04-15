@@ -20,5 +20,10 @@
   "exclude": [
     "./src/sample/**/*",
     "./src/__tests__/**/*"
+  ],
+  "references": [
+    {
+      "path": "./tsconfig.test.json"
+    }
   ]
 }
