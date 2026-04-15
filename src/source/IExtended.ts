@@ -79,6 +79,11 @@ export interface ILegendSource {
   fetchLegend(options?: IFetchLegendOptions): Promise<ILegendRecord>;
 }
 
+export interface IConfigurableSource {
+  updateParams(params: Record<string, unknown>): void;
+  getParams(): Record<string, unknown>;
+}
+
 export interface IExtended extends IInitSource, IQuerySource, ILegendSource {}
 
 export type IGisRequest = IQueryRequest | IIdentifyRequest;
