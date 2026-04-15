@@ -5,6 +5,9 @@
   "scripts": {
     "test": "jest",
     "jest": "jest",
+    "coverage": "jest --coverage",
+    "coverage:report:html": "rimraf coverage && jest --coverage --coverageReporters=html",
+    "coverage:serve": "npx http-server coverage -o",
     "prepare": "husky",
     "prettier": "prettier --single-quote --print-width 120 --write --parser typescript '{src, test}/**/*.ts'",
     "lint": "npm run prettier && eslint src/** --ext .ts,.tsx",
