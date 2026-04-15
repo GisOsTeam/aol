@@ -2,7 +2,7 @@ import { FilterBuilderType } from './IFilter';
 import { AndPre, IPredicate, Or } from './predicate';
 
 export class FilterBuilder {
-  public predicate: IPredicate;
+  public predicate?: IPredicate;
 
   constructor(predicate?: IPredicate) {
     if (predicate) {
