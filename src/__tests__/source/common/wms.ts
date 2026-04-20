@@ -461,6 +461,29 @@ describe('aol.source.common.wms', () => {
       expect(result.featureTypeResponses).toEqual([]);
       expect(result.request).toBe(mockRequest);
     });
+
+    test('Q7 — queryWfsUrl !== null, request.method absent → assigné depuis queryMethod', async () => {
+      const options: Required<ICommonWmsOptions> = {
+        ...BASE_OPTIONS,
+        queryWfsUrl: 'http://wfs.com',
+        queryMethod: 'POST',
+      };
+      const request = { ...mockRequest };
+      delete (request as any).method;
+      await WMSQuery({} as any, request as any, options);
+      expect((request as any).method).toBe('POST');
+    });
+
+    test('Q8 — queryWfsUrl !== null, request.method déjà défini → conservé tel quel', async () => {
+      const options: Required<ICommonWmsOptions> = {
+        ...BASE_OPTIONS,
+        queryWfsUrl: 'http://wfs.com',
+        queryMethod: 'POST',
+      };
+      const request = { ...mockRequest, method: 'GET' as const };
+      await WMSQuery({} as any, request as any, options);
+      expect(request.method).toBe('GET');
+    });
   });
 
   // ==========================================

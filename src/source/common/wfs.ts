@@ -6,6 +6,7 @@ import { Feature } from 'ol';
 export interface ICommonWfsOptions extends ISnapshotOptions {
   url: string;
   type: IFeatureType<string>;
+  method?: 'GET' | 'POST';
   outputFormat?: string;
   requestProjectionCode?: string;
   version?: WfsVersion;
@@ -98,6 +99,7 @@ export async function WFSLoadDescription(options: ICommonWfsOptions): Promise<vo
     url: options.url,
     type: options.type,
     version: options.version ?? DEFAULT_WFS_VERSION,
+    method: options.method ?? 'GET',
     outputFormat: options.outputFormat ?? DEFAULT_WFS_OUTPUT_FORMAT,
     requestProjectionCode: options.requestProjectionCode ?? DEFAULT_WFS_PROJECTION_CODE,
   };
@@ -123,6 +125,10 @@ export async function WFSQuery(
   options: ICommonWfsOptions,
   onlyVisible = false,
 ): Promise<IQueryResponse> {
+  if (!request.method) {
+    request.method = options.method ?? 'GET';
+  }
+
   const featureTypeResponse = await executeWfsQuery({
     source: source,
     url: options.url,
@@ -156,6 +162,7 @@ export function WFSRetrieveFeature(
     url: options.url,
     type: options.type,
     id,
+    method: options.method ?? 'GET',
     requestProjectionCode: options.requestProjectionCode ?? DEFAULT_WFS_PROJECTION_CODE,
     featureProjection: projection,
     version: options.version ?? DEFAULT_WFS_VERSION,

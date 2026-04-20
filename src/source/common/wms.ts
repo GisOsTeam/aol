@@ -238,6 +238,10 @@ export async function WMSQuery(
     const isVisible = type.hide !== true;
     if (!onlyVisible || isVisible) {
       if (options.queryWfsUrl !== null) {
+        if (!request.method) {
+          request.method = options.queryMethod;
+        }
+
         promises.push(
           executeWfsQuery({
             source: source,

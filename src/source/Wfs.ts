@@ -35,6 +35,7 @@ export class Wfs extends ExternalVector implements IInitSource, IQuerySource {
           featureProjectionCode: projectionCode,
           bbox: mapExtent,
           limit: this.options.limit,
+          method: this.options.method ?? 'GET',
           version: this.options.version,
           outputFormat: this.options.outputFormat,
           swapXYBBOXRequest: this.options.swapXYBBOXRequest,

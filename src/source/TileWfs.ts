@@ -48,6 +48,7 @@ export class TileWfs extends VectorTile implements IInitSource, IQuerySource {
             outputFormat: this.options.outputFormat,
             swapXYBBOXRequest: this.options.swapXYBBOXRequest,
             swapLonLatGeometryResult: this.options.swapLonLatGeometryResult,
+            method: this.options.method ?? 'GET',
           })
             .then(tile.onLoad.bind(tile))
             .catch(tile.onError.bind(tile));

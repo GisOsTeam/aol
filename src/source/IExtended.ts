@@ -92,6 +92,7 @@ export interface IAbstractRequest<T extends QueryType> {
   olMap: OlMap;
   queryType: T;
   limit?: number;
+  method?: 'GET' | 'POST';
   returnGeometry?: boolean;
   srId?: string;
   formatResponse?: boolean;

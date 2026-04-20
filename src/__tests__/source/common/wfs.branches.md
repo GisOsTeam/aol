@@ -63,6 +63,8 @@
 | LD5 | `options.outputFormat` non défini (`undefined`) | `DEFAULT_WFS_OUTPUT_FORMAT` est utilisé dans les `internalOptions` |
 | LD6 | `options.requestProjectionCode` non défini (`undefined`) | `DEFAULT_WFS_PROJECTION_CODE` est utilisé dans les `internalOptions` |
 | LD7 | Toutes les options définies | Les valeurs fournies (`version`, `outputFormat`, `requestProjectionCode`) sont transmises telles quelles |
+| LD8 | `options.method` défini | La valeur fournie est transmise dans `internalOptions` à `loadDescribeFeatureType` |
+| LD9 | `options.method` non défini (`undefined`) | `'GET'` est utilisé dans `internalOptions` (opérateur `??`) |
 
 ---
 
@@ -82,6 +84,9 @@
 | Q10 | `options.swapLonLatGeometryResult` défini | La valeur fournie (`true`) est transmise à `executeWfsQuery` |
 | Q11 | `options.swapLonLatGeometryResult` non défini (`undefined`) | `false` est utilisé (opérateur `??`) |
 | Q12 | Valeur retournée | Retourne `{ request, featureTypeResponses: [<résultat executeWfsQuery>] }` |
+| Q13 | `request.method` absent, `options.method` défini | `request.method` est assigné depuis `options.method` avant l'appel à `executeWfsQuery` |
+| Q14 | `request.method` absent, `options.method` absent | `request.method` est assigné à `'GET'` (défaut `??`) |
+| Q15 | `request.method` déjà défini | `request.method` est conservé tel quel, `options.method` ignoré |
 
 ---
 
@@ -103,3 +108,5 @@
 | R12 | `options.swapLonLatGeometryResult` non défini (`undefined`) | `false` est utilisé (opérateur `??`) |
 | R13 | Feature trouvée | Retourne la `Feature` renvoyée par `retrieveWfsFeature` |
 | R14 | Aucune feature (`undefined`) | Retourne `undefined` |
+| R15 | `options.method` défini | La valeur fournie est transmise à `retrieveWfsFeature` |
+| R16 | `options.method` non défini (`undefined`) | `'GET'` est utilisé (opérateur `??`) |

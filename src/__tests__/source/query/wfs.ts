@@ -81,6 +81,7 @@ describe('WFS', () => {
         bbox: bbox,
         featureProjectionCode: projectionCode,
         limit: 100,
+        method: 'GET',
         outputFormat: 'application/json', // 'application/json',
         queryType: 'query' as QueryType,
         requestProjectionCode: projectionCode,
@@ -359,6 +360,18 @@ describe('WFS', () => {
         expect<string>(response.features?.[0].get('numero')).toBe(numero);
       });
 
+      test('avec géométrie retourne la première entité attendue en POST', async () => {
+        const options = {
+          ...defaultOptions,
+          request: { ...identifyRequest, method: 'POST' as const },
+        };
+
+        const response = await executeWfsQuery(options);
+
+        expect<number>(response.features?.length).toBe(1);
+        expect<string>(response.features?.[0].get('numero')).toBe(numero);
+      });
+
       test('identify avec géométrie et prédicat retourne la première entité attendue', async () => {
         const options = {
           ...defaultOptions,
@@ -371,6 +384,34 @@ describe('WFS', () => {
 
         expect<number>(response.features?.length).toBe(1);
         expect<string>(response.features?.[0].get('numero')).toBe(numero);
+      });
+
+      describe('method', () => {
+        let sendSpy: jest.SpyInstance;
+        beforeEach(() => {
+          sendSpy = jest.spyOn(HttpEngine.getInstance(), 'send').mockResolvedValue({
+            status: 200,
+            text: '{"type":"FeatureCollection","features":[]}',
+            body: null,
+            statusText: 'OK',
+            contentType: 'application/json',
+            responseType: 'text',
+            headers: {},
+          });
+        });
+        afterEach(() => {
+          sendSpy.mockRestore();
+        });
+
+        test("EWQ_M3 - request.method = 'POST' (avec géométrie) → 'POST' transmis à HttpEngine", async () => {
+          await executeWfsQuery({ ...defaultOptions, request: { ...identifyRequest, method: 'POST' } });
+          expect(sendSpy.mock.calls[0][0].method).toBe('POST');
+        });
+
+        test("EWQ_M4 - request.method undefined (avec géométrie) → 'GET' transmis par défaut", async () => {
+          await executeWfsQuery({ ...defaultOptions });
+          expect(sendSpy.mock.calls[0][0].method).toBe('GET');
+        });
       });
     });
 
@@ -441,6 +482,19 @@ describe('WFS', () => {
         expect<string>(response.features?.[0].get('numero')).toBe(numero);
       });
 
+      test('avec prédicat retourne la première entité attendue en POST', async () => {
+        const options = {
+          ...defaultOptions,
+          request: { ...queryRequest, method: 'POST' as const },
+        };
+        options.type.predicate = andPredicate;
+
+        const response = await executeWfsQuery(options);
+
+        expect<number>(response.features?.length).toBe(1);
+        expect<string>(response.features?.[0].get('numero')).toBe(numero);
+      });
+
       test('avec filters dans les options retourne la première entité attendue', async () => {
         const options: IExecuteWfsQueryOptions = {
           ...defaultOptions,
@@ -481,6 +535,34 @@ describe('WFS', () => {
 
         expect<number>(response.features?.length).toBe(2);
       });
+
+      describe('method', () => {
+        let sendSpy: jest.SpyInstance;
+        beforeEach(() => {
+          sendSpy = jest.spyOn(HttpEngine.getInstance(), 'send').mockResolvedValue({
+            status: 200,
+            text: '{"type":"FeatureCollection","features":[]}',
+            body: null,
+            statusText: 'OK',
+            contentType: 'application/json',
+            responseType: 'text',
+            headers: {},
+          });
+        });
+        afterEach(() => {
+          sendSpy.mockRestore();
+        });
+
+        test("EWQ_M1 - request.method = 'POST' (sans géométrie) → 'POST' transmis à HttpEngine", async () => {
+          await executeWfsQuery({ ...defaultOptions, request: { ...queryRequest, method: 'POST' } });
+          expect(sendSpy.mock.calls[0][0].method).toBe('POST');
+        });
+
+        test("EWQ_M2 - request.method undefined (sans géométrie) → 'GET' transmis par défaut", async () => {
+          await executeWfsQuery({ ...defaultOptions });
+          expect(sendSpy.mock.calls[0][0].method).toBe('GET');
+        });
+      });
     });
   });
 
@@ -492,6 +574,7 @@ describe('WFS', () => {
         bbox: bbox,
         featureProjectionCode: projectionCode,
         limit: 100,
+        method: 'GET',
         outputFormat: 'application/json', // 'application/json',
         queryType: 'query' as QueryType,
         requestProjectionCode: projectionCode,
@@ -512,6 +595,174 @@ describe('WFS', () => {
       const features = response || [];
       const featureWithExpectedNumero = features.find((feature) => feature.get('numero') === numero);
       expect(featureWithExpectedNumero).toBeDefined();
+    });
+
+    test('charge les entités correspondant à une BBOX en POST', async () => {
+      const options = {
+        ...defaultOptions,
+        method: 'POST' as const,
+      };
+      const response = await loadWfsFeaturesOnBBOX(options);
+      const features = response || [];
+      const featureWithExpectedNumero = features.find((feature) => feature.get('numero') === numero);
+      expect(featureWithExpectedNumero).toBeDefined();
+    });
+
+    describe('method', () => {
+      let sendSpy: jest.SpyInstance;
+      beforeEach(() => {
+        sendSpy = jest.spyOn(HttpEngine.getInstance(), 'send').mockResolvedValue({
+          status: 200,
+          text: '{"type":"FeatureCollection","features":[]}',
+          body: null,
+          statusText: 'OK',
+          contentType: 'application/json',
+          responseType: 'text',
+          headers: {},
+        });
+      });
+      afterEach(() => {
+        sendSpy.mockRestore();
+      });
+
+      test("LB_M1 - method = 'GET' → params dans l'URL, body et contentType absents", async () => {
+        await loadWfsFeaturesOnBBOX({ ...defaultOptions, method: 'GET' });
+        const call = sendSpy.mock.calls[0][0];
+        expect(call.method).toBe('GET');
+        expect(call.params).toBeDefined();
+        expect(call.body).toBeUndefined();
+        expect(call.contentType).toBeUndefined();
+      });
+
+      test("LB_M2 - method = 'POST' → body URLEncoded, contentType application/x-www-form-urlencoded, params absent", async () => {
+        await loadWfsFeaturesOnBBOX({ ...defaultOptions, method: 'POST' });
+        const call = sendSpy.mock.calls[0][0];
+        expect(call.method).toBe('POST');
+        expect(call.params).toBeUndefined();
+        expect(call.contentType).toBe('application/x-www-form-urlencoded');
+        const bodyParams = new URLSearchParams(call.body as string);
+        expect(bodyParams.get('SERVICE')).toBe('WFS');
+      });
+
+      test('LB_414_1 - GET retourne 414 → retry POST réussit → features retournées', async () => {
+        sendSpy
+          .mockResolvedValueOnce({
+            status: 414,
+            text: '',
+            body: null,
+            statusText: 'URI Too Long',
+            contentType: '',
+            responseType: 'text',
+            headers: {},
+          })
+          .mockResolvedValueOnce({
+            status: 200,
+            text: '{"type":"FeatureCollection","features":[]}',
+            body: null,
+            statusText: 'OK',
+            contentType: 'application/json',
+            responseType: 'text',
+            headers: {},
+          });
+        const result = await loadWfsFeaturesOnBBOX({ ...defaultOptions, method: 'GET' });
+        expect(sendSpy).toHaveBeenCalledTimes(2);
+        expect(sendSpy.mock.calls[0][0].method).toBe('GET');
+        expect(sendSpy.mock.calls[1][0].method).toBe('POST');
+        expect(result).toEqual([]);
+      });
+
+      test('LB_414_2 - GET retourne 414 → retry POST échoue → erreur propagée', async () => {
+        sendSpy
+          .mockResolvedValueOnce({
+            status: 414,
+            text: '',
+            body: null,
+            statusText: 'URI Too Long',
+            contentType: '',
+            responseType: 'text',
+            headers: {},
+          })
+          .mockResolvedValueOnce({
+            status: 500,
+            text: '',
+            body: null,
+            statusText: 'Internal Server Error',
+            contentType: '',
+            responseType: 'text',
+            headers: {},
+          });
+        await expect(loadWfsFeaturesOnBBOX({ ...defaultOptions, method: 'GET' })).rejects.toThrow(
+          'WFS BBOX request error 500 (POST retry after 414)',
+        );
+        expect(sendSpy).toHaveBeenCalledTimes(2);
+      });
+
+      test('LB_414_3 - POST retourne 414 → pas de retry', async () => {
+        sendSpy.mockResolvedValueOnce({
+          status: 414,
+          text: '',
+          body: null,
+          statusText: 'URI Too Long',
+          contentType: '',
+          responseType: 'text',
+          headers: {},
+        });
+        await expect(loadWfsFeaturesOnBBOX({ ...defaultOptions, method: 'POST' })).rejects.toThrow(
+          'WFS BBOX request error 414',
+        );
+        expect(sendSpy).toHaveBeenCalledTimes(1);
+      });
+
+      test('LB_414_4 - GET retourne 414 → retry POST utilise body + contentType corrects', async () => {
+        sendSpy
+          .mockResolvedValueOnce({
+            status: 414,
+            text: '',
+            body: null,
+            statusText: 'URI Too Long',
+            contentType: '',
+            responseType: 'text',
+            headers: {},
+          })
+          .mockResolvedValueOnce({
+            status: 200,
+            text: '{"type":"FeatureCollection","features":[]}',
+            body: null,
+            statusText: 'OK',
+            contentType: 'application/json',
+            responseType: 'text',
+            headers: {},
+          });
+        await loadWfsFeaturesOnBBOX({ ...defaultOptions, method: 'GET' });
+        const retryCall = sendSpy.mock.calls[1][0];
+        expect(retryCall.method).toBe('POST');
+        expect(retryCall.params).toBeUndefined();
+        expect(retryCall.contentType).toBe('application/x-www-form-urlencoded');
+        expect(retryCall.body).toBeDefined();
+        const bodyParams = new URLSearchParams(retryCall.body as string);
+        expect(bodyParams.get('SERVICE')).toBe('WFS');
+      });
+
+      test('LB_414_5 - GET retourne 200 → pas de retry', async () => {
+        await loadWfsFeaturesOnBBOX({ ...defaultOptions, method: 'GET' });
+        expect(sendSpy).toHaveBeenCalledTimes(1);
+      });
+
+      test('LB_414_6 - GET retourne 400 → pas de retry', async () => {
+        sendSpy.mockResolvedValueOnce({
+          status: 400,
+          text: '',
+          body: null,
+          statusText: 'Bad Request',
+          contentType: '',
+          responseType: 'text',
+          headers: {},
+        });
+        await expect(loadWfsFeaturesOnBBOX({ ...defaultOptions, method: 'GET' })).rejects.toThrow(
+          'WFS BBOX request error 400',
+        );
+        expect(sendSpy).toHaveBeenCalledTimes(1);
+      });
     });
   });
 
@@ -539,6 +790,44 @@ describe('WFS', () => {
       expect(feature).toBeDefined();
       expect(feature?.getId()).toBe(featureId);
     });
+
+    test('récupère une entité spécifique à partir de son ID en POST', async () => {
+      const options = {
+        ...defaultOptions,
+        method: 'POST' as const,
+      };
+      const feature = await retrieveWfsFeature(options);
+      expect(feature).toBeDefined();
+      expect(feature?.getId()).toBe(featureId);
+    });
+
+    describe('method', () => {
+      let sendSpy: jest.SpyInstance;
+      beforeEach(() => {
+        sendSpy = jest.spyOn(HttpEngine.getInstance(), 'send').mockResolvedValue({
+          status: 200,
+          text: '{"type":"FeatureCollection","features":[]}',
+          body: null,
+          statusText: 'OK',
+          contentType: 'application/json',
+          responseType: 'text',
+          headers: {},
+        });
+      });
+      afterEach(() => {
+        sendSpy.mockRestore();
+      });
+
+      test("RWF_M1 - method = 'POST' → 'POST' transmis à HttpEngine", async () => {
+        await retrieveWfsFeature({ ...defaultOptions, method: 'POST' });
+        expect(sendSpy.mock.calls[0][0].method).toBe('POST');
+      });
+
+      test("RWF_M2 - method undefined → 'GET' transmis par défaut à HttpEngine", async () => {
+        await retrieveWfsFeature(defaultOptions);
+        expect(sendSpy.mock.calls[0][0].method).toBe('GET');
+      });
+    });
   });
 
   describe('loadWfsFeatureDescription', () => {
@@ -564,6 +853,46 @@ describe('WFS', () => {
       expect(options.type.attributes).toBeDefined();
       expect(options.type.attributes?.length).toBeGreaterThan(0);
       expect(options.type.geometryAttribute).toBeDefined();
+    });
+
+    test("charge la description d'un type de feature en POST", async () => {
+      const options = {
+        ...defaultOptions,
+        method: 'POST' as const,
+      };
+      await loadWfsFeatureDescription(options);
+
+      expect(options.type.attributes).toBeDefined();
+      expect(options.type.attributes?.length).toBeGreaterThan(0);
+      expect(options.type.geometryAttribute).toBeDefined();
+    });
+
+    describe('method', () => {
+      let sendSpy: jest.SpyInstance;
+      beforeEach(() => {
+        sendSpy = jest.spyOn(HttpEngine.getInstance(), 'send').mockResolvedValue({
+          status: 200,
+          text: '{"type":"FeatureCollection","features":[]}',
+          body: null,
+          statusText: 'OK',
+          contentType: 'application/json',
+          responseType: 'text',
+          headers: {},
+        });
+      });
+      afterEach(() => {
+        sendSpy.mockRestore();
+      });
+
+      test("LFD_M1 - method = 'POST' → 'POST' transmis à HttpEngine", async () => {
+        await loadWfsFeatureDescription({ ...defaultOptions, method: 'POST' });
+        expect(sendSpy.mock.calls[0][0].method).toBe('POST');
+      });
+
+      test("LFD_M2 - method undefined → 'GET' transmis par défaut à HttpEngine", async () => {
+        await loadWfsFeatureDescription(defaultOptions);
+        expect(sendSpy.mock.calls[0][0].method).toBe('GET');
+      });
     });
   });
 });

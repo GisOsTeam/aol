@@ -15,7 +15,7 @@ import Geometry from 'ol/geom/Geometry';
 import Projection from 'ol/proj/Projection';
 import { readFeatures } from '../../utils/featuresRead';
 import { calculateGeoExtent } from '../../utils/extent';
-import { HttpEngine, IHttpResponse } from '../../HttpEngine';
+import { HttpEngine } from '../../HttpEngine';
 import { FieldTypeEnum, FilterBuilder, FilterBuilderTypeEnum } from '../../filter';
 import { IPredicate, SpatialPre } from '../../filter/predicate';
 import { OperatorEnum } from '../../filter/operator';
@@ -41,6 +41,7 @@ export interface ILoadWfsFeatureOptions {
   filters?: IPredicate;
   id?: number | string;
   limit: number;
+  method: 'GET' | 'POST';
   outputFormat: string;
   queryType: QueryType;
   requestProjectionCode: string;
@@ -54,6 +55,7 @@ export interface ILoadWfsFeatureOptions {
 export interface IRetrieveWfsFeaturesOptions {
   featureProjection: Projection;
   id: number | string;
+  method?: 'GET' | 'POST';
   outputFormat: string;
   requestProjectionCode: string;
   swapLonLatGeometryResult: boolean;
@@ -67,6 +69,7 @@ export interface ILoadWfsFeatureDescriptionOptions {
   url: string;
   type: IFeatureType<string>;
   version: WfsVersion;
+  method?: 'GET' | 'POST';
   outputFormat: string;
   requestProjectionCode: string;
 }
@@ -78,6 +81,7 @@ interface IRetrieveWfsFeaturesDefaultOptions {
   featureProjection: Projection;
   filters: IPredicate;
   limit: number;
+  method: 'GET' | 'POST';
   outputFormat: string;
   overrideFilters: IPredicate | undefined;
   requestProjectionCode: string;
@@ -114,27 +118,38 @@ export async function executeWfsQuery(options: IExecuteWfsQueryOptions): Promise
   return wfsFeatureToQueryFeatureTypeResponseMapper(filteredFeatures, options.type, options.source);
 }
 
-export function loadWfsFeaturesOnBBOX(options: ILoadWfsFeatureOptions): Promise<Feature[]> {
+export async function loadWfsFeaturesOnBBOX(options: ILoadWfsFeatureOptions): Promise<Feature[]> {
   const params = buildWfsRequestParams(options);
-  return HttpEngine.getInstance()
-    .send({
+  const isPost = options.method === 'POST';
+
+  const res = await HttpEngine.getInstance().send({
+    url: options.url,
+    method: options.method,
+    params: isPost ? undefined : params,
+    body: isPost ? params : undefined,
+    contentType: isPost ? 'application/x-www-form-urlencoded' : undefined,
+    responseType: 'text',
+  });
+
+  // Retry en POST si GET retourne 414 (URI Too Long)
+  if (res.status === 414 && !isPost) {
+    const retryRes = await HttpEngine.getInstance().send({
       url: options.url,
-      params,
+      method: 'POST',
+      body: params,
+      contentType: 'application/x-www-form-urlencoded',
       responseType: 'text',
-    })
-    .then(
-      (res: IHttpResponse) => {
-        if (res.status !== 200) {
-          throw new Error('WFS BBOX request error ' + res.status);
-        }
-        const txt = res.text;
-        return readFeatures(txt, options);
-      },
-      (err) => {
-        console.error('WFS BBOX request failed:', err);
-        throw err;
-      },
-    );
+    });
+    if (retryRes.status !== 200) {
+      throw new Error('WFS BBOX request error ' + retryRes.status + ' (POST retry after 414)');
+    }
+    return readFeatures(retryRes.text, options);
+  }
+
+  if (res.status !== 200) {
+    throw new Error('WFS BBOX request error ' + res.status);
+  }
+  return readFeatures(res.text, options);
 }
 
 export async function retrieveWfsFeature(options: IRetrieveWfsFeaturesOptions): Promise<Feature | undefined> {
@@ -146,6 +161,7 @@ export async function retrieveWfsFeature(options: IRetrieveWfsFeaturesOptions): 
     featureProjectionCode: options.featureProjection.getCode(),
     bbox: [],
     limit: 1,
+    method: options.method ?? 'GET',
     version: options.version,
     outputFormat: options.outputFormat,
     swapLonLatGeometryResult: options.swapLonLatGeometryResult,
@@ -168,6 +184,7 @@ export async function loadWfsFeatureDescription(options: ILoadWfsFeatureDescript
     featureProjectionCode: options.requestProjectionCode,
     bbox: [],
     limit: 1,
+    method: options.method ?? 'GET',
     version: options.version,
     outputFormat: options.outputFormat,
   });
@@ -253,6 +270,7 @@ function retrieveWfsFeaturesWithBBOXFromGeometry(options: IRetrieveWfsFeaturesWi
     featureProjectionCode: options.featureProjection.getCode(),
     bbox: extentFinal,
     limit: options.limit,
+    method: options.method,
     version: options.version,
     outputFormat: options.outputFormat,
     swapXYBBOXRequest: options.swapXYBBOXRequest,
@@ -271,6 +289,7 @@ function retrieveWfsFeaturesWithoutGeometry(options: IRetrieveWfsFeaturesWithout
     featureProjectionCode: options.featureProjection.getCode(),
     bbox: [],
     limit: options.limit,
+    method: options.method,
     version: options.version,
     outputFormat: options.outputFormat,
     swapLonLatGeometryResult: options.swapLonLatGeometryResult,
@@ -301,6 +320,7 @@ function ewqoToRwfwogoTransformer(options: IExecuteWfsQueryOptions): IRetrieveWf
     featureProjection: options.request.olMap.getView().getProjection(),
     filters: (options.request.filters as IPredicate) ?? undefined,
     limit: options.request.limit ?? DEFAULT_WFS_LIMIT,
+    method: options.request.method ?? 'GET',
     outputFormat: options.outputFormat,
     overrideFilters: options.request.overrideFilters ?? undefined,
     requestProjectionCode: options.requestProjectionCode,
@@ -344,6 +364,7 @@ function ewqoToRwfwgoTransformer(options: IExecuteWfsQueryOptions): IRetrieveWfs
     identifyTolerance: identifyTolerance,
     limit: options.request.limit ?? DEFAULT_WFS_LIMIT,
     mapResolution: options.request.olMap.getView().getResolution() ?? DEFAULT_RESOLUTION,
+    method: options.request.method ?? 'GET',
     outputFormat: options.outputFormat,
     overrideFilters: options.request.overrideFilters ?? undefined,
     queryType: options.request.queryType,

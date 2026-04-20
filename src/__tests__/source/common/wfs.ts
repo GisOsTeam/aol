@@ -466,6 +466,38 @@ describe('aol.source.common.wfs', () => {
       expect(callArgs.outputFormat).toBe('application/json');
       expect(callArgs.requestProjectionCode).toBe('EPSG:4326');
     });
+
+    test('LD8 — options.method défini → transmis dans internalOptions', async () => {
+      const type: IFeatureType<string> = { id: 'test:layer' };
+      const options: ICommonWfsOptions = {
+        url: 'http://example.com/wfs',
+        type,
+        method: 'POST',
+      };
+
+      mockLoadDescribeFeatureType.mockResolvedValue(true);
+
+      await WFSLoadDescription(options);
+
+      const callArgs = mockLoadDescribeFeatureType.mock.calls[0][0];
+      expect(callArgs.method).toBe('POST');
+    });
+
+    test('LD9 — options.method non défini → GET utilisé', async () => {
+      const type: IFeatureType<string> = { id: 'test:layer' };
+      const options: ICommonWfsOptions = {
+        url: 'http://example.com/wfs',
+        type,
+        // method intentionally omitted
+      };
+
+      mockLoadDescribeFeatureType.mockResolvedValue(true);
+
+      await WFSLoadDescription(options);
+
+      const callArgs = mockLoadDescribeFeatureType.mock.calls[0][0];
+      expect(callArgs.method).toBe('GET');
+    });
   });
 
   // ──────────────────────────────────────────────────────────────────────────
@@ -518,9 +550,7 @@ describe('aol.source.common.wfs', () => {
 
     beforeEach(() => {
       jest.clearAllMocks();
-      mockLoadDescribeFeatureTypeInit = jest
-        .spyOn(wfsQuery, 'loadDescribeFeatureType')
-        .mockResolvedValue(true);
+      mockLoadDescribeFeatureTypeInit = jest.spyOn(wfsQuery, 'loadDescribeFeatureType').mockResolvedValue(true);
     });
 
     afterEach(() => {
@@ -580,9 +610,7 @@ describe('aol.source.common.wfs', () => {
 
     beforeEach(() => {
       jest.clearAllMocks();
-      mockExecuteWfsQuery = jest
-        .spyOn(wfsQuery, 'executeWfsQuery')
-        .mockResolvedValue(mockFeatureTypeResponse);
+      mockExecuteWfsQuery = jest.spyOn(wfsQuery, 'executeWfsQuery').mockResolvedValue(mockFeatureTypeResponse);
     });
 
     afterEach(() => {
@@ -626,7 +654,10 @@ describe('aol.source.common.wfs', () => {
     });
 
     test('Q7 - requestProjectionCode undefined → uses DEFAULT_WFS_PROJECTION_CODE', async () => {
-      await WFSQuery(mockSource, mockRequest, { ...baseOptions, requestProjectionCode: undefined } as ICommonWfsOptions);
+      await WFSQuery(mockSource, mockRequest, {
+        ...baseOptions,
+        requestProjectionCode: undefined,
+      } as ICommonWfsOptions);
       expect(mockExecuteWfsQuery.mock.calls[0][0].requestProjectionCode).toBe(DEFAULT_WFS_PROJECTION_CODE);
     });
 
@@ -646,7 +677,10 @@ describe('aol.source.common.wfs', () => {
     });
 
     test('Q11 - swapLonLatGeometryResult undefined → uses false', async () => {
-      await WFSQuery(mockSource, mockRequest, { ...baseOptions, swapLonLatGeometryResult: undefined } as ICommonWfsOptions);
+      await WFSQuery(mockSource, mockRequest, {
+        ...baseOptions,
+        swapLonLatGeometryResult: undefined,
+      } as ICommonWfsOptions);
       expect(mockExecuteWfsQuery.mock.calls[0][0].swapLonLatGeometryResult).toBe(false);
     });
 
@@ -655,6 +689,24 @@ describe('aol.source.common.wfs', () => {
       expect(result.request).toBe(mockRequest);
       expect(result.featureTypeResponses).toHaveLength(1);
       expect(result.featureTypeResponses[0]).toBe(mockFeatureTypeResponse);
+    });
+
+    test('Q13 — request.method absent → assigné depuis options.method ?? GET', async () => {
+      const request: IGisRequest = { ...mockRequest };
+      await WFSQuery(mockSource, request, { ...baseOptions, method: 'POST' });
+      expect(request.method).toBe('POST');
+    });
+
+    test('Q14 — request.method absent, options.method absent → assigné à GET', async () => {
+      const request: IGisRequest = { ...mockRequest };
+      await WFSQuery(mockSource, request, { ...baseOptions, method: undefined });
+      expect(request.method).toBe('GET');
+    });
+
+    test('Q15 — request.method déjà défini → conservé, options.method ignoré', async () => {
+      const request: IGisRequest = { ...mockRequest, method: 'GET' };
+      await WFSQuery(mockSource, request, { ...baseOptions, method: 'POST' });
+      expect(request.method).toBe('GET');
     });
   });
 
@@ -679,9 +731,7 @@ describe('aol.source.common.wfs', () => {
 
     beforeEach(() => {
       jest.clearAllMocks();
-      mockRetrieveWfsFeature = jest
-        .spyOn(wfsQuery, 'retrieveWfsFeature')
-        .mockResolvedValue(mockFeature);
+      mockRetrieveWfsFeature = jest.spyOn(wfsQuery, 'retrieveWfsFeature').mockResolvedValue(mockFeature);
     });
 
     afterEach(() => {
@@ -710,7 +760,10 @@ describe('aol.source.common.wfs', () => {
     });
 
     test('R4 - requestProjectionCode undefined → uses DEFAULT_WFS_PROJECTION_CODE', async () => {
-      await WFSRetrieveFeature(1, mockProjection, { ...baseOptions, requestProjectionCode: undefined } as ICommonWfsOptions);
+      await WFSRetrieveFeature(1, mockProjection, {
+        ...baseOptions,
+        requestProjectionCode: undefined,
+      } as ICommonWfsOptions);
       expect(mockRetrieveWfsFeature.mock.calls[0][0].requestProjectionCode).toBe(DEFAULT_WFS_PROJECTION_CODE);
     });
 
@@ -740,7 +793,10 @@ describe('aol.source.common.wfs', () => {
     });
 
     test('R10 - swapXYBBOXRequest undefined → uses false', async () => {
-      await WFSRetrieveFeature(1, mockProjection, { ...baseOptions, swapXYBBOXRequest: undefined } as ICommonWfsOptions);
+      await WFSRetrieveFeature(1, mockProjection, {
+        ...baseOptions,
+        swapXYBBOXRequest: undefined,
+      } as ICommonWfsOptions);
       expect(mockRetrieveWfsFeature.mock.calls[0][0].swapXYBBOXRequest).toBe(false);
     });
 
@@ -750,7 +806,10 @@ describe('aol.source.common.wfs', () => {
     });
 
     test('R12 - swapLonLatGeometryResult undefined → uses false', async () => {
-      await WFSRetrieveFeature(1, mockProjection, { ...baseOptions, swapLonLatGeometryResult: undefined } as ICommonWfsOptions);
+      await WFSRetrieveFeature(1, mockProjection, {
+        ...baseOptions,
+        swapLonLatGeometryResult: undefined,
+      } as ICommonWfsOptions);
       expect(mockRetrieveWfsFeature.mock.calls[0][0].swapLonLatGeometryResult).toBe(false);
     });
 
@@ -763,6 +822,16 @@ describe('aol.source.common.wfs', () => {
       mockRetrieveWfsFeature.mockResolvedValue(undefined);
       const result = await WFSRetrieveFeature(1, mockProjection, baseOptions);
       expect(result).toBeUndefined();
+    });
+
+    test('R15 — options.method défini → transmis à retrieveWfsFeature', async () => {
+      await WFSRetrieveFeature(1, mockProjection, { ...baseOptions, method: 'POST' });
+      expect(mockRetrieveWfsFeature.mock.calls[0][0].method).toBe('POST');
+    });
+
+    test('R16 — options.method non défini → GET utilisé', async () => {
+      await WFSRetrieveFeature(1, mockProjection, { ...baseOptions, method: undefined });
+      expect(mockRetrieveWfsFeature.mock.calls[0][0].method).toBe('GET');
     });
   });
 });

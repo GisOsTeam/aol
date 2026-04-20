@@ -86,6 +86,8 @@
 | Q4 | `queryWfsUrl !== null` | `executeWfsQuery` est appelé |
 | Q5 | `queryWfsUrl === null` | `executeWmsQuery` est appelé |
 | Q6 | Types vides | Retourne `featureTypeResponses` vide |
+| Q7 | `queryWfsUrl !== null` et `request.method` absent | `request.method` est assigné avec `options.queryMethod` avant l’appel à `executeWfsQuery` |
+| Q8 | `queryWfsUrl !== null` et `request.method` déjà défini | `request.method` est conservé tel quel, non écrasé par `options.queryMethod` |
 
 ---
 
