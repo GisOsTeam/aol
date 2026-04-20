@@ -382,6 +382,25 @@ describe('aol.source.common.wms', () => {
       const callArgs = source.updateParams.mock.calls[0][0] as Record<string, unknown>;
       expect(callArgs).not.toHaveProperty('CQL_FILTER');
     });
+
+    test('SS7 — cqlFilter devient vide après fusion → CQL_FILTER supprimé des params', () => {
+      const source = createMockConfigurableSource();
+      WMSSetSourceOptions(
+        { ...BASE_OPTIONS, types: [{ id: 'ns:layer' }] },
+        source as any,
+        jest.fn(),
+        jest.fn(),
+        newImageLoadFn,
+        undefined,
+        new Map(),
+        {
+          CQL_FILTER: 'EXISTING_FILTER',
+        },
+        handlePropertyChange,
+      );
+      const callArgs = source.updateParams.mock.calls[0][0] as Record<string, unknown>;
+      expect(callArgs).not.toHaveProperty('CQL_FILTER');
+    });
   });
 
   // ==========================================

@@ -188,8 +188,10 @@ export function WMSSetSourceOptions<Options extends ICommonWmsOptions, T>(
     NOW: Date.now(),
   };
   const cqlFilter = WMSBuildFilter(mergedOptions.types, defaultTypePredicateAsMap);
-  if (cqlFilter) {
+  if (cqlFilter && cqlFilter !== '') {
     mergedParams.CQL_FILTER = cqlFilter;
+  } else {
+    delete mergedParams.CQL_FILTER;
   }
 
   if (mergedOptions.loadImagesWithHttpEngine) {

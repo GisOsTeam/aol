@@ -62,6 +62,7 @@
 |---|---------|-------------|
 | SS5 | `cqlFilter` non vide | `CQL_FILTER` est ajouté aux params |
 | SS6 | `cqlFilter` vide | `CQL_FILTER` est absent des params |
+| SS7 | `cqlFilter` devient vide après fusion | `CQL_FILTER` est supprimé des params |
 
 ---
 
