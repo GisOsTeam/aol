@@ -186,12 +186,11 @@ export function WMSSetSourceOptions<Options extends ICommonWmsOptions, T>(
     LAYERS: getWmsLayersFromTypes(mergedOptions.types),
     VERSION: mergedOptions.version,
     NOW: Date.now(),
+    CQL_FILTER: undefined,
   };
   const cqlFilter = WMSBuildFilter(mergedOptions.types, defaultTypePredicateAsMap);
   if (cqlFilter && cqlFilter !== '') {
     mergedParams.CQL_FILTER = cqlFilter;
-  } else {
-    delete mergedParams.CQL_FILTER;
   }
 
   if (mergedOptions.loadImagesWithHttpEngine) {

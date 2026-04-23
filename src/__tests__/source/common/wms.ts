@@ -369,7 +369,7 @@ describe('aol.source.common.wms', () => {
     test('SS6 — cqlFilter vide → CQL_FILTER absent des params', () => {
       const source = createMockConfigurableSource();
       WMSSetSourceOptions(
-        { ...BASE_OPTIONS, types: [{ id: 'ns:layer' }] },
+        { ...BASE_OPTIONS },
         source as any,
         jest.fn(),
         jest.fn(),
@@ -380,13 +380,14 @@ describe('aol.source.common.wms', () => {
         handlePropertyChange,
       );
       const callArgs = source.updateParams.mock.calls[0][0] as Record<string, unknown>;
-      expect(callArgs).not.toHaveProperty('CQL_FILTER');
+      expect(callArgs).toHaveProperty('CQL_FILTER');
+      expect(callArgs['CQL_FILTER']).toBe(undefined);
     });
 
     test('SS7 — cqlFilter devient vide après fusion → CQL_FILTER supprimé des params', () => {
       const source = createMockConfigurableSource();
       WMSSetSourceOptions(
-        { ...BASE_OPTIONS, types: [{ id: 'ns:layer' }] },
+        { ...BASE_OPTIONS },
         source as any,
         jest.fn(),
         jest.fn(),
@@ -399,7 +400,8 @@ describe('aol.source.common.wms', () => {
         handlePropertyChange,
       );
       const callArgs = source.updateParams.mock.calls[0][0] as Record<string, unknown>;
-      expect(callArgs).not.toHaveProperty('CQL_FILTER');
+      expect(callArgs).toHaveProperty('CQL_FILTER');
+      expect(callArgs['CQL_FILTER']).toBe(undefined);
     });
   });
 
