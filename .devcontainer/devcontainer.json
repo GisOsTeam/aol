@@ -43,7 +43,8 @@
     "vscode": {
       "extensions": [
         "donjayamanne.githistory",
-        "eamodio.gitlens"
+        "eamodio.gitlens",
+        "Orta.vscode-jest"
       ]
     }
   },
