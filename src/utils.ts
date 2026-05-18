@@ -90,10 +90,17 @@ export function toOpenLayersGeometry(geoJSONGeometry: GeoJSONGeometry): Geometry
  * @return  {GeoJSONGeometry} geoJSONGeometry
  */
 export function toGeoJSONGeometry(geometry: Geometry): GeoJSONGeometry {
+  let writableGeometry: Geometry;
+
+  // Handle case of circle : convert to polygon
   if (geometry.getType() === 'Circle') {
-    geometry = fromCircle(geometry as Circle);
+    writableGeometry = fromCircle(geometry as Circle);
+  } else {
+    writableGeometry = geometry;
   }
-  return geoJSONFormat.writeGeometryObject(geometry);
+
+  // Write geometry in GeoJSON
+  return geoJSONFormat.writeGeometryObject(writableGeometry);
 }
 
 /**
@@ -111,10 +118,17 @@ export function toOpenLayersFeature(geoJSONFeature: GeoJSONFeature): Feature {
  * @return {GeoJSONFeature} geoJSONFeature
  */
 export function toGeoJSONFeature(feature: Feature): GeoJSONFeature {
-  if (feature.getGeometry()?.getType() === 'Circle') {
-    feature?.setGeometry(fromCircle(feature.getGeometry() as Circle));
+  // Work on clone so changes are not applied to original feature
+  // /!\ Feature's id is not cloned : should not be a problem since id isn't included in GeoJSON feature anyway.
+  const writableFeature: Feature = feature.clone();
+
+  // Handle case of feature of circle : convert its geometry to polygon
+  if (writableFeature.getGeometry()?.getType() === 'Circle') {
+    writableFeature.setGeometry(fromCircle(writableFeature.getGeometry() as Circle));
   }
-  return geoJSONFormat.writeFeatureObject(feature);
+
+  // Write feature in GeoJSON
+  return geoJSONFormat.writeFeatureObject(writableFeature);
 }
 
 /**
