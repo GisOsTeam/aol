@@ -34,7 +34,13 @@ export class TileWfs extends VectorTile implements IInitSource, IQuerySource {
         tile.setLoader((extent: Extent, resolution: any, projection: { getCode: () => any }) => {
           const projectionCode = projection.getCode();
 
-          const mapExtent = transformExtent(extent, projectionCode, this.options.requestProjectionCode);
+          let mapExtent: Extent;
+          if (extent.some((extentCoordinate) => !isFinite(extentCoordinate))) {
+            // No extent => empty array
+            mapExtent = [];
+          } else {
+            mapExtent = transformExtent(extent, projectionCode, this.options.requestProjectionCode);
+          }
 
           loadWfsFeaturesOnBBOX({
             url: 'getUrl' in this ? (this as any).getUrl() : (this as any).getUrls()[0],

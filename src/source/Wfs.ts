@@ -14,6 +14,7 @@ import {
   WFSQuery,
   WFSRetrieveFeature,
 } from './common/wfs';
+import { Extent } from 'ol/extent';
 
 export interface IWfsOptions extends ICommonWfsOptions, Omit<Options, 'url'> {}
 
@@ -25,7 +26,13 @@ export class Wfs extends ExternalVector implements IInitSource, IQuerySource {
       loader: (extent, resolution, projection) => {
         const projectionCode = projection.getCode();
 
-        const mapExtent = transformExtent(extent, projectionCode, this.options.requestProjectionCode);
+        let mapExtent: Extent;
+        if (extent.some((extentCoordinate) => !isFinite(extentCoordinate))) {
+          // No extent => empty array
+          mapExtent = [];
+        } else {
+          mapExtent = transformExtent(extent, projectionCode, this.options.requestProjectionCode);
+        }
 
         loadWfsFeaturesOnBBOX({
           url: 'getUrl' in this ? (this as any).getUrl() : (this as any).getUrls()[0],
