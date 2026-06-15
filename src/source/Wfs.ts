@@ -23,7 +23,7 @@ export class Wfs extends ExternalVector implements IInitSource, IQuerySource {
   constructor(options: IWfsOptions) {
     super({
       ...options,
-      loader: (extent, resolution, projection) => {
+      loader: (extent: Extent, _resolution: number, projection: Projection) => {
         const projectionCode = projection.getCode();
 
         let mapExtent: Extent;

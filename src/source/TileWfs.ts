@@ -3,13 +3,13 @@ import { LayerType, LayerTypeEnum, SourceType, SourceTypeEnum } from './types';
 import { IGisRequest, IQueryResponse, IInitSource, IQuerySource } from './IExtended';
 import { transformExtent } from 'ol/proj';
 import { Options } from 'ol/source/VectorTile';
+import OlTile from 'ol/Tile';
 import OlVectorTile from 'ol/VectorTile';
 import { loadWfsFeaturesOnBBOX } from './query/wfs';
 import Projection from 'ol/proj/Projection';
 import { Feature } from 'ol';
 import { TileCoord } from 'ol/tilecoord';
 import { Extent } from 'ol/extent';
-import { FeatureLike } from 'ol/Feature';
 import {
   ICommonWfsOptions,
   WFSInit,
@@ -30,8 +30,12 @@ export class TileWfs extends VectorTile implements IInitSource, IQuerySource {
       tileUrlFunction: (tileCoord: TileCoord) => {
         return tileCoord == null ? undefined : `z${tileCoord[0]}|x${tileCoord[1]}|y${tileCoord[2]}`;
       },
-      tileLoadFunction: (tile: OlVectorTile<FeatureLike>, url: string) => {
-        tile.setLoader((extent: Extent, resolution: any, projection: { getCode: () => any }) => {
+      tileLoadFunction: (tile: OlTile, _url: string) => {
+        if (!(tile instanceof OlVectorTile)) {
+          console.warn('WFS tile should be a vector tile, instead tile is :', tile);
+          return;
+        }
+        tile.setLoader((extent: Extent, _resolution: number, projection: Projection) => {
           const projectionCode = projection.getCode();
 
           let mapExtent: Extent;
@@ -56,8 +60,8 @@ export class TileWfs extends VectorTile implements IInitSource, IQuerySource {
             swapLonLatGeometryResult: this.options.swapLonLatGeometryResult,
             method: this.options.method ?? 'GET',
           })
-            .then(tile.onLoad.bind(tile))
-            .catch(tile.onError.bind(tile));
+            .then((features) => tile.onLoad(features, projection))
+            .catch(() => tile.onError());
         });
       },
     });
