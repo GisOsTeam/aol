@@ -1,19 +1,17 @@
 import OlFeature from 'ol/Feature';
-import Wkt from 'ol/format/WKT';
 import { Extent } from 'ol/extent';
 import { all } from 'ol/loadingstrategy';
 import { Projection } from 'ol/proj';
 import { Vector, IVectorOptions } from './Vector';
 import { SourceType, SourceTypeEnum } from './types/sourceType';
 import { LayerType, LayerTypeEnum } from './types/layerType';
+import { WktUtils } from '../wkt.utils';
 
 export interface ILocalVectorOptions extends IVectorOptions {
   initialFeatures?: any[];
 }
 
 export class LocalVector extends Vector {
-  private wktFormat = new Wkt();
-
   protected oldProjectionCode: string;
 
   constructor(options: ILocalVectorOptions) {
@@ -44,7 +42,7 @@ export class LocalVector extends Vector {
         const projectionCode = initialFeature.projectionCode;
         const wkt = initialFeature.wkt;
         const properties = initialFeature.properties;
-        const geometry = this.wktFormat.readGeometry(wkt);
+        const geometry = WktUtils.toOpenLayersGeometry(wkt);
         const olFeature = new OlFeature(geometry);
         olFeature.setProperties(properties);
         (olFeature as any).originalProjectionCode = projectionCode;
@@ -74,7 +72,7 @@ export class LocalVector extends Vector {
       properties.geometry = undefined;
       initialFeatures.push({
         projectionCode: originalProjectionCode,
-        wkt: this.wktFormat.writeGeometry(originalGeometry),
+        wkt: WktUtils.toWktGeometry(originalGeometry),
         properties,
       });
     });
