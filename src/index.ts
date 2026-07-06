@@ -6,4 +6,6 @@ export * from './HttpEngine';
 export * from './ISnapshot';
 export * from './LayerStyles';
 export * from './ProjectionInfo';
+export * from './units.utils';
 export * from './utils';
+export * from './wkt.utils';
