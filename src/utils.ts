@@ -11,10 +11,11 @@ import SimpleGeometry from 'ol/geom/SimpleGeometry';
 import BaseLayer from 'ol/layer/Base';
 import GroupLayer from 'ol/layer/Group';
 import Map from 'ol/Map';
-import { ProjectionLike } from 'ol/proj';
+import { Projection } from 'ol/proj';
 import View from 'ol/View';
 import { IFeatureType, ILegendRecord, ILegendSource } from './source/IExtended';
 import { HttpEngine, IHttpResponse } from './HttpEngine';
+import { UnitsUtils } from './units.utils';
 
 const geoJSONFormat = new GeoJSON();
 
@@ -144,13 +145,13 @@ export function disjoint(g1: GeoJSONGeometry, g2: GeoJSONGeometry) {
  * Apply buffer to geometry
  * @param {GeoJSONFeature} geoJsonFeatureSource
  * @param {number} tolerance
- * @param {ProjectionLike} projectionSource
+ * @param {Projection} projectionSource
  * @return {GeoJSONFeature} Buffured feature
  */
 export function buffer(
   geoJsonFeatureSource: GeoJSONFeature,
   tolerance: number,
-  projectionSource?: ProjectionLike,
+  projectionSource?: Projection,
 ): GeoJSONFeature {
   // Si projectionSource non définit alors pas besoin de re-projeter donc on retourne la feature
   if (!projectionSource) {
@@ -163,7 +164,9 @@ export function buffer(
   // Création d'une feature GeoJSON depuis la feature OpenLayers
   const geoJsonFeature = geoJSONFormat.writeFeatureObject(tmpFeature);
   // Application de la tolerance à la géométrie
-  const wgs84BufferedFeature: GeoJSONFeature = turf.buffer(geoJsonFeature as any, tolerance);
+  const wgs84BufferedFeature: GeoJSONFeature = turf.buffer(geoJsonFeature as any, tolerance, {
+    units: UnitsUtils.toTurfUnits(projectionSource.getUnits()),
+  });
   // Création d'une feature OpenLayers depuis la feature GeoJSON intégrant la tolérance
   tmpFeature = toOpenLayersFeature(wgs84BufferedFeature);
   // Projection de la géométrie de la feature depuis 'EPSG:4326' vers projectionSource

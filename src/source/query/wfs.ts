@@ -378,30 +378,32 @@ function ewqoToRwfwgoTransformer(options: IExecuteWfsQueryOptions): IRetrieveWfs
 }
 
 function filterFeaturesByGeometry(features: Feature[], options: IRetrieveWfsFeaturesWithGeometryOptions): Feature[] {
-  const geoTolerance = options.identifyTolerance * options.mapResolution;
-  let geometryUsedForDisjoint = options.geometry.clone();
+  // Use request geometry in same projection as requested features
+  let geometryUsedForDisjoint = options.geometry
+    .clone()
+    .transform(options.geometryProjection, options.featureProjection);
 
-  if (options.queryType === 'identify') {
-    const reprojected = options.geometry.clone().transform(options.geometryProjection, options.featureProjection);
-
-    geometryUsedForDisjoint = toOpenLayersGeometry(
-      buffer(toGeoJSONFeature(new Feature<Geometry>(reprojected.clone())), geoTolerance, options.featureProjection)
-        .geometry,
-    ).clone();
+  // Case of identify from point with tolerance : apply buffer on point
+  if (
+    options.queryType === 'identify' &&
+    options.identifyTolerance > 0 &&
+    (options.geometry.getType() === 'Point' || options.geometry.getType() === 'MultiPoint')
+  ) {
+    const geoTolerance = options.identifyTolerance * options.mapResolution;
+    const bufferedFeatureUsedForDisjoint = buffer(
+      toGeoJSONFeature(new Feature<Geometry>(geometryUsedForDisjoint)),
+      geoTolerance,
+      options.featureProjection,
+    );
+    geometryUsedForDisjoint = toOpenLayersGeometry(bufferedFeatureUsedForDisjoint.geometry).clone();
   }
 
   return features.filter((feature) => {
     const featureGeom = feature.getGeometry();
     if (featureGeom) {
-      const filterableGeom = featureGeom.clone().transform(options.featureProjection, options.geometryProjection);
-      // Si en mode identify et la géométrie source et de type point (ou multi point)
-      // Ou si la géométrie de la feature intersecte la géométrie de la requête
+      // Si la géométrie de la feature intersecte la géométrie de la requête
       // Alors on ajoute la feature aux features à retourner
-      return (
-        (options.queryType === 'identify' &&
-          (options.geometry.getType() === 'Point' || options.geometry.getType() === 'MultiPoint')) ||
-        !disjoint(toGeoJSONGeometry(filterableGeom), toGeoJSONGeometry(geometryUsedForDisjoint))
-      );
+      return !disjoint(toGeoJSONGeometry(featureGeom), toGeoJSONGeometry(geometryUsedForDisjoint));
     }
     return false;
   });
