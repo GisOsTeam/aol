@@ -138,8 +138,6 @@ export function executeWmsQuery(options: {
   const mapProjection = olView.getProjection();
   const extentOriginal: Extent = [...geometry.getExtent()];
   let extentUsed: Extent = [...extentOriginal];
-  // Géométrie utilisée pour vérifier que les features resultant de la requête ne sont pas disjoint
-  let geometryUsedForDisjoint = geometry.clone();
 
   // tolérance utilisée
   let tolerance = DEFAULT_TOLERANCE;
@@ -148,11 +146,12 @@ export function executeWmsQuery(options: {
   const resolution = olView.getResolution() == null ? 1 : olView.getResolution();
 
   // Assignation de la tolérance à appliquer
-  const geoTolerance = tolerance * resolution;
+  let geoTolerance;
 
   switch (queryType) {
     case 'query':
       tolerance = 1;
+      geoTolerance = tolerance * resolution;
       // Utilisation de l'étendue intégrant la tolérance comme étendue par défaut
       extentUsed = [...calculateGeoExtent(extentOriginal, geoTolerance)];
       break;
@@ -161,15 +160,29 @@ export function executeWmsQuery(options: {
       if (Math.round(identifyTolerance) > 0) {
         tolerance = identifyTolerance;
       }
+      geoTolerance = tolerance * resolution;
       // Utilisation de l'étendue centrée sur la géometry
       const center = getCenter(geometry.getExtent());
       extentUsed = getForViewAndSize(center, resolution, 0, [1001, 1001]);
       break;
   }
 
-  geometryUsedForDisjoint = toOpenLayersGeometry(
-    buffer(toGeoJSONFeature(new Feature<Geometry>(geometry.clone())), geoTolerance, geometryProjection).geometry,
-  );
+  // Géométrie utilisée pour vérifier que les features resultant de la requête ne sont pas disjoint
+  let geometryUsedForDisjoint = geometry.clone();
+
+  // Case of identify from point with tolerance : apply buffer on point
+  if (
+    queryType === 'identify' &&
+    (options.request.identifyTolerance ?? 0) > 0 &&
+    (geometry.getType() === 'Point' || geometry.getType() === 'MultiPoint')
+  ) {
+    const bufferedFeatureUsedForDisjoint = buffer(
+      toGeoJSONFeature(new Feature<Geometry>(geometryUsedForDisjoint)),
+      geoTolerance,
+      geometryProjection,
+    );
+    geometryUsedForDisjoint = toOpenLayersGeometry(bufferedFeatureUsedForDisjoint.geometry).clone();
+  }
 
   // Utilisation de l'étendue re-projetée comme étendue par défaut
   extentUsed = transformExtent(extentUsed, geometryProjection, options.requestProjectionCode);
@@ -198,13 +211,9 @@ export function executeWmsQuery(options: {
           // Duplication de la géométrie de la feature courante et transformation vers la projection de la géométrie
           // source
           const geom = feature.getGeometry().clone().transform(mapProjection, geometryProjection);
-          // Si en mode identify et la géométrie source et de type point (ou multi point)
-          // Ou si la géométrie de la feature intersecte la géométrie de la requête
+          // Si la géométrie de la feature intersecte la géométrie de la requête
           // Alors on ajoute la feature aux features à retourner
-          if (
-            (queryType === 'identify' && (geometry.getType() === 'Point' || geometry.getType() === 'MultiPoint')) ||
-            !disjoint(toGeoJSONGeometry(geom), toGeoJSONGeometry(geometryUsedForDisjoint))
-          ) {
+          if (!disjoint(toGeoJSONGeometry(geom), toGeoJSONGeometry(geometryUsedForDisjoint))) {
             features.push(feature);
           }
         } else {
