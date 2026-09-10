@@ -22,7 +22,7 @@ export abstract class FilterPredicate<T, O extends IOperator = IOperator> extend
             return `Concatenate(${String(this.leftHand.key)})`;
         }
       case FilterBuilderTypeEnum.OGC:
-        return `<fes:ValueReference>${String(this.leftHand.key)}</fes:ValueReference>`
+        return `<fes:ValueReference>${String(this.leftHand.key)}</fes:ValueReference>`;
       default:
         return `${String(this.leftHand.key)}`;
     }

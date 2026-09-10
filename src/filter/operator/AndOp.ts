@@ -12,7 +12,7 @@ export class AndOp implements IOperator {
   public toString(type?: FilterBuilderTypeEnum): string {
     switch (type) {
       case FilterBuilderTypeEnum.OGC:
-        return "fes:And"
+        return 'fes:And';
       default:
         if (this.not) {
           return 'AND NOT';
