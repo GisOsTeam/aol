@@ -21,12 +21,14 @@ export abstract class FilterPredicate<T, O extends IOperator = IOperator> extend
           default:
             return `Concatenate(${String(this.leftHand.key)})`;
         }
+      case FilterBuilderTypeEnum.OGC:
+        return `<fes:ValueReference>${String(this.leftHand.key)}</fes:ValueReference>`
       default:
         return `${String(this.leftHand.key)}`;
     }
   }
 
-  protected defaultRightHandString(): string {
+  protected defaultRightHandString(type?: FilterBuilderType): string {
     switch (typeof this.rightHand) {
       case 'string':
         return `'${this.rightHand}'`;

@@ -12,7 +12,7 @@ export class AndOp implements IOperator {
   public toString(type?: FilterBuilderTypeEnum): string {
     switch (type) {
       case FilterBuilderTypeEnum.OGC:
-        throw new Error('Unsupported value type for And operator');
+        return "fes:And"
       default:
         if (this.not) {
           return 'AND NOT';

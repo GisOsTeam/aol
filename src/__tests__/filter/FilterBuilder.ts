@@ -113,6 +113,12 @@ describe('aol.filter', () => {
     });
 
     describe('equal', () => {
+      describe('ogc', () => {
+        test('number', () => {
+          const predicate = new Equal(numberField, new EqualOp(), 1);
+          expect(predicate.toString(FilterBuilderTypeEnum.OGC)).toMatchSnapshot();
+        });
+      });
       describe('cql', () => {
         test('not.number', () => {
           const predicate = new Equal(numberField, new EqualOp(true), 1);
