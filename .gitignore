@@ -68,3 +68,6 @@ lib
 
 # Orig files
 *.orig
+
+# Scratch/debug output (e.g. dumped integration test requests)
+/tmp/
