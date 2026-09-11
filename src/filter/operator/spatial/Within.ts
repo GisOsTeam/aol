@@ -9,13 +9,16 @@ export class Within implements IOperator {
     this.not = not;
   }
   public toString(filterBuilderType?: FilterBuilderType): string {
-    if (filterBuilderType === FilterBuilderTypeEnum.CQL) {
-      if (this.not) {
-        throw new Error(`Operator 'not' is not implemented`);
-      }
-      return 'WITHIN';
+    if (this.not) {
+      throw new Error(`Operator 'not' is not implemented`);
     }
-
-    throw new Error('filters other than CQL are not implemented');
+    switch (filterBuilderType) {
+      case FilterBuilderTypeEnum.CQL:
+        return 'WITHIN';
+      case FilterBuilderTypeEnum.OGC:
+        return 'fes:Within';
+      default:
+        throw new Error('filters other than CQL and OGC are not implemented');
+    }
   }
 }
