@@ -6,4 +6,5 @@ export * from './BoundingBox';
 export * from './Contains';
 export * from './Disjoint';
 export * from './Intersects';
+export * from './SpatialOperatorBase';
 export * from './Within';

@@ -1,5 +1,6 @@
 import { IOperator, OperatorEnum, OperatorType } from './IOperator';
 import { FilterBuilderType, FilterBuilderTypeEnum } from '../IFilter';
+import { getFesOperatorTag } from '../fes';
 
 export class Ilike implements IOperator {
   public not: boolean;
@@ -11,7 +12,7 @@ export class Ilike implements IOperator {
 
   public toString(filterBuilderType?: FilterBuilderType): string {
     if (filterBuilderType === FilterBuilderTypeEnum.OGC) {
-      return 'fes:PropertyIsLike';
+      return getFesOperatorTag(this.type);
     }
     if (filterBuilderType === FilterBuilderTypeEnum.SQL) {
       if (this.not) {

@@ -1,4 +1,7 @@
 import { FilterValueType } from './IFilter';
+// Imported directly from IOperator.ts (not the './operator' barrel) to avoid a circular
+// import: operator classes import getFesOperatorTag from this file.
+import { OperatorEnum, OperatorType } from './operator/IOperator';
 
 /**
  * Helpers to build OGC Filter Encoding Standard 2.0 (FES, OGC 09-026r2) XML fragments,
@@ -36,3 +39,39 @@ export function wrapFesNot(xml: string, not: boolean): string {
  * declares on the surrounding <fes:Filter> root.
  */
 export const GML32_NAMESPACE = 'http://www.opengis.net/gml/3.2';
+
+/**
+ * Single source of truth for "which FES 2.0 element does this operator render as".
+ * Always a fixed tag per operator type: negation is never encoded here - it is handled
+ * uniformly by wrapping the rendered predicate in <fes:Not> (see wrapFesNot above), so this
+ * map (and getFesOperatorTag) never needs to look at an operator's `not` flag.
+ *
+ * OperatorEnum.in is intentionally absent: FES has no direct "property in list" comparison,
+ * so In predicates render as an <fes:Or> of <fes:PropertyIsEqualTo> instead (see In.ts) and
+ * never call getFesOperatorTag.
+ */
+const FES_OPERATOR_TAGS: Partial<Record<OperatorType, string>> = {
+  [OperatorEnum.equal]: 'fes:PropertyIsEqualTo',
+  [OperatorEnum.greaterThan]: 'fes:PropertyIsGreaterThan',
+  [OperatorEnum.greaterOrEqualThan]: 'fes:PropertyIsGreaterThanOrEqualTo',
+  [OperatorEnum.lowerThan]: 'fes:PropertyIsLessThan',
+  [OperatorEnum.lowerOrEqualThan]: 'fes:PropertyIsLessThanOrEqualTo',
+  [OperatorEnum.like]: 'fes:PropertyIsLike',
+  [OperatorEnum.ilike]: 'fes:PropertyIsLike',
+  [OperatorEnum.null]: 'fes:PropertyIsNull',
+  [OperatorEnum.and]: 'fes:And',
+  [OperatorEnum.or]: 'fes:Or',
+  [OperatorEnum.BBOX]: 'fes:BBOX',
+  [OperatorEnum.Contains]: 'fes:Contains',
+  [OperatorEnum.Disjoint]: 'fes:Disjoint',
+  [OperatorEnum.Intersects]: 'fes:Intersects',
+  [OperatorEnum.Within]: 'fes:Within',
+};
+
+export function getFesOperatorTag(operatorType: OperatorType): string {
+  const tag = FES_OPERATOR_TAGS[operatorType];
+  if (!tag) {
+    throw new Error(`No FES 2.0 tag registered for operator type "${operatorType}"`);
+  }
+  return tag;
+}
