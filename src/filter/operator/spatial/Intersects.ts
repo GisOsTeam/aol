@@ -9,13 +9,16 @@ export class Intersects implements IOperator {
     this.not = not;
   }
   public toString(filterBuilderType?: FilterBuilderType): string {
-    if (filterBuilderType === FilterBuilderTypeEnum.CQL) {
-      if (this.not) {
-        throw new Error(`Operator 'not' is not implemented`);
-      }
-      return 'INTERSECTS';
+    if (this.not) {
+      throw new Error(`Operator 'not' is not implemented`);
     }
-
-    throw new Error('filters other than CQL are not implemented');
+    switch (filterBuilderType) {
+      case FilterBuilderTypeEnum.CQL:
+        return 'INTERSECTS';
+      case FilterBuilderTypeEnum.OGC:
+        return 'fes:Intersects';
+      default:
+        throw new Error('filters other than CQL and OGC are not implemented');
+    }
   }
 }
