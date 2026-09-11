@@ -1,5 +1,6 @@
 import { FilterBuilderType, FilterBuilderTypeEnum } from '../IFilter';
 import { IOperator, OperatorEnum, OperatorType } from './IOperator';
+import { getFesOperatorTag } from '../fes';
 
 export class LowerOrEqualThan implements IOperator {
   public readonly not: boolean;
@@ -11,7 +12,7 @@ export class LowerOrEqualThan implements IOperator {
 
   public toString(filterBuilderType?: FilterBuilderType): string {
     if (filterBuilderType === FilterBuilderTypeEnum.OGC) {
-      return 'fes:PropertyIsLessThanOrEqualTo';
+      return getFesOperatorTag(this.type);
     }
     return '<=';
   }

@@ -1,5 +1,6 @@
 import { IOperator, OperatorEnum, OperatorType } from './IOperator';
 import { FilterBuilderTypeEnum } from '../IFilter';
+import { getFesOperatorTag } from '../fes';
 
 export class AndOp implements IOperator {
   public not: boolean;
@@ -12,7 +13,7 @@ export class AndOp implements IOperator {
   public toString(type?: FilterBuilderTypeEnum): string {
     switch (type) {
       case FilterBuilderTypeEnum.OGC:
-        return 'fes:And';
+        return getFesOperatorTag(this.type);
       default:
         if (this.not) {
           return 'AND NOT';
