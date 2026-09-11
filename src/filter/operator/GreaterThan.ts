@@ -1,3 +1,4 @@
+import { FilterBuilderType, FilterBuilderTypeEnum } from '../IFilter';
 import { IOperator, OperatorEnum, OperatorType } from './IOperator';
 
 export class GreaterThan implements IOperator {
@@ -8,7 +9,10 @@ export class GreaterThan implements IOperator {
     this.not = false;
   }
 
-  public toString(): string {
+  public toString(filterBuilderType?: FilterBuilderType): string {
+    if (filterBuilderType === FilterBuilderTypeEnum.OGC) {
+      return 'fes:PropertyIsGreaterThan';
+    }
     return '>';
   }
 }

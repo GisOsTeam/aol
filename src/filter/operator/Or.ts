@@ -12,7 +12,7 @@ export class Or implements IOperator {
   public toString(type?: FilterBuilderTypeEnum): string {
     switch (type) {
       case FilterBuilderTypeEnum.OGC:
-        throw new Error('Unsupported value type for Or operator');
+        return 'fes:Or';
       default:
         if (this.not) {
           return 'OR NOT';

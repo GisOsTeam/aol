@@ -1,5 +1,6 @@
 import { FieldTypeEnum, FilterBuilderType, FilterBuilderTypeEnum, FilterValueType, IField } from '../IFilter';
 import { IOperator } from '../operator';
+import { buildFesLiteral, buildFesValueReference, wrapFesNot } from '../fes';
 import { BasePredicate } from './BasePredicate';
 
 export abstract class FilterPredicate<T, O extends IOperator = IOperator> extends BasePredicate<
@@ -22,7 +23,7 @@ export abstract class FilterPredicate<T, O extends IOperator = IOperator> extend
             return `Concatenate(${String(this.leftHand.key)})`;
         }
       case FilterBuilderTypeEnum.OGC:
-        return `<fes:ValueReference>${String(this.leftHand.key)}</fes:ValueReference>`;
+        return buildFesValueReference(String(this.leftHand.key));
       default:
         return `${String(this.leftHand.key)}`;
     }
@@ -35,5 +36,19 @@ export abstract class FilterPredicate<T, O extends IOperator = IOperator> extend
       default:
         return `${this.rightHand}`;
     }
+  }
+
+  /**
+   * Default FES 2.0 rendering for a simple comparison predicate:
+   * <fes:{Operator}><fes:ValueReference>...</fes:ValueReference><fes:Literal>...</fes:Literal></fes:{Operator}>
+   * wrapped in <fes:Not> when the operator is negated.
+   * Predicates whose FES encoding differs (Null, In, Like/Ilike, logical combinators, ...) override this.
+   */
+  protected buildOgcString(): string {
+    const tag = this.operator.toString(FilterBuilderTypeEnum.OGC);
+    const core = `<${tag}>${this.defaultLeftHandString(FilterBuilderTypeEnum.OGC)}${buildFesLiteral(
+      this.rightHand,
+    )}</${tag}>`;
+    return wrapFesNot(core, this.operator.not);
   }
 }

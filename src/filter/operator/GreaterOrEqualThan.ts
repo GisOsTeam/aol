@@ -10,7 +10,7 @@ export class GreaterOrEqualThan implements IOperator {
   }
 
   public toString(filterBuilderType?: FilterBuilderType): string {
-    if ((filterBuilderType = FilterBuilderTypeEnum.OGC)) {
+    if (filterBuilderType === FilterBuilderTypeEnum.OGC) {
       return 'fes:PropertyIsGreaterThanOrEqualTo';
     }
     return '>=';

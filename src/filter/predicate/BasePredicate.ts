@@ -1,4 +1,4 @@
-import { FilterBuilderType, FilterValueType, IField } from '../IFilter';
+import { FilterBuilderType, FilterBuilderTypeEnum, FilterValueType, IField } from '../IFilter';
 import { IOperator } from '../operator';
 import { IPredicate } from './IPredicate';
 import { hash64 } from '../../utils';
@@ -20,6 +20,9 @@ export abstract class BasePredicate<
   }
 
   public toString(type?: FilterBuilderType): string {
+    if (type === FilterBuilderTypeEnum.OGC) {
+      return this.buildOgcString();
+    }
     return `(${this.buildLeftHandString(type)} ${this.operator.toString(type)} ${this.buildRightHandString(type)})`;
   }
 
@@ -30,4 +33,9 @@ export abstract class BasePredicate<
   protected abstract buildLeftHandString(type: FilterBuilderType): string;
 
   protected abstract buildRightHandString(type: FilterBuilderType): string;
+
+  /**
+   * Renders this predicate as an OGC Filter Encoding 2.0 (FES) XML fragment.
+   */
+  protected abstract buildOgcString(): string;
 }
