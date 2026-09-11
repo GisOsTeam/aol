@@ -20,8 +20,6 @@ exports[`aol.filter predicate equal cql number 1`] = `"(foo = 1)"`;
 
 exports[`aol.filter predicate equal cql string 1`] = `"(Concatenate(foo) = '1')"`;
 
-exports[`aol.filter predicate equal ogc number 1`] = `"<fes:equal><fes:ValueReference>foo</fes:ValueReference> <fes:Literal>2023-01-01</fes:Literal><fes:And>"`;
-
 exports[`aol.filter predicate equal sql boolean 1`] = `"(foo = true)"`;
 
 exports[`aol.filter predicate equal sql not.boolean 1`] = `"(foo <> true)"`;
