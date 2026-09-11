@@ -1,3 +1,4 @@
+import { FilterBuilderType, FilterBuilderTypeEnum } from '../IFilter';
 import { IOperator, OperatorEnum, OperatorType } from './IOperator';
 
 export class Equal implements IOperator {
@@ -8,7 +9,10 @@ export class Equal implements IOperator {
     this.not = not;
   }
 
-  public toString(): string {
+  public toString(filterBuilderType?: FilterBuilderType): string {
+    if (filterBuilderType === FilterBuilderTypeEnum.OGC) {
+      return 'fes:PropertyIsEqualTo';
+    }
     if (this.not) {
       return '<>';
     } else {

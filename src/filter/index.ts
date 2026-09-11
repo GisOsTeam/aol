@@ -4,3 +4,4 @@
 
 export * from './FilterBuilder';
 export * from './IFilter';
+export * from './fes';

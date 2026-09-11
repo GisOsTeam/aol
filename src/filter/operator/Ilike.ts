@@ -10,6 +10,9 @@ export class Ilike implements IOperator {
   }
 
   public toString(filterBuilderType?: FilterBuilderType): string {
+    if (filterBuilderType === FilterBuilderTypeEnum.OGC) {
+      return 'fes:PropertyIsLike';
+    }
     if (filterBuilderType === FilterBuilderTypeEnum.SQL) {
       if (this.not) {
         return 'NOT LIKE';

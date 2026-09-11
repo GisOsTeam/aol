@@ -1,5 +1,6 @@
 import { FilterBuilderType, FilterBuilderTypeEnum, FilterValueType, IField } from '../IFilter';
 import { Ilike as IlikeOp } from '../operator';
+import { buildFesLiteral, wrapFesNot } from '../fes';
 import { FilterPredicate } from './FilterPredicate';
 
 export class Ilike<T> extends FilterPredicate<T, IlikeOp> {
@@ -27,5 +28,13 @@ export class Ilike<T> extends FilterPredicate<T, IlikeOp> {
       default:
         return this.defaultRightHandString();
     }
+  }
+
+  protected buildOgcString(): string {
+    const tag = this.operator.toString(FilterBuilderTypeEnum.OGC);
+    const core = `<${tag} wildCard="%" singleChar="_" escapeChar="\\" matchCase="false">${this.defaultLeftHandString(
+      FilterBuilderTypeEnum.OGC,
+    )}${buildFesLiteral(this.rightHand)}</${tag}>`;
+    return wrapFesNot(core, this.operator.not);
   }
 }
