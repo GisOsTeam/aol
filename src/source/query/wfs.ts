@@ -16,13 +16,14 @@ import Projection from 'ol/proj/Projection';
 import { readFeatures } from '../../utils/featuresRead';
 import { calculateGeoExtent } from '../../utils/extent';
 import { HttpEngine } from '../../HttpEngine';
-import { FieldTypeEnum, FilterBuilder, FilterBuilderTypeEnum } from '../../filter';
+import { escapeXmlAttribute, FieldTypeEnum, FilterBuilder, FilterBuilderTypeEnum } from '../../filter';
 import { IPredicate, SpatialPre } from '../../filter/predicate';
 import { OperatorEnum } from '../../filter/operator';
-import { DEFAULT_WFS_LIMIT, DEFAULT_WFS_VERSION, WfsVersion } from '../common';
+import { DEFAULT_WFS_LIMIT, DEFAULT_WFS_VERSION, WfsVersion, WfsVersionEnum } from '../common';
 import { parseDescribeFeatureType } from '../parser/wfs-describe-feature-type.parser';
 
 export interface IExecuteWfsQueryOptions {
+  filterFormat?: OgcFilterFormat; // Défaut : CQL_FILTER en KVP (comportement historique)
   outputFormat: string;
   request: IGisRequest;
   requestProjectionCode: string;
@@ -34,15 +35,25 @@ export interface IExecuteWfsQueryOptions {
   version: WfsVersion; // On conserve pour ne pas apporter de breaking change
 }
 
+/**
+ * Format de filtre utilisé pour interroger le serveur WFS :
+ * - CQL (défaut) : filtre rendu en CQL_FILTER, transmis en KVP (GET ou POST urlencoded).
+ * - OGC : filtre rendu en FES 2.0 (<fes:Filter>), transmis dans un corps <wfs:GetFeature> XML
+ *   en POST. Nécessite version = '2.0.0' (FES 2.0 n'existe pas pour les WFS 1.0.0/1.1.0).
+ */
+export type OgcFilterFormat = FilterBuilderTypeEnum.CQL | FilterBuilderTypeEnum.FES;
+
 export interface ILoadWfsFeatureOptions {
   bbox: number[];
-  cql?: string; // Override type predicate CQL if provided
+  cql?: string; // Override type predicate CQL if provided (ignoré si filterFormat = OGC, voir overrideFilters)
   featureProjectionCode: string;
+  filterFormat?: OgcFilterFormat;
   filters?: IPredicate;
   id?: number | string;
   limit: number;
   method: 'GET' | 'POST';
   outputFormat: string;
+  overrideFilters?: IPredicate; // Équivalent de `cql` pour filterFormat = OGC
   queryType: QueryType;
   requestProjectionCode: string;
   swapLonLatGeometryResult?: boolean;
@@ -79,6 +90,7 @@ export const DEFAULT_TOLERANCE = 1;
 
 interface IRetrieveWfsFeaturesDefaultOptions {
   featureProjection: Projection;
+  filterFormat?: OgcFilterFormat;
   filters: IPredicate;
   limit: number;
   method: 'GET' | 'POST';
@@ -100,7 +112,7 @@ interface IRetrieveWfsFeaturesWithGeometryOptions extends IRetrieveWfsFeaturesDe
   queryType: QueryType;
 }
 
-interface IRetrieveWfsFeaturesWithoutGeometryOptions extends IRetrieveWfsFeaturesDefaultOptions {}
+interface IRetrieveWfsFeaturesWithoutGeometryOptions extends IRetrieveWfsFeaturesDefaultOptions { }
 
 export async function executeWfsQuery(options: IExecuteWfsQueryOptions): Promise<IQueryFeatureTypeResponse> {
   const { geometry } = options.request;
@@ -119,6 +131,10 @@ export async function executeWfsQuery(options: IExecuteWfsQueryOptions): Promise
 }
 
 export async function loadWfsFeaturesOnBBOX(options: ILoadWfsFeatureOptions): Promise<Feature[]> {
+  if (options.filterFormat === FilterBuilderTypeEnum.FES) {
+    return loadWfsFeaturesWithFesFilter(options);
+  }
+
   const params = buildWfsRequestParams(options);
   const isPost = options.method === 'POST';
 
@@ -150,6 +166,101 @@ export async function loadWfsFeaturesOnBBOX(options: ILoadWfsFeatureOptions): Pr
     throw new Error('WFS BBOX request error ' + res.status);
   }
   return readFeatures(res.text, options);
+}
+
+/**
+ * WFS 2.0.0 GetFeature as an XML POST body, filter encoded as FES 2.0 (<fes:Filter>) instead of
+ * CQL_FILTER. Used when options.filterFormat === FilterBuilderTypeEnum.FES.
+ *
+ * Not supported here: fetching by id (options.id / fes:ResourceId) - callers using that (see
+ * retrieveWfsFeature, loadWfsFeatureDescription) never set filterFormat, so they keep using the
+ * CQL/KVP path above regardless of a source's configured filterFormat.
+ */
+async function loadWfsFeaturesWithFesFilter(options: ILoadWfsFeatureOptions): Promise<Feature[]> {
+  if (options.version !== WfsVersionEnum.V2_0_0) {
+    throw new Error(
+      `filterFormat FES requires WFS version '2.0.0' (FES 2.0 is not available for version '${options.version}')`,
+    );
+  }
+
+  const predicate = buildOgcFilterPredicate(options);
+  const body = buildGetFeatureRequestXml(options, predicate);
+
+  const res = await HttpEngine.getInstance().send({
+    url: options.url,
+    method: 'POST',
+    body,
+    contentType: 'application/xml',
+    responseType: 'text',
+  });
+
+  const owsException = extractOwsExceptionText(res.text);
+  if (res.status !== 200 || owsException != null) {
+    throw new Error(`WFS GetFeature request error: ${owsException ?? `status ${res.status}`}`);
+  }
+  return readFeatures(res.text, options);
+}
+
+/**
+ * Combines options.overrideFilters (if set, used alone - mirrors the CQL path's `cql` override),
+ * or otherwise options.filters + options.type.predicate + the bbox (as a BBOX SpatialPre, always
+ * ANDed in when present - unlike the CQL path, FES has no separate "just BBOX" KVP parameter to
+ * fall back to).
+ */
+function buildOgcFilterPredicate(options: ILoadWfsFeatureOptions): IPredicate | undefined {
+  if (options.overrideFilters != null) {
+    return options.overrideFilters;
+  }
+
+  const filterBuilder = new FilterBuilder();
+  if (options.filters) {
+    filterBuilder.from(options.filters);
+  }
+  if (options.type?.predicate != null) {
+    filterBuilder.from(options.type.predicate);
+  }
+
+  if (options.bbox != null && options.bbox.length === 4) {
+    const geometryName = options.type?.geometryAttribute?.key ?? 'the_geom';
+    const bboxPredicate = new SpatialPre(
+      { key: geometryName, type: FieldTypeEnum.Geometry },
+      buildBboxCoordinatesString(options, true),
+      SpatialPre.buildOperator(OperatorEnum.BBOX),
+    );
+    filterBuilder.and(bboxPredicate);
+  }
+
+  return filterBuilder.predicate;
+}
+
+function buildGetFeatureRequestXml(options: ILoadWfsFeatureOptions, predicate: IPredicate | undefined): string {
+  const typeName = getQueryId<string>(options.type);
+  const filterXml = predicate ? `<fes:Filter>${predicate.toString(FilterBuilderTypeEnum.FES)}</fes:Filter>` : '';
+  return (
+    '<?xml version="1.0" encoding="UTF-8"?>' +
+    `<wfs:GetFeature service="WFS" version="2.0.0" count="${options.limit}" ` +
+    `outputFormat="${escapeXmlAttribute(options.outputFormat)}" ` +
+    'xmlns:wfs="http://www.opengis.net/wfs/2.0" xmlns:fes="http://www.opengis.net/fes/2.0">' +
+    `<wfs:Query typeNames="${escapeXmlAttribute(typeName)}" srsName="${escapeXmlAttribute(
+      options.requestProjectionCode,
+    )}">` +
+    filterXml +
+    '</wfs:Query>' +
+    '</wfs:GetFeature>'
+  );
+}
+
+/**
+ * Extracts the message from an OWS ExceptionReport, if the response is one. WFS servers may
+ * return these with a non-200 status (observed against a live server) or, per the OWS spec,
+ * with status 200 - checked independently of options.status for that reason.
+ */
+function extractOwsExceptionText(responseText: string): string | undefined {
+  if (!responseText || !responseText.includes('ExceptionReport')) {
+    return undefined;
+  }
+  const match = /<(?:\w+:)?ExceptionText>([\s\S]*?)<\/(?:\w+:)?ExceptionText>/i.exec(responseText);
+  return match ? match[1].trim() : responseText.slice(0, 300);
 }
 
 export async function retrieveWfsFeature(options: IRetrieveWfsFeaturesOptions): Promise<Feature | undefined> {
@@ -262,7 +373,9 @@ function retrieveWfsFeaturesWithBBOXFromGeometry(options: IRetrieveWfsFeaturesWi
 
   return loadWfsFeaturesOnBBOX({
     cql: options.overrideFilters ? options.overrideFilters.toString(FilterBuilderTypeEnum.CQL) : undefined,
+    filterFormat: options.filterFormat,
     filters: options.filters ?? undefined,
+    overrideFilters: options.overrideFilters,
     url: options.url,
     type: options.type,
     queryType: 'query',
@@ -281,7 +394,9 @@ function retrieveWfsFeaturesWithBBOXFromGeometry(options: IRetrieveWfsFeaturesWi
 function retrieveWfsFeaturesWithoutGeometry(options: IRetrieveWfsFeaturesWithoutGeometryOptions): Promise<Feature[]> {
   return loadWfsFeaturesOnBBOX({
     cql: options.overrideFilters ? options.overrideFilters.toString(FilterBuilderTypeEnum.CQL) : undefined,
+    filterFormat: options.filterFormat,
     filters: options.filters ?? undefined,
+    overrideFilters: options.overrideFilters,
     url: options.url,
     type: options.type,
     queryType: 'query',
@@ -318,6 +433,7 @@ function ewqoToRwfwogoTransformer(options: IExecuteWfsQueryOptions): IRetrieveWf
   return {
     // request: options.request,
     featureProjection: options.request.olMap.getView().getProjection(),
+    filterFormat: options.filterFormat,
     filters: (options.request.filters as IPredicate) ?? undefined,
     limit: options.request.limit ?? DEFAULT_WFS_LIMIT,
     method: options.request.method ?? 'GET',
@@ -358,6 +474,7 @@ function ewqoToRwfwgoTransformer(options: IExecuteWfsQueryOptions): IRetrieveWfs
   // Sanitize options to be compatible with IRetrieveWfsFeaturesWithGeometryOptions
   return {
     featureProjection: options.request.olMap.getView().getProjection(),
+    filterFormat: options.filterFormat,
     filters: (options.request.filters as IPredicate) ?? undefined,
     geometry: options.request.geometry.clone() as Geometry,
     geometryProjection: options.request.geometryProjection as Projection,
@@ -435,6 +552,20 @@ function buildDefaultWfsRequestParams(options: ILoadWfsFeatureOptions): { [id: s
   return params;
 }
 
+/**
+ * Formats options.bbox as "minx,miny,maxx,maxy,CRS" (optionally CRS-quoted, for embedding as a
+ * string literal inside CQL), applying the swapXYBBOXRequest axis swap. Shared by the plain BBOX
+ * KVP param, CQL_FILTER's BBOX(...) predicate and the OGC/FES BBOX predicate - byte-identical to
+ * what each built inline before this was extracted.
+ */
+function buildBboxCoordinatesString(options: ILoadWfsFeatureOptions, quoteCrs: boolean): string {
+  const crs = quoteCrs ? `'${options.requestProjectionCode}'` : options.requestProjectionCode;
+  if (options.swapXYBBOXRequest === true) {
+    return `${options.bbox[1]},${options.bbox[0]},${options.bbox[3]},${options.bbox[2]},${crs}`;
+  }
+  return `${options.bbox.join(',')},${crs}`;
+}
+
 function buildBBOXParameter(options: ILoadWfsFeatureOptions): { [id: string]: string } {
   const params: { [id: string]: string } = {};
   if (
@@ -442,11 +573,7 @@ function buildBBOXParameter(options: ILoadWfsFeatureOptions): { [id: string]: st
     options.bbox.length === 4 &&
     !(options.type?.predicate != null || options.cql != null || options.filters != null)
   ) {
-    if (options.swapXYBBOXRequest === true) {
-      params.BBOX = `${options.bbox[1]},${options.bbox[0]},${options.bbox[3]},${options.bbox[2]},${options.requestProjectionCode}`;
-    } else {
-      params.BBOX = `${options.bbox.join(',')},${options.requestProjectionCode}`;
-    }
+    params.BBOX = buildBboxCoordinatesString(options, false);
   }
   return params;
 }
@@ -473,16 +600,10 @@ function buildCQLFilterParameter(options: ILoadWfsFeatureOptions): { [id: string
 
   if (filterBuilder.predicate) {
     if (options.bbox != null && options.bbox.length === 4) {
-      let bboxString: string;
-      if (options.swapXYBBOXRequest === true) {
-        bboxString = `${options.bbox[1]},${options.bbox[0]},${options.bbox[3]},${options.bbox[2]},'${options.requestProjectionCode}'`;
-      } else {
-        bboxString = `${options.bbox.join(',')},'${options.requestProjectionCode}'`;
-      }
       const geometryName = options.type?.geometryAttribute?.key ?? 'the_geom';
       const bboxPredicate = new SpatialPre(
         { key: geometryName, type: FieldTypeEnum.Geometry },
-        bboxString,
+        buildBboxCoordinatesString(options, true),
         SpatialPre.buildOperator(OperatorEnum.BBOX),
       );
       filterBuilder.and(bboxPredicate);
@@ -502,4 +623,8 @@ export const __testing__ = {
   buildWfsRequestParams,
   buildBBOXParameter,
   buildCQLFilterParameter,
+  buildOgcFilterPredicate,
+  buildGetFeatureRequestXml,
+  extractOwsExceptionText,
+  loadWfsFeaturesWithOgcFilter: loadWfsFeaturesWithFesFilter,
 };

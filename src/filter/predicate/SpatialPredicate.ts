@@ -57,8 +57,8 @@ export class SpatialPre extends FilterPredicate<string> {
   }
 
   public toString(type?: FilterBuilderType): string {
-    if (type === FilterBuilderTypeEnum.OGC) {
-      return this.buildOgcString();
+    if (type === FilterBuilderTypeEnum.FES) {
+      return this.buildFesString();
     }
     return `(${this.operator.toString(type)}(${this.buildLeftHandString()},${this.buildRightHandString()}))`;
   }
@@ -70,9 +70,9 @@ export class SpatialPre extends FilterPredicate<string> {
     return `${this.rightHand}`;
   }
 
-  protected buildOgcString(): string {
-    const tag = this.operator.toString(FilterBuilderTypeEnum.OGC);
-    const valueReference = this.defaultLeftHandString(FilterBuilderTypeEnum.OGC);
+  protected buildFesString(): string {
+    const tag = this.operator.toString(FilterBuilderTypeEnum.FES);
+    const valueReference = this.defaultLeftHandString(FilterBuilderTypeEnum.FES);
     const geometryXml = this.operator instanceof BoundingBox ? this.buildOgcEnvelope() : this.buildOgcGeometry();
     return `<${tag}>${valueReference}${geometryXml}</${tag}>`;
   }

@@ -25,7 +25,7 @@ export abstract class SpatialOperatorBase implements IOperator {
     switch (filterBuilderType) {
       case FilterBuilderTypeEnum.CQL:
         return this.cqlName;
-      case FilterBuilderTypeEnum.OGC:
+      case FilterBuilderTypeEnum.FES:
         return getFesOperatorTag(this.type);
       default:
         throw new Error('filters other than CQL and OGC are not implemented');

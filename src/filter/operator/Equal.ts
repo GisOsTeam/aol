@@ -11,7 +11,7 @@ export class Equal implements IOperator {
   }
 
   public toString(filterBuilderType?: FilterBuilderType): string {
-    if (filterBuilderType === FilterBuilderTypeEnum.OGC) {
+    if (filterBuilderType === FilterBuilderTypeEnum.FES) {
       return getFesOperatorTag(this.type);
     }
     if (this.not) {

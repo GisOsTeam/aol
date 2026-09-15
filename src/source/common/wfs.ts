@@ -1,6 +1,12 @@
 import { Projection } from 'ol/proj';
 import { IFeatureType, IGisRequest, IQueryResponse, IQuerySource, ISnapshotOptions } from '../IExtended';
-import { executeWfsQuery, loadDescribeFeatureType, loadWfsFeatureDescription, retrieveWfsFeature } from '../query';
+import {
+  executeWfsQuery,
+  loadDescribeFeatureType,
+  loadWfsFeatureDescription,
+  OgcFilterFormat,
+  retrieveWfsFeature,
+} from '../query';
 import { Feature } from 'ol';
 
 export interface ICommonWfsOptions extends ISnapshotOptions {
@@ -13,6 +19,12 @@ export interface ICommonWfsOptions extends ISnapshotOptions {
   swapXYBBOXRequest?: boolean;
   swapLonLatGeometryResult?: boolean;
   limit?: number;
+  /**
+   * Format used to send the filter (type predicate + request filters + bbox) to the server.
+   * Défaut : CQL_FILTER en KVP (comportement historique). OGC nécessite version = '2.0.0'
+   * (voir loadWfsFeaturesWithOgcFilter dans query/wfs.ts) et envoie un <wfs:GetFeature> XML en POST.
+   */
+  filterFormat?: OgcFilterFormat;
 }
 
 export enum WfsVersionEnum {
@@ -139,6 +151,7 @@ export async function WFSQuery(
     requestProjectionCode: options.requestProjectionCode ?? DEFAULT_WFS_PROJECTION_CODE,
     swapXYBBOXRequest: options.swapXYBBOXRequest ?? false,
     swapLonLatGeometryResult: options.swapLonLatGeometryResult ?? false,
+    filterFormat: options.filterFormat,
   });
 
   return {

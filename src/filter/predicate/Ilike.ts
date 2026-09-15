@@ -30,10 +30,10 @@ export class Ilike<T> extends FilterPredicate<T, IlikeOp> {
     }
   }
 
-  protected buildOgcString(): string {
-    const tag = this.operator.toString(FilterBuilderTypeEnum.OGC);
+  protected buildFesString(): string {
+    const tag = this.operator.toString(FilterBuilderTypeEnum.FES);
     const core = `<${tag} wildCard="%" singleChar="_" escapeChar="\\" matchCase="false">${this.defaultLeftHandString(
-      FilterBuilderTypeEnum.OGC,
+      FilterBuilderTypeEnum.FES,
     )}${buildFesLiteral(this.rightHand)}</${tag}>`;
     return wrapFesNot(core, this.operator.not);
   }

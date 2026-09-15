@@ -28,7 +28,7 @@ export type FilterValueType = string | number | boolean | any[];
 export enum FilterBuilderTypeEnum {
   CQL = 'CQL',
   SQL = 'SQL',
-  OGC = 'OGC',
+  FES = 'FES',
 }
 
-export type FilterBuilderType = FilterBuilderTypeEnum.CQL | FilterBuilderTypeEnum.SQL | FilterBuilderTypeEnum.OGC;
+export type FilterBuilderType = FilterBuilderTypeEnum.CQL | FilterBuilderTypeEnum.SQL | FilterBuilderTypeEnum.FES;
