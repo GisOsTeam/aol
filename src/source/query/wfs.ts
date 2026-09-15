@@ -112,7 +112,7 @@ interface IRetrieveWfsFeaturesWithGeometryOptions extends IRetrieveWfsFeaturesDe
   queryType: QueryType;
 }
 
-interface IRetrieveWfsFeaturesWithoutGeometryOptions extends IRetrieveWfsFeaturesDefaultOptions { }
+interface IRetrieveWfsFeaturesWithoutGeometryOptions extends IRetrieveWfsFeaturesDefaultOptions {}
 
 export async function executeWfsQuery(options: IExecuteWfsQueryOptions): Promise<IQueryFeatureTypeResponse> {
   const { geometry } = options.request;
