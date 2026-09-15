@@ -24,7 +24,7 @@ export class In<T> extends FilterPredicate<T, InOp> {
    * FES 2.0 has no direct "property in list" comparison operator, so IN is rendered as
    * an OR of PropertyIsEqualTo (one per value), negated with fes:Not for NOT IN.
    */
-  protected buildOgcString(): string {
+  protected buildFesString(): string {
     let values: any[];
     if (Array.isArray(this.rightHand)) {
       values = this.rightHand;
@@ -36,7 +36,7 @@ export class In<T> extends FilterPredicate<T, InOp> {
     } else {
       values = [this.rightHand];
     }
-    const valueReference = this.defaultLeftHandString(FilterBuilderTypeEnum.OGC);
+    const valueReference = this.defaultLeftHandString(FilterBuilderTypeEnum.FES);
     const comparisons = values.map(
       (v) => `<fes:PropertyIsEqualTo>${valueReference}${buildFesLiteral(v)}</fes:PropertyIsEqualTo>`,
     );

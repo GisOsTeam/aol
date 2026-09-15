@@ -17,10 +17,10 @@ export class AndPre extends BasePredicate<IPredicate, AndOp, IPredicate> {
     return this.rightHand.toString(type);
   }
 
-  protected buildOgcString(): string {
-    const tag = this.operator.toString(FilterBuilderTypeEnum.OGC);
-    const core = `<${tag}>${this.leftHand.toString(FilterBuilderTypeEnum.OGC)}${this.rightHand.toString(
-      FilterBuilderTypeEnum.OGC,
+  protected buildFesString(): string {
+    const tag = this.operator.toString(FilterBuilderTypeEnum.FES);
+    const core = `<${tag}>${this.leftHand.toString(FilterBuilderTypeEnum.FES)}${this.rightHand.toString(
+      FilterBuilderTypeEnum.FES,
     )}</${tag}>`;
     return wrapFesNot(core, this.operator.not);
   }

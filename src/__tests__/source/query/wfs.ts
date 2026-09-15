@@ -4,7 +4,7 @@ import { get as getProjection, Projection } from 'ol/proj';
 import Polygon from 'ol/geom/Polygon';
 import { IFeatureType, IQueryRequest, IIdentifyRequest, QueryType } from '../../../source/IExtended';
 import { Wfs } from '../../../source/Wfs';
-import { FieldTypeEnum, FilterBuilder } from '../../../filter';
+import { FieldTypeEnum, FilterBuilder, FilterBuilderTypeEnum } from '../../../filter';
 import { LowerOrEqualThan, Equal as EqualPre } from '../../../filter/predicate';
 import { executeWfsQuery } from '../../../source/query';
 import { Equal } from '../../../filter/operator';
@@ -762,6 +762,243 @@ describe('WFS', () => {
           'WFS BBOX request error 400',
         );
         expect(sendSpy).toHaveBeenCalledTimes(1);
+      });
+    });
+
+    describe('OGC filter format (WFS 2.0.0 GetFeature XML)', () => {
+      const typeWithPredicate: IFeatureType<string> = { ...type, predicate: dateDebutPredicate };
+
+      describe('buildOgcFilterPredicate', () => {
+        test('no filters, no type.predicate, no bbox → undefined', () => {
+          const predicate = __testing__.buildOgcFilterPredicate({
+            bbox: [],
+            featureProjectionCode: projectionCode,
+            limit: 100,
+            method: 'POST',
+            outputFormat: 'application/json',
+            queryType: 'query',
+            requestProjectionCode: projectionCode,
+            type: { id: 'foo' },
+            url: 'https://example.com/wfs',
+            version: WfsVersionEnum.V2_0_0,
+          });
+          expect(predicate).toBeUndefined();
+        });
+
+        test('bbox only → a lone fes:BBOX, no fes:And wrapper', () => {
+          const predicate = __testing__.buildOgcFilterPredicate({
+            bbox,
+            featureProjectionCode: projectionCode,
+            limit: 100,
+            method: 'POST',
+            outputFormat: 'application/json',
+            queryType: 'query',
+            requestProjectionCode: projectionCode,
+            type,
+            url: 'https://example.com/wfs',
+            version: WfsVersionEnum.V2_0_0,
+          });
+          const xml = predicate?.toString(FilterBuilderTypeEnum.FES);
+          expect(xml).toContain('<fes:BBOX>');
+          expect(xml).not.toContain('<fes:And>');
+        });
+
+        test('filters + bbox → fes:And combining both', () => {
+          const predicate = __testing__.buildOgcFilterPredicate({
+            bbox,
+            featureProjectionCode: projectionCode,
+            filters: numeroPredicate,
+            limit: 100,
+            method: 'POST',
+            outputFormat: 'application/json',
+            queryType: 'query',
+            requestProjectionCode: projectionCode,
+            type,
+            url: 'https://example.com/wfs',
+            version: WfsVersionEnum.V2_0_0,
+          });
+          const xml = predicate?.toString(FilterBuilderTypeEnum.FES) ?? '';
+          expect(xml).toContain('<fes:And>');
+          expect(xml).toContain('<fes:BBOX>');
+          expect(xml).toContain('<fes:PropertyIsEqualTo>');
+        });
+
+        test('type.predicate + bbox → fes:And combining both', () => {
+          const predicate = __testing__.buildOgcFilterPredicate({
+            bbox,
+            featureProjectionCode: projectionCode,
+            limit: 100,
+            method: 'POST',
+            outputFormat: 'application/json',
+            queryType: 'query',
+            requestProjectionCode: projectionCode,
+            type: typeWithPredicate,
+            url: 'https://example.com/wfs',
+            version: WfsVersionEnum.V2_0_0,
+          });
+          const xml = predicate?.toString(FilterBuilderTypeEnum.FES) ?? '';
+          expect(xml).toContain('<fes:And>');
+          expect(xml).toContain('<fes:BBOX>');
+          expect(xml).toContain('<fes:PropertyIsLessThanOrEqualTo>');
+        });
+
+        test('overrideFilters set → used alone, filters/type.predicate/bbox ignored', () => {
+          const predicate = __testing__.buildOgcFilterPredicate({
+            bbox,
+            featureProjectionCode: projectionCode,
+            filters: numeroPredicate,
+            overrideFilters: dateDebutPredicate,
+            limit: 100,
+            method: 'POST',
+            outputFormat: 'application/json',
+            queryType: 'query',
+            requestProjectionCode: projectionCode,
+            type: typeWithPredicate,
+            url: 'https://example.com/wfs',
+            version: WfsVersionEnum.V2_0_0,
+          });
+          expect(predicate).toBe(dateDebutPredicate);
+        });
+      });
+
+      describe('buildGetFeatureRequestXml', () => {
+        const baseXmlOptions: ILoadWfsFeatureOptions = {
+          bbox: [],
+          featureProjectionCode: projectionCode,
+          limit: 10,
+          method: 'POST',
+          outputFormat: 'application/json',
+          queryType: 'query',
+          requestProjectionCode: projectionCode,
+          type,
+          url: 'https://example.com/wfs',
+          version: WfsVersionEnum.V2_0_0,
+        };
+
+        test('builds the WFS 2.0.0 GetFeature envelope with a filter', () => {
+          const xml = __testing__.buildGetFeatureRequestXml(baseXmlOptions, numeroPredicate);
+          expect(xml).toContain('<wfs:GetFeature service="WFS" version="2.0.0" count="10"');
+          expect(xml).toContain('xmlns:wfs="http://www.opengis.net/wfs/2.0"');
+          expect(xml).toContain('xmlns:fes="http://www.opengis.net/fes/2.0"');
+          expect(xml).toContain(`typeNames="${type.id}"`);
+          expect(xml).toContain(`srsName="${projectionCode}"`);
+          expect(xml).toContain('<fes:Filter><fes:PropertyIsEqualTo>');
+        });
+
+        test('omits fes:Filter entirely when there is no predicate', () => {
+          const xml = __testing__.buildGetFeatureRequestXml(baseXmlOptions, undefined);
+          expect(xml).not.toContain('fes:Filter');
+          expect(xml).toContain('<wfs:Query');
+        });
+      });
+
+      describe('extractOwsExceptionText', () => {
+        test('returns undefined when there is no ExceptionReport', () => {
+          expect(__testing__.extractOwsExceptionText('{"type":"FeatureCollection","features":[]}')).toBeUndefined();
+        });
+
+        test('extracts the ExceptionText content', () => {
+          const xml =
+            '<ows:ExceptionReport><ows:Exception><ows:ExceptionText>Illegal property name: foo</ows:ExceptionText>' +
+            '</ows:Exception></ows:ExceptionReport>';
+          expect(__testing__.extractOwsExceptionText(xml)).toBe('Illegal property name: foo');
+        });
+      });
+
+      describe('loadWfsFeaturesOnBBOX with filterFormat = OGC', () => {
+        let sendSpy: jest.SpyInstance;
+        let ogcOptions: ILoadWfsFeatureOptions;
+
+        beforeEach(() => {
+          ogcOptions = {
+            bbox,
+            featureProjectionCode: projectionCode,
+            filterFormat: FilterBuilderTypeEnum.FES,
+            filters: numeroPredicate,
+            limit: 10,
+            method: 'POST',
+            outputFormat: 'application/json',
+            queryType: 'query',
+            requestProjectionCode: projectionCode,
+            type,
+            url: 'https://example.com/wfs',
+            version: WfsVersionEnum.V2_0_0,
+          };
+          sendSpy = jest.spyOn(HttpEngine.getInstance(), 'send').mockResolvedValue({
+            status: 200,
+            text: '{"type":"FeatureCollection","features":[]}',
+            body: null,
+            statusText: 'OK',
+            contentType: 'application/json',
+            responseType: 'text',
+            headers: {},
+          });
+        });
+
+        afterEach(() => {
+          sendSpy.mockRestore();
+        });
+
+        test('sends a single POST with an application/xml body containing the FES filter', async () => {
+          await loadWfsFeaturesOnBBOX(ogcOptions);
+          expect(sendSpy).toHaveBeenCalledTimes(1);
+          const call = sendSpy.mock.calls[0][0];
+          expect(call.method).toBe('POST');
+          expect(call.contentType).toBe('application/xml');
+          expect(call.params).toBeUndefined();
+          expect(call.body).toContain('<wfs:GetFeature');
+          expect(call.body).toContain('<fes:PropertyIsEqualTo>');
+        });
+
+        test("rejects when version is not '2.0.0', without sending any request", async () => {
+          await expect(loadWfsFeaturesOnBBOX({ ...ogcOptions, version: WfsVersionEnum.V1_1_0 })).rejects.toThrow(
+            "requires WFS version '2.0.0'",
+          );
+          expect(sendSpy).not.toHaveBeenCalled();
+        });
+
+        test('rejects on a non-200 response', async () => {
+          sendSpy.mockResolvedValueOnce({
+            status: 500,
+            text: '',
+            body: null,
+            statusText: 'Internal Server Error',
+            contentType: '',
+            responseType: 'text',
+            headers: {},
+          });
+          await expect(loadWfsFeaturesOnBBOX(ogcOptions)).rejects.toThrow('status 500');
+        });
+
+        test('rejects with the OWS exception message on a 200 response carrying an ExceptionReport', async () => {
+          sendSpy.mockResolvedValueOnce({
+            status: 200,
+            text:
+              '<ows:ExceptionReport><ows:Exception><ows:ExceptionText>Illegal property name: foo</ows:ExceptionText>' +
+              '</ows:Exception></ows:ExceptionReport>',
+            body: null,
+            statusText: 'OK',
+            contentType: 'application/xml',
+            responseType: 'text',
+            headers: {},
+          });
+          await expect(loadWfsFeaturesOnBBOX(ogcOptions)).rejects.toThrow('Illegal property name: foo');
+        });
+
+        test('returns features parsed from a successful response', async () => {
+          sendSpy.mockResolvedValueOnce({
+            status: 200,
+            text: `{"type":"FeatureCollection","features":[{"type":"Feature","properties":{"numero":"${numero}"},"geometry":null}]}`,
+            body: null,
+            statusText: 'OK',
+            contentType: 'application/json',
+            responseType: 'text',
+            headers: {},
+          });
+          const features = await loadWfsFeaturesOnBBOX(ogcOptions);
+          expect(features.length).toBe(1);
+          expect(features[0].get('numero')).toBe(numero);
+        });
       });
     });
   });

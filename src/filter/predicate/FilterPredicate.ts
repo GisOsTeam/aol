@@ -22,7 +22,7 @@ export abstract class FilterPredicate<T, O extends IOperator = IOperator> extend
           default:
             return `Concatenate(${String(this.leftHand.key)})`;
         }
-      case FilterBuilderTypeEnum.OGC:
+      case FilterBuilderTypeEnum.FES:
         return buildFesValueReference(String(this.leftHand.key));
       default:
         return `${String(this.leftHand.key)}`;
@@ -44,9 +44,9 @@ export abstract class FilterPredicate<T, O extends IOperator = IOperator> extend
    * wrapped in <fes:Not> when the operator is negated.
    * Predicates whose FES encoding differs (Null, In, Like/Ilike, logical combinators, ...) override this.
    */
-  protected buildOgcString(): string {
-    const tag = this.operator.toString(FilterBuilderTypeEnum.OGC);
-    const core = `<${tag}>${this.defaultLeftHandString(FilterBuilderTypeEnum.OGC)}${buildFesLiteral(
+  protected buildFesString(): string {
+    const tag = this.operator.toString(FilterBuilderTypeEnum.FES);
+    const core = `<${tag}>${this.defaultLeftHandString(FilterBuilderTypeEnum.FES)}${buildFesLiteral(
       this.rightHand,
     )}</${tag}>`;
     return wrapFesNot(core, this.operator.not);

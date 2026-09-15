@@ -47,6 +47,7 @@ export class Wfs extends ExternalVector implements IInitSource, IQuerySource {
           outputFormat: this.options.outputFormat,
           swapXYBBOXRequest: this.options.swapXYBBOXRequest,
           swapLonLatGeometryResult: this.options.swapLonLatGeometryResult,
+          filterFormat: this.options.filterFormat,
         })
           .then((features) => this.addFeatures(features))
           .catch(() => this.removeLoadedExtent(extent));

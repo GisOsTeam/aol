@@ -7,8 +7,7 @@ export abstract class BasePredicate<
   LH extends IPredicate | IField<any>,
   O extends IOperator,
   RH extends IPredicate | FilterValueType,
-> implements IPredicate<LH, O, RH>
-{
+> implements IPredicate<LH, O, RH> {
   public readonly leftHand: LH;
   public readonly operator: O;
   public readonly rightHand: RH;
@@ -20,8 +19,8 @@ export abstract class BasePredicate<
   }
 
   public toString(type?: FilterBuilderType): string {
-    if (type === FilterBuilderTypeEnum.OGC) {
-      return this.buildOgcString();
+    if (type === FilterBuilderTypeEnum.FES) {
+      return this.buildFesString();
     }
     return `(${this.buildLeftHandString(type)} ${this.operator.toString(type)} ${this.buildRightHandString(type)})`;
   }
@@ -30,12 +29,12 @@ export abstract class BasePredicate<
     return hash64(this.toString());
   }
 
-  protected abstract buildLeftHandString(type: FilterBuilderType): string;
+  protected abstract buildLeftHandString(type?: FilterBuilderType): string;
 
-  protected abstract buildRightHandString(type: FilterBuilderType): string;
+  protected abstract buildRightHandString(type?: FilterBuilderType): string;
 
   /**
    * Renders this predicate as an OGC Filter Encoding 2.0 (FES) XML fragment.
    */
-  protected abstract buildOgcString(): string;
+  protected abstract buildFesString(): string;
 }

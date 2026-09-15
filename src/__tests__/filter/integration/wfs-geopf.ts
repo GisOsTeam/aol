@@ -15,6 +15,8 @@ import {
 } from '../../../filter/predicate';
 import { Equal as EqualOp, Ilike as IlikeOp, In as InOp } from '../../../filter/operator';
 import { BoundingBox, Intersects } from '../../../filter/operator/spatial';
+import { loadWfsFeaturesOnBBOX } from '../../../source/query/wfs';
+import { WfsVersionEnum } from '../../../source/common';
 
 /**
  * Integration test: builds real FES 2.0 <fes:Filter> fragments with this library's predicate
@@ -22,8 +24,11 @@ import { BoundingBox, Intersects } from '../../../filter/operator/spatial';
  * live IGN Géoplateforme WFS server. This validates the OGC/FES encoding against a real
  * implementation, beyond what the pure unit tests in FilterBuilder.ts can check.
  *
- * The <wfs:GetFeature> envelope is built locally here on purpose: this library does not (yet)
- * expose a WFS 2.0.0 XML request builder, only the <fes:Filter> encoding (see FilterBuilder.ts).
+ * Most tests below use a locally hand-built <wfs:GetFeature> envelope (fetchFeatures) to pin down
+ * exactly what <fes:Filter> content each predicate produces; the last describe block instead
+ * calls loadWfsFeaturesOnBBOX({ filterFormat: OGC, ... }) directly - the real library function
+ * (src/source/query/wfs.ts) - to validate the whole wiring (filter building, XML envelope,
+ * HttpEngine POST, response parsing into ol Features) end to end against the live server.
  *
  * Every generated request is also dumped to tmp/wfs-requests/ (gitignored) as its own .xml
  * file, one per test, for manual inspection of the exhaustive list of requests this suite sends.
@@ -70,7 +75,7 @@ function buildGetFeatureRequestXml(filterXml: string, count: number): string {
 }
 
 async function fetchFeatures(predicate: IPredicate, count = 10): Promise<IGeoJsonFeatureCollection> {
-  const filterXml = predicate.toString(FilterBuilderTypeEnum.OGC);
+  const filterXml = predicate.toString(FilterBuilderTypeEnum.FES);
   const body = buildGetFeatureRequestXml(filterXml, count);
 
   dumpRequestXml(expect.getState().currentTestName ?? 'unknown-test', body);
@@ -266,5 +271,73 @@ describe(SUITE_NAME, () => {
     const collection = await fetchFeatures(predicate);
 
     expect(collection.features.length).toEqual(0);
+  });
+
+  describe('loadWfsFeaturesOnBBOX with filterFormat = OGC (real library wiring, not a hand-built envelope)', () => {
+    test('Equal filter: returns real ol Features matching the known code_mission', async () => {
+      const features = await loadWfsFeaturesOnBBOX({
+        bbox: [],
+        featureProjectionCode: 'EPSG:4326',
+        filterFormat: FilterBuilderTypeEnum.FES,
+        filters: new Equal(codeMissionField, new EqualOp(), KNOWN_CODE_MISSION_1),
+        limit: 10,
+        method: 'POST',
+        outputFormat: 'application/json',
+        queryType: 'query',
+        requestProjectionCode: 'EPSG:4326',
+        type: { id: TYPE_NAME },
+        url: WFS_URL,
+        version: WfsVersionEnum.V2_0_0,
+      });
+
+      expect(features.length).toBeGreaterThan(0);
+      for (const feature of features) {
+        expect(feature.get('code_mission')).toEqual(KNOWN_CODE_MISSION_1);
+      }
+    });
+
+    test('bbox + a date-range filter combined by the library into one fes:And', async () => {
+      const features = await loadWfsFeaturesOnBBOX({
+        bbox: [55.62, -20.92, 55.64, -20.91],
+        featureProjectionCode: 'EPSG:4326',
+        filterFormat: FilterBuilderTypeEnum.FES,
+        filters: new AndPre(
+          new GreaterOrEqualThan(dateFinAcquisitionField, '2023-01-01'),
+          new LowerOrEqualThan(dateFinAcquisitionField, '2023-12-31'),
+        ),
+        limit: 10,
+        method: 'POST',
+        outputFormat: 'application/json',
+        queryType: 'query',
+        requestProjectionCode: 'EPSG:4326',
+        type: { id: TYPE_NAME, geometryAttribute: { key: 'geom', type: FieldTypeEnum.Geometry } },
+        url: WFS_URL,
+        version: WfsVersionEnum.V2_0_0,
+      });
+
+      expect(features.length).toBeGreaterThan(0);
+      for (const feature of features) {
+        expect(feature.get('code_mission')).toEqual(KNOWN_CODE_MISSION_1);
+      }
+    });
+
+    test('rejects when version is not 2.0.0, without sending any request', async () => {
+      await expect(
+        loadWfsFeaturesOnBBOX({
+          bbox: [],
+          featureProjectionCode: 'EPSG:4326',
+          filterFormat: FilterBuilderTypeEnum.FES,
+          filters: new Equal(codeMissionField, new EqualOp(), KNOWN_CODE_MISSION_1),
+          limit: 10,
+          method: 'POST',
+          outputFormat: 'application/json',
+          queryType: 'query',
+          requestProjectionCode: 'EPSG:4326',
+          type: { id: TYPE_NAME },
+          url: WFS_URL,
+          version: WfsVersionEnum.V1_1_0,
+        }),
+      ).rejects.toThrow("requires WFS version '2.0.0'");
+    });
   });
 });

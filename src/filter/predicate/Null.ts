@@ -9,8 +9,8 @@ export class Null<T> extends FilterPredicate<T, NullOp> {
   }
 
   public toString(type?: FilterBuilderType): string {
-    if (type === FilterBuilderTypeEnum.OGC) {
-      return this.buildOgcString();
+    if (type === FilterBuilderTypeEnum.FES) {
+      return this.buildFesString();
     }
     return `(${this.buildLeftHandString(type)} ${this.operator.toString()})`;
   }
@@ -23,9 +23,9 @@ export class Null<T> extends FilterPredicate<T, NullOp> {
     return this.defaultRightHandString();
   }
 
-  protected buildOgcString(): string {
-    const tag = this.operator.toString(FilterBuilderTypeEnum.OGC);
-    const core = `<${tag}>${this.defaultLeftHandString(FilterBuilderTypeEnum.OGC)}</${tag}>`;
+  protected buildFesString(): string {
+    const tag = this.operator.toString(FilterBuilderTypeEnum.FES);
+    const core = `<${tag}>${this.defaultLeftHandString(FilterBuilderTypeEnum.FES)}</${tag}>`;
     return wrapFesNot(core, this.operator.not);
   }
 }
