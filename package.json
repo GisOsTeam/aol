@@ -8,13 +8,15 @@
     "coverage": "jest --coverage",
     "coverage:report:html": "rimraf coverage && jest --coverage --coverageReporters=html",
     "coverage:serve": "npx http-server coverage -o",
+    "create:minor:snapshot": "npm version preminor --preid=snapshot",
     "prepare": "husky",
     "prettier": "prettier --single-quote --print-width 120 --write --parser typescript '{src, test}/**/*.ts'",
     "lint": "npm run prettier && eslint src/** --ext .ts,.tsx",
     "genindex": "barrelsby -d ./src -D -L -l all -q -e sample -e __tests__ -e .d.ts",
     "build": "rimraf lib && npm run genindex && npm run lint && tsc -p tsconfig.json && cp ./package.json lib",
     "prepublishOnly": "bash -c '[[ \"$PWD\" =~ /lib ]]'",
-    "pub": "bash -c 'pushd ./ && npm run build && cd lib && npm publish --access public && popd'"
+    "pub": "bash -c 'pushd ./ && npm run build && cd lib && npm publish --access public && popd'",
+    "pub:snapshot": "bash -c 'pushd ./ && npm run build && cd lib && npm publish --access public --tag snapshot && popd'"
   },
   "repository": {
     "type": "git",
