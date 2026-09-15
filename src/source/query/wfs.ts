@@ -112,7 +112,7 @@ interface IRetrieveWfsFeaturesWithGeometryOptions extends IRetrieveWfsFeaturesDe
   queryType: QueryType;
 }
 
-interface IRetrieveWfsFeaturesWithoutGeometryOptions extends IRetrieveWfsFeaturesDefaultOptions {}
+interface IRetrieveWfsFeaturesWithoutGeometryOptions extends IRetrieveWfsFeaturesDefaultOptions { }
 
 export async function executeWfsQuery(options: IExecuteWfsQueryOptions): Promise<IQueryFeatureTypeResponse> {
   const { geometry } = options.request;
@@ -348,7 +348,7 @@ export async function loadDescribeFeatureType(options: ILoadWfsFeatureDescriptio
     },
   });
   if (response.status === 200) {
-    const wfsFeatureTypes = parseDescribeFeatureType(response.text);
+    const wfsFeatureTypes = parseDescribeFeatureType(response.text || response.body);
     for (const featureType of wfsFeatureTypes) {
       if (featureType.id === options.type.id) {
         Object.assign(options.type, featureType);
