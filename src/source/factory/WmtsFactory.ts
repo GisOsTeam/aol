@@ -9,7 +9,7 @@ export class WmtsFactory {
     const config: Partial<Options> = { ...wmtsOptions, url: undefined }; // On enlène l'url car elle provient de la source
     const options = optionsFromCapabilities(parser.read(source), config);
     if (options == null) {
-      throw new Error("Unable to process options from capabilities");
+      throw new Error('Unable to process options from capabilities');
     }
     const merdgedOptions = {
       ...wmtsOptions,
