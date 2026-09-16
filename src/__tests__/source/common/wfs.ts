@@ -229,6 +229,7 @@ describe('aol.source.common.wfs', () => {
     let mockSend: jest.Mock;
     let mockHttpEngineInstance: IHttpEngine;
     let mockLoadDescribeFeatureType: jest.SpyInstance;
+    let mockLoadWfsFeatureDescription: jest.SpyInstance;
 
     beforeEach(() => {
       jest.clearAllMocks();
@@ -240,12 +241,17 @@ describe('aol.source.common.wfs', () => {
 
       (HttpEngine.getInstance as jest.Mock).mockReturnValue(mockHttpEngineInstance);
       mockLoadDescribeFeatureType = jest.spyOn(wfsQuery, 'loadDescribeFeatureType');
+      mockLoadWfsFeatureDescription = jest.spyOn(wfsQuery, 'loadWfsFeatureDescription');
     });
 
     test('LD1 - loadDescribeFeatureType retourne true → description chargée depuis XSD', async () => {
       // Arrange
       const type: IFeatureType<string> = {
-        id: 'lyv_lyvia.lyvhistoriqueType', // Must match complexType name in XSD
+        // Doit correspondre au QName complet du feature type réel : préfixe lié
+        // au targetNamespace du XSD (xmlns:metropole-de-lyon) + nom local porté par
+        // l'élément top-level en substitutionGroup="gml:AbstractFeature"
+        // (et non au nom du xsd:complexType, qui n'est qu'une convention de nommage serveur)
+        id: 'metropole-de-lyon:lyv_lyvia.lyvhistorique',
         name: 'lyvhistorique',
       };
 
@@ -299,10 +305,11 @@ describe('aol.source.common.wfs', () => {
 
       // Assert
       expect(mockSend).toHaveBeenCalled();
+      expect(mockLoadWfsFeatureDescription).not.toHaveBeenCalled();
       const callArgs = mockSend.mock.calls[0][0] as any;
       expect(callArgs.method).toBe('GET');
       expect(callArgs.url).toBe('http://example.com/wfs');
-      expect(callArgs.params.typeNames).toBe('lyv_lyvia.lyvhistoriqueType');
+      expect(callArgs.params.typeNames).toBe('metropole-de-lyon:lyv_lyvia.lyvhistorique');
       expect(callArgs.params.service).toBe('WFS');
       expect(callArgs.params.version).toBe(WfsVersionEnum.V2_0_0);
       expect(callArgs.params.request).toBe('DescribeFeatureType');
@@ -343,6 +350,8 @@ describe('aol.source.common.wfs', () => {
 
       // Assert
       expect(mockSend).toHaveBeenCalled();
+      expect(mockLoadDescribeFeatureType).toHaveBeenCalled();
+      expect(mockLoadWfsFeatureDescription).toHaveBeenCalled();
       expect(options.type).toHaveProperty('id');
       expect(options.type.id).toBe('lyv_lyvia.lyvhistoriqueType');
       expect(options.type).toHaveProperty('name');

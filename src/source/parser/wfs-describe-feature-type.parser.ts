@@ -79,24 +79,94 @@ export class DescribeFeatureTypeParser {
     // Finder tous les complexTypes
     const complexTypes = this.findAllComplexTypes();
 
-    // Pour chaque complexType, extraire les champs
-    const featureTypes: IFeatureType<string>[] = complexTypes.map((complexTypeEl, idx) => {
-      const typeName = complexTypeEl.getAttribute('name');
-      const fields = this.extractFieldsFromComplexType(complexTypeEl);
-      const attributes = this.convertFieldsToAttributes(fields);
+    // Le nom réel d'un feature type (celui utilisé dans TYPENAMES) est porté par
+    // l'élément top-level en substitutionGroup de gml:AbstractFeature (GML 3.2)
+    // ou gml:_Feature (GML 2 / 3.1) — PAS par le nom du xsd:complexType, qui n'est
+    // qu'une convention d'implémentation (souvent <TypeName>Type) sans valeur normative.
+    const featureElements = this.findFeatureElements();
 
-      return {
-        id: typeName || `Unknown_${idx}`,
-        name: typeName || 'Unknown',
-        attributes,
-        // Identifier attribute (généralement le premier champ)
-        identifierAttribute: attributes.length > 0 ? attributes[0] : undefined,
-        // Geometry attribute (le champ de type Geometry)
-        geometryAttribute: attributes.find((attr) => attr.type === FieldTypeEnum.Geometry) || undefined,
-      };
+    if (featureElements.length === 0) {
+      // Fallback pour les schémas non conformes qui ne déclarent pas cet élément :
+      // on retombe sur l'ancien comportement (nom du complexType).
+      return complexTypes.map((complexTypeEl, idx) =>
+        this.buildFeatureType(complexTypeEl, complexTypeEl.getAttribute('name'), idx),
+      );
+    }
+
+    return featureElements.map((elementEl, idx) => {
+      const localName = elementEl.getAttribute('name');
+      const typeName = localName ? this.buildQName(localName) : null;
+      const complexTypeLocalName = this.getLocalName(elementEl.getAttribute('type') || '');
+      const complexTypeEl = complexTypes.find((ct) => ct.getAttribute('name') === complexTypeLocalName) || null;
+      return this.buildFeatureType(complexTypeEl, typeName, idx);
     });
+  }
 
-    return featureTypes;
+  /**
+   * Reconstruire le QName complet ("prefix:localName") d'un élément global.
+   * Un élément déclaré directement sous xsd:schema appartient toujours au
+   * targetNamespace du schéma (quel que soit elementFormDefault) — c'est ce
+   * QName qui identifie le feature type dans TYPENAMES/typeName côté WFS,
+   * et qui doit donc être comparé à IFeatureType.id.
+   * Si aucun préfixe n'est déclaré pour ce namespace, on retombe sur le nom local seul.
+   */
+  private buildQName(localName: string): string {
+    const targetNamespace = this.doc?.documentElement.getAttribute('targetNamespace');
+    if (!targetNamespace) return localName;
+
+    for (const [prefix, uri] of this.namespaces.entries()) {
+      if (uri === targetNamespace && prefix !== 'default') {
+        return `${prefix}:${localName}`;
+      }
+    }
+
+    return localName;
+  }
+
+  /**
+   * Construire un IFeatureType à partir de son complexType (peut être absent si non résolu)
+   * et du nom de feature type réel (issu de l'élément substitutionGroup=gml:AbstractFeature).
+   */
+  private buildFeatureType(complexTypeEl: Element | null, typeName: string | null, idx: number): IFeatureType<string> {
+    const fields = complexTypeEl ? this.extractFieldsFromComplexType(complexTypeEl) : [];
+    const attributes = this.convertFieldsToAttributes(fields);
+
+    return {
+      id: typeName || `Unknown_${idx}`,
+      name: typeName || 'Unknown',
+      attributes,
+      // Identifier attribute (généralement le premier champ)
+      identifierAttribute: attributes.length > 0 ? attributes[0] : undefined,
+      // Geometry attribute (le champ de type Geometry)
+      geometryAttribute: attributes.find((attr) => attr.type === FieldTypeEnum.Geometry) || undefined,
+    };
+  }
+
+  /**
+   * Chercher les éléments top-level déclarant un feature type, c'est-à-dire les
+   * xsd:element dont le substitutionGroup pointe vers gml:AbstractFeature (GML 3.2)
+   * ou gml:_Feature (GML 2 / 3.1). Seuls ces éléments identifient un vrai feature type ;
+   * les autres complexType du schéma (types de propriétés, types imbriqués, ...) sont ignorés.
+   */
+  private findFeatureElements(): Element[] {
+    if (!this.doc) return [];
+
+    const results: Element[] = [];
+    const allElements = this.doc.getElementsByTagName('*');
+    for (let i = 0; i < allElements.length; i++) {
+      const el = allElements[i];
+      if (this.getLocalName(el.tagName) !== 'element') continue;
+
+      const substitutionGroup = el.getAttribute('substitutionGroup');
+      if (!substitutionGroup) continue;
+
+      const localName = this.getLocalName(substitutionGroup);
+      if (localName === 'AbstractFeature' || localName === '_Feature') {
+        results.push(el);
+      }
+    }
+
+    return results;
   }
 
   /**
