@@ -627,43 +627,50 @@ describe('aol.source.common.wfs', () => {
     });
 
     test('Q1 - should call executeWfsQuery with source, url, type and request', async () => {
-      await WFSQuery(mockSource, mockRequest, baseOptions);
+      const request: IGisRequest = { ...mockRequest };
+      await WFSQuery(mockSource, request, baseOptions);
 
       expect(mockExecuteWfsQuery).toHaveBeenCalledTimes(1);
       const callArgs = mockExecuteWfsQuery.mock.calls[0][0];
       expect(callArgs.source).toBe(mockSource);
       expect(callArgs.url).toBe(baseOptions.url);
       expect(callArgs.type).toBe(baseOptions.type);
-      expect(callArgs.request).toBe(mockRequest);
+      expect(callArgs.request).toBe(request);
     });
 
     test('Q2 - should use provided version', async () => {
-      await WFSQuery(mockSource, mockRequest, { ...baseOptions, version: WfsVersionEnum.V1_0_0 });
+      const request: IGisRequest = { ...mockRequest };
+      await WFSQuery(mockSource, request, { ...baseOptions, version: WfsVersionEnum.V1_0_0 });
       expect(mockExecuteWfsQuery.mock.calls[0][0].version).toBe(WfsVersionEnum.V1_0_0);
     });
 
     test('Q3 - version undefined → uses DEFAULT_WFS_VERSION', async () => {
-      await WFSQuery(mockSource, mockRequest, { ...baseOptions, version: undefined } as ICommonWfsOptions);
+      const request: IGisRequest = { ...mockRequest };
+      await WFSQuery(mockSource, request, { ...baseOptions, version: undefined } as ICommonWfsOptions);
       expect(mockExecuteWfsQuery.mock.calls[0][0].version).toBe(DEFAULT_WFS_VERSION);
     });
 
     test('Q4 - should use provided outputFormat', async () => {
-      await WFSQuery(mockSource, mockRequest, { ...baseOptions, outputFormat: 'text/xml' });
+      const request: IGisRequest = { ...mockRequest };
+      await WFSQuery(mockSource, request, { ...baseOptions, outputFormat: 'text/xml' });
       expect(mockExecuteWfsQuery.mock.calls[0][0].outputFormat).toBe('text/xml');
     });
 
     test('Q5 - outputFormat undefined → uses DEFAULT_WFS_OUTPUT_FORMAT', async () => {
-      await WFSQuery(mockSource, mockRequest, { ...baseOptions, outputFormat: undefined } as ICommonWfsOptions);
+      const request: IGisRequest = { ...mockRequest };
+      await WFSQuery(mockSource, request, { ...baseOptions, outputFormat: undefined } as ICommonWfsOptions);
       expect(mockExecuteWfsQuery.mock.calls[0][0].outputFormat).toBe(DEFAULT_WFS_OUTPUT_FORMAT);
     });
 
     test('Q6 - should use provided requestProjectionCode', async () => {
-      await WFSQuery(mockSource, mockRequest, { ...baseOptions, requestProjectionCode: 'EPSG:2154' });
+      const request: IGisRequest = { ...mockRequest };
+      await WFSQuery(mockSource, request, { ...baseOptions, requestProjectionCode: 'EPSG:2154' });
       expect(mockExecuteWfsQuery.mock.calls[0][0].requestProjectionCode).toBe('EPSG:2154');
     });
 
     test('Q7 - requestProjectionCode undefined → uses DEFAULT_WFS_PROJECTION_CODE', async () => {
-      await WFSQuery(mockSource, mockRequest, {
+      const request: IGisRequest = { ...mockRequest };
+      await WFSQuery(mockSource, request, {
         ...baseOptions,
         requestProjectionCode: undefined,
       } as ICommonWfsOptions);
@@ -671,22 +678,26 @@ describe('aol.source.common.wfs', () => {
     });
 
     test('Q8 - should use provided swapXYBBOXRequest = true', async () => {
-      await WFSQuery(mockSource, mockRequest, { ...baseOptions, swapXYBBOXRequest: true });
+      const request: IGisRequest = { ...mockRequest };
+      await WFSQuery(mockSource, request, { ...baseOptions, swapXYBBOXRequest: true });
       expect(mockExecuteWfsQuery.mock.calls[0][0].swapXYBBOXRequest).toBe(true);
     });
 
     test('Q9 - swapXYBBOXRequest undefined → uses false', async () => {
-      await WFSQuery(mockSource, mockRequest, { ...baseOptions, swapXYBBOXRequest: undefined } as ICommonWfsOptions);
+      const request: IGisRequest = { ...mockRequest };
+      await WFSQuery(mockSource, request, { ...baseOptions, swapXYBBOXRequest: undefined } as ICommonWfsOptions);
       expect(mockExecuteWfsQuery.mock.calls[0][0].swapXYBBOXRequest).toBe(false);
     });
 
     test('Q10 - should use provided swapLonLatGeometryResult = true', async () => {
-      await WFSQuery(mockSource, mockRequest, { ...baseOptions, swapLonLatGeometryResult: true });
+      const request: IGisRequest = { ...mockRequest };
+      await WFSQuery(mockSource, request, { ...baseOptions, swapLonLatGeometryResult: true });
       expect(mockExecuteWfsQuery.mock.calls[0][0].swapLonLatGeometryResult).toBe(true);
     });
 
     test('Q11 - swapLonLatGeometryResult undefined → uses false', async () => {
-      await WFSQuery(mockSource, mockRequest, {
+      const request: IGisRequest = { ...mockRequest };
+      await WFSQuery(mockSource, request, {
         ...baseOptions,
         swapLonLatGeometryResult: undefined,
       } as ICommonWfsOptions);
@@ -694,8 +705,9 @@ describe('aol.source.common.wfs', () => {
     });
 
     test('Q12 - should return { request, featureTypeResponses: [executeWfsQuery result] }', async () => {
-      const result = await WFSQuery(mockSource, mockRequest, baseOptions);
-      expect(result.request).toBe(mockRequest);
+      const request: IGisRequest = { ...mockRequest };
+      const result = await WFSQuery(mockSource, request, baseOptions);
+      expect(result.request).toBe(request);
       expect(result.featureTypeResponses).toHaveLength(1);
       expect(result.featureTypeResponses[0]).toBe(mockFeatureTypeResponse);
     });
