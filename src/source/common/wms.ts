@@ -380,7 +380,7 @@ export async function WMSFetchLegend(
     fetchLegendoptions.refresh = false;
   }
 
-  if (currentLegendByLayer && fetchLegendoptions.refresh == false) {
+  if (currentLegendByLayer && Object.keys(currentLegendByLayer).length > 0 && fetchLegendoptions.refresh == false) {
     return currentLegendByLayer;
   }
   return await loadLegendWms(source, { loadWithHttpEngine });
