@@ -50,17 +50,70 @@ interface TypeMapping {
 }
 
 /**
+ * Parser une chaîne XSD en document XML, en levant une erreur explicite en cas d'échec
+ * (XML malformé, ou page d'erreur renvoyée par le serveur à la place du schéma attendu).
+ */
+function parseXsdDocument(xsdString: string): Document {
+  try {
+    // Utilise le DOMParser natif (Node.js via jsdom ou navigateur)
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(xsdString, 'application/xml');
+
+    // Vérifier les erreurs de parsing
+    if (doc.getElementsByTagName('parsererror').length > 0) {
+      throw new Error('XML parsing error detected');
+    }
+
+    return doc;
+  } catch (error) {
+    throw new Error(`Erreur de parsing XML: ${(error as Error).message}`);
+  }
+}
+
+/**
+ * Vérifier que le document possède bien un élément racine (xsd:schema), en levant une
+ * erreur explicite sinon. Un Document XML peut en théorie être sans racine (typage DOM
+ * `documentElement: Element | null`) ; on consolide ici cette vérification en un seul
+ * endroit pour pouvoir traiter la racine comme non-nullable partout ailleurs.
+ */
+function requireRootElement(doc: Document): Element {
+  const root = doc.documentElement;
+  if (!root) {
+    throw new Error('Document XSD sans élément racine');
+  }
+  return root;
+}
+
+/**
+ * Extraire tous les namespaces déclarés sur un élément (typiquement la racine xsd:schema)
+ */
+function extractNamespaces(element: Element): Map<string, string> {
+  const namespaces = new Map<string, string>();
+
+  for (let i = 0; i < element.attributes.length; i++) {
+    const attr = element.attributes[i];
+    if (attr.name === 'xmlns' || attr.name.startsWith('xmlns:')) {
+      const prefix = attr.name === 'xmlns' ? 'default' : attr.name.split(':')[1];
+      namespaces.set(prefix, attr.value);
+    }
+  }
+
+  return namespaces;
+}
+
+/**
  * Parseur XSD pour DescribeFeatureType WFS
  */
 export class DescribeFeatureTypeParser {
-  private xsdString: string;
-  private doc: Document | null = null;
-  private typeMapping: TypeMapping;
-  private namespaces: Map<string, string>;
+  private readonly doc: Document;
+  private readonly rootElement: Element;
+  private readonly typeMapping: TypeMapping;
+  private readonly namespaces: Map<string, string>;
 
   constructor(xsdString: string) {
-    this.xsdString = xsdString;
-    this.namespaces = new Map();
+    this.doc = parseXsdDocument(xsdString);
+    this.rootElement = requireRootElement(this.doc);
+    this.namespaces = extractNamespaces(this.rootElement);
     this.typeMapping = this.buildTypeMapping();
   }
 
@@ -68,14 +121,14 @@ export class DescribeFeatureTypeParser {
    * Lance le parsing complet du document XSD
    */
   public parse(): IFeatureType<string>[] {
-    this.initializeDocument();
-    if (!this.doc) {
-      throw new Error('Impossible de parser le document XSD');
-    }
+    return this.parseDetailed().map((entry) => entry.feature);
+  }
 
-    // Extraire les namespaces du root element
-    this.extractNamespaces(this.doc.documentElement);
-
+  /**
+   * Variante de `parse()` qui expose, en plus de chaque `IFeatureType`, la liste détaillée
+   * des `WfsField` ayant servi à le construire (utilisée par `parseDescribeFeatureTypeDetailed`).
+   */
+  public parseDetailed(): { feature: IFeatureType<string>; fields: WfsField[] }[] {
     // Finder tous les complexTypes
     const complexTypes = this.findAllComplexTypes();
 
@@ -89,7 +142,7 @@ export class DescribeFeatureTypeParser {
       // Fallback pour les schémas non conformes qui ne déclarent pas cet élément :
       // on retombe sur l'ancien comportement (nom du complexType).
       return complexTypes.map((complexTypeEl, idx) =>
-        this.buildFeatureType(complexTypeEl, complexTypeEl.getAttribute('name'), idx),
+        this.buildFeatureTypeEntry(complexTypeEl, complexTypeEl.getAttribute('name'), idx),
       );
     }
 
@@ -98,7 +151,7 @@ export class DescribeFeatureTypeParser {
       const typeName = localName ? this.buildQName(localName) : null;
       const complexTypeLocalName = this.getLocalName(elementEl.getAttribute('type') || '');
       const complexTypeEl = complexTypes.find((ct) => ct.getAttribute('name') === complexTypeLocalName) || null;
-      return this.buildFeatureType(complexTypeEl, typeName, idx);
+      return this.buildFeatureTypeEntry(complexTypeEl, typeName, idx);
     });
   }
 
@@ -111,7 +164,7 @@ export class DescribeFeatureTypeParser {
    * Si aucun préfixe n'est déclaré pour ce namespace, on retombe sur le nom local seul.
    */
   private buildQName(localName: string): string {
-    const targetNamespace = this.doc?.documentElement.getAttribute('targetNamespace');
+    const targetNamespace = this.rootElement.getAttribute('targetNamespace');
     if (!targetNamespace) return localName;
 
     for (const [prefix, uri] of this.namespaces.entries()) {
@@ -124,14 +177,19 @@ export class DescribeFeatureTypeParser {
   }
 
   /**
-   * Construire un IFeatureType à partir de son complexType (peut être absent si non résolu)
-   * et du nom de feature type réel (issu de l'élément substitutionGroup=gml:AbstractFeature).
+   * Construire un IFeatureType (et les WfsField associés) à partir de son complexType
+   * (peut être absent si non résolu) et du nom de feature type réel (issu de l'élément
+   * substitutionGroup=gml:AbstractFeature).
    */
-  private buildFeatureType(complexTypeEl: Element | null, typeName: string | null, idx: number): IFeatureType<string> {
+  private buildFeatureTypeEntry(
+    complexTypeEl: Element | null,
+    typeName: string | null,
+    idx: number,
+  ): { feature: IFeatureType<string>; fields: WfsField[] } {
     const fields = complexTypeEl ? this.extractFieldsFromComplexType(complexTypeEl) : [];
     const attributes = this.convertFieldsToAttributes(fields);
 
-    return {
+    const feature: IFeatureType<string> = {
       id: typeName || `Unknown_${idx}`,
       name: typeName || 'Unknown',
       attributes,
@@ -140,6 +198,8 @@ export class DescribeFeatureTypeParser {
       // Geometry attribute (le champ de type Geometry)
       geometryAttribute: attributes.find((attr) => attr.type === FieldTypeEnum.Geometry) || undefined,
     };
+
+    return { feature, fields };
   }
 
   /**
@@ -149,8 +209,6 @@ export class DescribeFeatureTypeParser {
    * les autres complexType du schéma (types de propriétés, types imbriqués, ...) sont ignorés.
    */
   private findFeatureElements(): Element[] {
-    if (!this.doc) return [];
-
     const results: Element[] = [];
     const allElements = this.doc.getElementsByTagName('*');
     for (let i = 0; i < allElements.length; i++) {
@@ -167,39 +225,6 @@ export class DescribeFeatureTypeParser {
     }
 
     return results;
-  }
-
-  /**
-   * Initialiser le document XML via DOMParser
-   */
-  private initializeDocument(): void {
-    try {
-      // Utilise le DOMParser natif (Node.js via jsdom ou navigateur)
-      const parser = new DOMParser();
-      this.doc = parser.parseFromString(this.xsdString, 'application/xml');
-
-      // Vérifier les erreurs de parsing
-      if (this.doc.getElementsByTagName('parsererror').length > 0) {
-        throw new Error('XML parsing error detected');
-      }
-    } catch (error) {
-      throw new Error(`Erreur de parsing XML: ${(error as Error).message}`);
-    }
-  }
-
-  /**
-   * Extraire tous les namespaces déclarés dans l'élément root
-   */
-  private extractNamespaces(element: Element): void {
-    if (!element) return;
-
-    for (let i = 0; i < element.attributes.length; i++) {
-      const attr = element.attributes[i];
-      if (attr.name === 'xmlns' || attr.name.startsWith('xmlns:')) {
-        const prefix = attr.name === 'xmlns' ? 'default' : attr.name.split(':')[1];
-        this.namespaces.set(prefix, attr.value);
-      }
-    }
   }
 
   /**
@@ -279,8 +304,6 @@ export class DescribeFeatureTypeParser {
    * Chercher tous les complexTypes dans le document (avec ou sans namespace)
    */
   private findAllComplexTypes(): Element[] {
-    if (!this.doc) return [];
-
     const complexTypes: Element[] = [];
 
     // Chercher xsd:complexType, xs:complexType, ou complexType (sans namespace)
@@ -528,18 +551,13 @@ export function parseDescribeFeatureType(xsdString: string): IFeatureType<string
  */
 export function parseDescribeFeatureTypeDetailed(xsdString: string): WfsFeatureTypeDetailed[] {
   const parser = new DescribeFeatureTypeParser(xsdString);
-  const baseFeatures = parser.parse();
 
-  // Récupérer les fields stockés en interne pour enrichir les résultats
-  return baseFeatures.map((feature, idx) => {
-    const fields = (parser as any)._lastFields?.[idx] || [];
-    return {
-      ...feature,
-      typeName: feature.name || 'Unknown',
-      namespace: undefined,
-      fields,
-    } as WfsFeatureTypeDetailed;
-  });
+  return parser.parseDetailed().map(({ feature, fields }) => ({
+    ...feature,
+    typeName: feature.name || 'Unknown',
+    namespace: undefined,
+    fields,
+  })) as WfsFeatureTypeDetailed[];
 }
 
 /**
