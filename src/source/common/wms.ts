@@ -27,14 +27,9 @@ import { fetchWmsCapabilities, getWmsLegendUrl } from '../../utils/wms-capabilit
 import { loadLegendWms } from '../legend';
 import { FilterBuilder, FilterBuilderTypeEnum } from '../../filter';
 import BaseObject from 'ol/Object';
+import { DEFAULT_WMS_VERSION, WmsVersion, WmsVersionEnum } from '../types/wmsVersion';
 
-export enum WmsVersionEnum {
-  V1_0_0 = '1.0.0',
-  V1_1_0 = '1.1.0',
-  V1_3_0 = '1.3.0',
-}
-// Type wms version from enum, keep string union for backward compatibility with old versions of wms module
-export type WmsVersion = '1.0.0' | '1.1.0' | '1.3.0' | WmsVersionEnum;
+export { DEFAULT_WMS_VERSION, WmsVersion, WmsVersionEnum };
 
 export interface ICommonWmsOptions extends ISnapshotOptions {
   limit?: number;
@@ -57,7 +52,6 @@ export interface IWMSLoadFunctionAccessor<T> {
 
 export type WMSLoadFunction<T> = (arg: T, p1: string) => void;
 
-export const DEFAULT_WMS_VERSION: WmsVersion = WmsVersionEnum.V1_3_0;
 export const DEFAULT_WMS_QUERY_FORMAT = 'text/xml; subtype=gml/3.1.1';
 export const DEFAULT_WMS_PROJECTION_CODE = 'EPSG:3857';
 export const DEFAULT_WMS_LIMIT = 10000;

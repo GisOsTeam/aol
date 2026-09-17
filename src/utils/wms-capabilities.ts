@@ -1,6 +1,6 @@
 import WMSCapabilitiesFormat from 'ol/format/WMSCapabilities';
 import { HttpEngine } from '../HttpEngine';
-import { DEFAULT_WMS_VERSION, WmsVersion } from '../source/common/wms';
+import { DEFAULT_WMS_VERSION, WmsVersion } from '../source/types/wmsVersion';
 
 const parser = new WMSCapabilitiesFormat();
 

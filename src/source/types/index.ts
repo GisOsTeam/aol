@@ -4,3 +4,4 @@
 
 export * from './layerType';
 export * from './sourceType';
+export * from './wmsVersion';
