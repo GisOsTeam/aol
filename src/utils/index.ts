@@ -5,4 +5,5 @@
 export * from './extent';
 export * from './geodesicBuffer';
 export * from './image-load-function.utils';
+export * from './wms-capabilities';
 export * from './zipSecurityCheck';
