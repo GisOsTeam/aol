@@ -360,16 +360,14 @@ export function WMSHandlePropertyChange(
  */
 export async function WMSFetchLegend(
   currentLegendByLayer: Record<string, ILayerLegend[]>,
-  source: ILegendSource,
-  commonWmsOptions: Required<ICommonWmsOptions>,
+  source: ILegendSource & IConfigurableSource,
   fetchLegendoptions?: IFetchLegendOptions,
 ): Promise<Record<string, ILayerLegend[]>> {
   if (!fetchLegendoptions) {
     fetchLegendoptions = {};
   }
-  let loadWithHttpEngine = commonWmsOptions.loadImagesWithHttpEngine;
-  if (fetchLegendoptions.forceLoadWithHttpEngine != null) {
-    loadWithHttpEngine = fetchLegendoptions.forceLoadWithHttpEngine;
+  if (fetchLegendoptions.forceLoadWithHttpEngine == null) {
+    fetchLegendoptions.forceLoadWithHttpEngine = (source as any).options?.loadImagesWithHttpEngine ?? true;
   }
   if (!fetchLegendoptions.refresh) {
     fetchLegendoptions.refresh = false;
@@ -378,7 +376,7 @@ export async function WMSFetchLegend(
   if (currentLegendByLayer && Object.keys(currentLegendByLayer).length > 0 && fetchLegendoptions.refresh == false) {
     return currentLegendByLayer;
   }
-  return await loadLegendWms(source, { loadWithHttpEngine });
+  return await loadLegendWms(source, fetchLegendoptions);
 }
 
 /**

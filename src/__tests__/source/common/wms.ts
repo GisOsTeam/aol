@@ -611,44 +611,50 @@ describe('aol.source.common.wms', () => {
     const freshLegend: Record<string, ILayerLegend[]> = {
       'ns:layer': [{ srcImage: 'img', image: {} as any, height: 10, width: 10 }],
     };
-    const mockSource = {} as any;
+    const mockSource = { options: { loadImagesWithHttpEngine: false } } as any;
 
     beforeEach(() => {
       mockLoadLegendWms.mockResolvedValue(freshLegend);
     });
 
     test('F1 — fetchLegendoptions=undefined → refresh=false par défaut, retourne le cache', async () => {
-      const result = await WMSFetchLegend(cachedLegend, mockSource, BASE_OPTIONS, undefined);
+      const result = await WMSFetchLegend(cachedLegend, mockSource, undefined);
       expect(mockLoadLegendWms).not.toHaveBeenCalled();
       expect(result).toBe(cachedLegend);
     });
 
-    test('F2 — forceLoadWithHttpEngine=true → override loadWithHttpEngine', async () => {
-      const options = { ...BASE_OPTIONS, loadImagesWithHttpEngine: false };
-      await WMSFetchLegend(null as any, mockSource, options, { forceLoadWithHttpEngine: true });
-      expect(mockLoadLegendWms).toHaveBeenCalledWith(mockSource, { loadWithHttpEngine: true });
+    test('F2 — forceLoadWithHttpEngine=true → override source.options.loadImagesWithHttpEngine', async () => {
+      const source = { options: { loadImagesWithHttpEngine: false } } as any;
+      await WMSFetchLegend(null as any, source, { forceLoadWithHttpEngine: true });
+      expect(mockLoadLegendWms).toHaveBeenCalledWith(source, { forceLoadWithHttpEngine: true, refresh: false });
     });
 
-    test('F3 — forceLoadWithHttpEngine=null → utilise commonWmsOptions.loadImagesWithHttpEngine', async () => {
-      const options = { ...BASE_OPTIONS, loadImagesWithHttpEngine: true };
-      await WMSFetchLegend(null as any, mockSource, options, { forceLoadWithHttpEngine: undefined });
-      expect(mockLoadLegendWms).toHaveBeenCalledWith(mockSource, { loadWithHttpEngine: true });
+    test('F3 — forceLoadWithHttpEngine non fourni → utilise source.options.loadImagesWithHttpEngine', async () => {
+      const source = { options: { loadImagesWithHttpEngine: true } } as any;
+      await WMSFetchLegend(null as any, source, { forceLoadWithHttpEngine: undefined });
+      expect(mockLoadLegendWms).toHaveBeenCalledWith(source, { forceLoadWithHttpEngine: true, refresh: false });
+    });
+
+    test('F3b — forceLoadWithHttpEngine non fourni, options entièrement omis → même défaut appliqué', async () => {
+      const source = { options: { loadImagesWithHttpEngine: true } } as any;
+      await WMSFetchLegend(null as any, source, undefined);
+      expect(mockLoadLegendWms).toHaveBeenCalledWith(source, { forceLoadWithHttpEngine: true, refresh: false });
     });
 
     test('F4 — refresh=false ET cache disponible → retourne le cache sans appel réseau', async () => {
-      const result = await WMSFetchLegend(cachedLegend, mockSource, BASE_OPTIONS, { refresh: false });
+      const result = await WMSFetchLegend(cachedLegend, mockSource, { refresh: false });
       expect(mockLoadLegendWms).not.toHaveBeenCalled();
       expect(result).toBe(cachedLegend);
     });
 
     test('F5 — refresh=true → loadLegendWms appelé même si cache disponible', async () => {
-      const result = await WMSFetchLegend(cachedLegend, mockSource, BASE_OPTIONS, { refresh: true });
+      const result = await WMSFetchLegend(cachedLegend, mockSource, { refresh: true });
       expect(mockLoadLegendWms).toHaveBeenCalledTimes(1);
       expect(result).toBe(freshLegend);
     });
 
     test('F6 — cache falsy (null) → loadLegendWms appelé', async () => {
-      const result = await WMSFetchLegend(null as any, mockSource, BASE_OPTIONS, { refresh: false });
+      const result = await WMSFetchLegend(null as any, mockSource, { refresh: false });
       expect(mockLoadLegendWms).toHaveBeenCalledTimes(1);
       expect(result).toBe(freshLegend);
     });

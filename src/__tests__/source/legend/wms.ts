@@ -49,6 +49,32 @@ describe('loadLegendWms fallback (mocked HttpEngine)', () => {
   </Capability>
 </WMS_Capabilities>`;
 
+  const CAPABILITIES_WITH_TWO_STYLES = `<?xml version="1.0" encoding="UTF-8"?>
+<WMS_Capabilities version="1.3.0" xmlns="http://www.opengis.net/wms" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <Service><Name>WMS</Name><Title>Test</Title></Service>
+  <Capability>
+    <Layer>
+      <Layer>
+        <Name>${LAYER_NAME}</Name>
+        <Style>
+          <Name>normal</Name>
+          <LegendURL width="300" height="69">
+            <Format>image/png</Format>
+            <OnlineResource xlink:href="https://example.com/legend-normal.png" xlink:type="simple"/>
+          </LegendURL>
+        </Style>
+        <Style>
+          <Name>PCI vecteur</Name>
+          <LegendURL width="300" height="183">
+            <Format>image/png</Format>
+            <OnlineResource xlink:href="https://example.com/legend-pci.png" xlink:type="simple"/>
+          </LegendURL>
+        </Style>
+      </Layer>
+    </Layer>
+  </Capability>
+</WMS_Capabilities>`;
+
   const CAPABILITIES_WITHOUT_LEGEND = `<?xml version="1.0" encoding="UTF-8"?>
 <WMS_Capabilities version="1.3.0" xmlns="http://www.opengis.net/wms">
   <Service><Name>WMS</Name><Title>Test</Title></Service>
@@ -117,5 +143,36 @@ describe('loadLegendWms fallback (mocked HttpEngine)', () => {
     });
 
     await expect(source.fetchLegend()).rejects.toThrow(/Unable to load legend for WMS layer/);
+  });
+
+  test('LLW4 - memoizes a GetLegendGraphic failure: a later call skips straight to the fallback', async () => {
+    mockHttpEngine(CAPABILITIES_WITH_LEGEND);
+    const source = new ImageWms({
+      url: WMS_URL,
+      types: [{ id: LAYER_NAME }],
+      params: {},
+      loadImagesWithHttpEngine: true,
+    });
+    const countBlobCalls = () => sendSpy.mock.calls.filter((call) => call[0].responseType === 'blob').length;
+
+    await source.fetchLegend();
+    expect(countBlobCalls()).toBe(1);
+
+    await source.fetchLegend({ refresh: true });
+    expect(countBlobCalls()).toBe(1); // no new GetLegendGraphic attempt on the second call
+  });
+
+  test('LLW5 - fallback legend follows the currently active STYLES param, not just the first style', async () => {
+    mockHttpEngine(CAPABILITIES_WITH_TWO_STYLES);
+    const source = new ImageWms({
+      url: WMS_URL,
+      types: [{ id: LAYER_NAME }],
+      params: {},
+      loadImagesWithHttpEngine: true,
+    });
+    source.updateParams({ ...source.getParams(), STYLES: 'PCI vecteur' });
+
+    const response = await source.fetchLegend();
+    expect(response[LAYER_NAME][0].srcImage).toBe('https://example.com/legend-pci.png');
   });
 });

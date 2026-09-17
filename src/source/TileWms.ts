@@ -1,5 +1,12 @@
 import OlTileWMS from 'ol/source/TileWMS';
-import { IGisRequest, IQueryResponse, IExtended, ILayerLegend, IFetchLegendOptions } from './IExtended';
+import {
+  IGisRequest,
+  IQueryResponse,
+  IExtended,
+  ILayerLegend,
+  IFetchLegendOptions,
+  IConfigurableSource,
+} from './IExtended';
 import { LayerType, LayerTypeEnum } from './types/layerType';
 import { SourceType, SourceTypeEnum } from './types/sourceType';
 import { Options } from 'ol/source/TileWMS';
@@ -25,7 +32,7 @@ import { Tile } from 'ol';
 
 export interface ITileWmsOptions extends ICommonWmsOptions, Omit<Options, 'url'> {}
 
-export class TileWms extends OlTileWMS implements IExtended {
+export class TileWms extends OlTileWMS implements IExtended, IConfigurableSource {
   protected options: Required<ITileWmsOptions>;
 
   protected legendByLayer: Record<string, ILayerLegend[]>;
@@ -106,7 +113,8 @@ export class TileWms extends OlTileWMS implements IExtended {
   };
 
   public async fetchLegend(options?: IFetchLegendOptions): Promise<Record<string, ILayerLegend[]>> {
-    return WMSFetchLegend(this.legendByLayer, this, this.options, options);
+    this.legendByLayer = await WMSFetchLegend(this.legendByLayer, this, options);
+    return this.legendByLayer;
   }
 
   public changeLayerStyle(

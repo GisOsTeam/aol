@@ -115,11 +115,14 @@
 
 ## `WMSFetchLegend`
 
+Ne prend plus `commonWmsOptions` en paramètre séparé : le défaut de `forceLoadWithHttpEngine` est lu directement sur `(source as any).options.loadImagesWithHttpEngine` (la source WMS porte déjà sa config). `TileWms.fetchLegend`/`ImageWms.fetchLegend` ne font donc que déléguer telles quelles les `options` reçues, sans logique de fusion dupliquée dans chaque classe — c'est `WMSFetchLegend` qui merge, une seule fois.
+
 | # | Branche | Description |
 |---|---------|-------------|
 | F1 | `fetchLegendoptions = undefined` | Initialisé avec un objet vide ; `refresh` défaut à `false` |
-| F2 | `forceLoadWithHttpEngine != null` | Override `loadWithHttpEngine` passé à `loadLegendWms` |
-| F3 | `forceLoadWithHttpEngine = null/undefined` | Utilise `commonWmsOptions.loadImagesWithHttpEngine` |
+| F2 | `forceLoadWithHttpEngine` fourni explicitement (`true`/`false`) | Conservé tel quel, ne retombe pas sur `source.options.loadImagesWithHttpEngine` |
+| F3 | `forceLoadWithHttpEngine` absent/`undefined`, avec d'autres champs fournis (ex: `{ refresh: true }`) | Retombe sur `source.options.loadImagesWithHttpEngine` — le défaut s'applique même quand `fetchLegendoptions` est un objet partiel, pas seulement quand il est absent (régression corrigée : voir F3b) |
+| F3b | `fetchLegendoptions` entièrement omis (`undefined`) | Même défaut appliqué que F3 — comportement identique que l'appelant fournisse un objet partiel ou rien du tout |
 | F4 | `refresh = false` (ou non défini) ET cache disponible | Retourne `currentLegendByLayer` sans appel réseau |
 | F5 | `refresh = true` | `loadLegendWms` est appelé même si cache disponible |
 | F6 | Cache vide/falsy (`null`/`undefined`) | `loadLegendWms` est appelé |

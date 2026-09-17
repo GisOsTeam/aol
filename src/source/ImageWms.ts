@@ -1,5 +1,12 @@
 import OlImageWMS from 'ol/source/ImageWMS';
-import { IGisRequest, IQueryResponse, IExtended, ILayerLegend, IFetchLegendOptions } from './IExtended';
+import {
+  IGisRequest,
+  IQueryResponse,
+  IExtended,
+  ILayerLegend,
+  IFetchLegendOptions,
+  IConfigurableSource,
+} from './IExtended';
 import { LayerType, LayerTypeEnum } from './types/layerType';
 import { SourceType, SourceTypeEnum } from './types/sourceType';
 import { Options } from 'ol/source/ImageWMS';
@@ -25,7 +32,7 @@ import {
 
 export interface IImageWmsOptions extends ICommonWmsOptions, Omit<Options, 'url'> {}
 
-export class ImageWms extends OlImageWMS implements IExtended {
+export class ImageWms extends OlImageWMS implements IExtended, IConfigurableSource {
   protected options: Required<IImageWmsOptions>;
 
   protected legendByLayer: Record<string, ILayerLegend[]>;
@@ -106,7 +113,8 @@ export class ImageWms extends OlImageWMS implements IExtended {
   };
 
   public async fetchLegend(options?: IFetchLegendOptions): Promise<Record<string, ILayerLegend[]>> {
-    return WMSFetchLegend(this.legendByLayer, this, this.options, options);
+    this.legendByLayer = await WMSFetchLegend(this.legendByLayer, this, options);
+    return this.legendByLayer;
   }
 
   public changeLayerStyle(
