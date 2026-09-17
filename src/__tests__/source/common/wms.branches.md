@@ -126,6 +126,18 @@
 
 ---
 
+## `WMSChangeLayerStyle`
+
+Fonction async : elle charge elle-même les capabilities (via `fetchWmsCapabilities(options.url, { version: options.version })`, cf. `../../utils/wms-capabilities.branches.md`) plutôt que de les recevoir en paramètre — l'appelant n'a donc qu'à fournir `options` (déjà disponible sur toute source WMS via `this.options`), pas un objet capabilities pré-chargé.
+
+| # | Branche | Description |
+|---|---------|-------------|
+| CH1 | Nouveau style valide | `source.updateParams` est appelé avec les params existants + `STYLES` mis à jour ; la `LegendURL` du nouveau style (lue via `getWmsLegendUrl` sur les capabilities fraîchement chargées) est retournée et transmise à `onLegendChange` |
+| CH2 | Nouveau style inconnu de la couche | `updateParams` est quand même appliqué (le style est envoyé au serveur WMS tel quel), mais la légende retournée/notifiée est `null` |
+| CH3 | Appel à `fetchWmsCapabilities` | Reçoit bien `options.url` et `{ version: options.version }` — les capabilities proviennent de la config de la source, pas d'un paramètre séparé |
+
+---
+
 ## `WMSBuildFilter`
 
 | # | Branche | Description |

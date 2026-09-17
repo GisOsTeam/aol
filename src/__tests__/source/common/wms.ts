@@ -1,6 +1,7 @@
 import {
   ICommonWmsOptions,
   WMSBuildFilter,
+  WMSChangeLayerStyle,
   WMSFetchLegend,
   WMSGetTypePredicateAsMap,
   WMSHandlePropertyChange,
@@ -17,13 +18,15 @@ import {
   DEFAULT_WMS_QUERY_FORMAT,
   DEFAULT_WMS_VERSION,
 } from '../../../source/common/wms';
-import { IFeatureType, IGisRequest, ILayerLegend } from '../../../source/IExtended';
+import { IConfigurableSource, IFeatureType, IGisRequest, ILayerLegend } from '../../../source/IExtended';
+import { IWmsCapabilities } from '../../../utils/wms-capabilities';
 import { Equal, IPredicate, Like } from '../../../filter/predicate';
 import { Equal as EqualOp, Like as LikeOp } from '../../../filter/operator';
 import { FieldTypeEnum, IField } from '../../../filter';
 import * as queryModule from '../../../source/query';
 import * as wfsModule from '../../../source/common/wfs';
 import * as legendModule from '../../../source/legend';
+import * as wmsCapabilitiesModule from '../../../utils/wms-capabilities';
 
 // ---- Mock des modules externes ----
 
@@ -42,6 +45,11 @@ jest.mock('../../../source/common/wfs', () => ({
 
 jest.mock('../../../source/legend', () => ({
   loadLegendWms: jest.fn(),
+}));
+
+jest.mock('../../../utils/wms-capabilities', () => ({
+  ...jest.requireActual('../../../utils/wms-capabilities'),
+  fetchWmsCapabilities: jest.fn(),
 }));
 
 // ---- Helpers ----
@@ -642,6 +650,93 @@ describe('aol.source.common.wms', () => {
       const result = await WMSFetchLegend(null as any, mockSource, BASE_OPTIONS, { refresh: false });
       expect(mockLoadLegendWms).toHaveBeenCalledTimes(1);
       expect(result).toBe(freshLegend);
+    });
+  });
+
+  // ==========================================
+  // WMSChangeLayerStyle
+  // ==========================================
+  describe('WMSChangeLayerStyle', () => {
+    const mockFetchWmsCapabilities = wmsCapabilitiesModule.fetchWmsCapabilities as jest.Mock;
+    const capabilities: IWmsCapabilities = {
+      version: '1.3.0',
+      Capability: {
+        Layer: {
+          Layer: [
+            {
+              Name: 'CADASTRALPARCELS.PARCELLAIRE_EXPRESS',
+              Style: [
+                {
+                  Name: 'normal',
+                  LegendURL: [{ OnlineResource: 'https://example.com/legend-normal.png' }],
+                },
+                {
+                  Name: 'PCI vecteur',
+                  LegendURL: [{ OnlineResource: 'https://example.com/legend-pci.png' }],
+                },
+              ],
+            },
+          ],
+        },
+      },
+    };
+    const options: Required<ICommonWmsOptions> = { ...BASE_OPTIONS };
+
+    beforeEach(() => {
+      mockFetchWmsCapabilities.mockReset().mockResolvedValue(capabilities);
+    });
+
+    test('CH1 — updates STYLES param, returns the new legend url and notifies the callback', async () => {
+      const params: Record<string, unknown> = { LAYERS: 'CADASTRALPARCELS.PARCELLAIRE_EXPRESS' };
+      const source: IConfigurableSource = {
+        getParams: jest.fn(() => params),
+        updateParams: jest.fn((newParams) => Object.assign(params, newParams)),
+      };
+      const onLegendChange = jest.fn();
+
+      const legendUrl = await WMSChangeLayerStyle(
+        source,
+        options,
+        'CADASTRALPARCELS.PARCELLAIRE_EXPRESS',
+        'PCI vecteur',
+        onLegendChange,
+      );
+
+      expect(source.updateParams).toHaveBeenCalledWith({ ...params, STYLES: 'PCI vecteur' });
+      expect(legendUrl).toBe('https://example.com/legend-pci.png');
+      expect(onLegendChange).toHaveBeenCalledWith(legendUrl, 'PCI vecteur');
+    });
+
+    test('CH2 — unknown style → notifies the callback with a null legend url', async () => {
+      const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+      const source: IConfigurableSource = {
+        getParams: jest.fn(() => ({})),
+        updateParams: jest.fn(),
+      };
+      const onLegendChange = jest.fn();
+
+      const legendUrl = await WMSChangeLayerStyle(
+        source,
+        options,
+        'CADASTRALPARCELS.PARCELLAIRE_EXPRESS',
+        'does-not-exist',
+        onLegendChange,
+      );
+
+      expect(legendUrl).toBeNull();
+      expect(onLegendChange).toHaveBeenCalledWith(null, 'does-not-exist');
+      warnSpy.mockRestore();
+    });
+
+    test('CH3 — fetches capabilities from options.url/options.version, not from a caller-supplied capabilities object', async () => {
+      const source: IConfigurableSource = {
+        getParams: jest.fn(() => ({})),
+        updateParams: jest.fn(),
+      };
+
+      await WMSChangeLayerStyle(source, options, 'CADASTRALPARCELS.PARCELLAIRE_EXPRESS', 'normal');
+
+      expect(mockFetchWmsCapabilities).toHaveBeenCalledWith(options.url, { version: options.version });
     });
   });
 

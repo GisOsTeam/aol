@@ -23,6 +23,7 @@ import {
 import { WFSLoadDescription, WfsVersionEnum } from './wfs';
 import { Feature } from 'ol';
 import { getWmsLayersFromTypes } from '../../utils';
+import { fetchWmsCapabilities, getWmsLegendUrl } from '../../utils/wms-capabilities';
 import { loadLegendWms } from '../legend';
 import { FilterBuilder, FilterBuilderTypeEnum } from '../../filter';
 import BaseObject from 'ol/Object';
@@ -384,6 +385,31 @@ export async function WMSFetchLegend(
     return currentLegendByLayer;
   }
   return await loadLegendWms(source, { loadWithHttpEngine });
+}
+
+/**
+ * Change le style actif d'une source WMS (TileWms ou ImageWms, ou toute IConfigurableSource) :
+ *  - met à jour le paramètre STYLES de la source (updateParams)
+ *  - charge (ou récupère du cache) le GetCapabilities du serveur pour en tirer la LegendURL
+ *    correspondant au nouveau style
+ *  - notifie `onLegendChange` (par exemple pour mettre à jour l'<img> de légende affichée)
+ * @returns la nouvelle LegendURL (ou null si introuvable)
+ */
+export async function WMSChangeLayerStyle(
+  source: IConfigurableSource,
+  options: Required<ICommonWmsOptions>,
+  layerName: string,
+  newStyle: string,
+  onLegendChange?: (legendUrl: string | null, styleName: string) => void,
+): Promise<string | null> {
+  source.updateParams({ ...source.getParams(), STYLES: newStyle });
+
+  const capabilities = await fetchWmsCapabilities(options.url, { version: options.version });
+  const legendUrl = getWmsLegendUrl(capabilities, layerName, newStyle);
+  if (onLegendChange) {
+    onLegendChange(legendUrl, newStyle);
+  }
+  return legendUrl;
 }
 
 export function WMSBuildFilter(
