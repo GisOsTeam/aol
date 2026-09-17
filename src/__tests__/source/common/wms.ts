@@ -3,6 +3,7 @@ import {
   WMSBuildFilter,
   WMSChangeLayerStyle,
   WMSFetchLegend,
+  WMSGetLayerStyles,
   WMSGetTypePredicateAsMap,
   WMSHandlePropertyChange,
   WMSInit,
@@ -736,6 +737,46 @@ describe('aol.source.common.wms', () => {
 
       await WMSChangeLayerStyle(source, options, 'CADASTRALPARCELS.PARCELLAIRE_EXPRESS', 'normal');
 
+      expect(mockFetchWmsCapabilities).toHaveBeenCalledWith(options.url, { version: options.version });
+    });
+  });
+
+  // ==========================================
+  // WMSGetLayerStyles
+  // ==========================================
+  describe('WMSGetLayerStyles', () => {
+    const mockFetchWmsCapabilities = wmsCapabilitiesModule.fetchWmsCapabilities as jest.Mock;
+    const capabilities: IWmsCapabilities = {
+      version: '1.3.0',
+      Capability: {
+        Layer: {
+          Layer: [
+            {
+              Name: 'CADASTRALPARCELS.PARCELLAIRE_EXPRESS',
+              Style: [{ Name: 'normal' }, { Name: 'PCI vecteur' }],
+            },
+          ],
+        },
+      },
+    };
+    const options: Required<ICommonWmsOptions> = { ...BASE_OPTIONS };
+
+    beforeEach(() => {
+      mockFetchWmsCapabilities.mockReset().mockResolvedValue(capabilities);
+    });
+
+    test('GS1 — returns the style names declared for the layer', async () => {
+      const styles = await WMSGetLayerStyles(options, 'CADASTRALPARCELS.PARCELLAIRE_EXPRESS');
+      expect(styles).toEqual(['normal', 'PCI vecteur']);
+    });
+
+    test('GS2 — unknown layer → returns an empty array', async () => {
+      const styles = await WMSGetLayerStyles(options, 'UNKNOWN.LAYER');
+      expect(styles).toEqual([]);
+    });
+
+    test('GS3 — fetches capabilities from options.url/options.version', async () => {
+      await WMSGetLayerStyles(options, 'CADASTRALPARCELS.PARCELLAIRE_EXPRESS');
       expect(mockFetchWmsCapabilities).toHaveBeenCalledWith(options.url, { version: options.version });
     });
   });

@@ -138,6 +138,18 @@ Fonction async : elle charge elle-même les capabilities (via `fetchWmsCapabilit
 
 ---
 
+## `WMSGetLayerStyles`
+
+Même principe que `WMSChangeLayerStyle` : charge les capabilities elle-même via `fetchWmsCapabilities(options.url, { version: options.version })`, l'appelant ne fournit que `options`.
+
+| # | Branche | Description |
+|---|---------|-------------|
+| GS1 | Couche trouvée avec plusieurs styles | Retourne les noms de styles dans l'ordre de déclaration du GetCapabilities (délégué à `getWmsLayerStyles`) |
+| GS2 | Couche introuvable | Retourne `[]` plutôt qu'une exception |
+| GS3 | Appel à `fetchWmsCapabilities` | Reçoit bien `options.url` et `{ version: options.version }` |
+
+---
+
 ## `WMSBuildFilter`
 
 | # | Branche | Description |

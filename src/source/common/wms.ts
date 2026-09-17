@@ -23,7 +23,7 @@ import {
 import { WFSLoadDescription, WfsVersionEnum } from './wfs';
 import { Feature } from 'ol';
 import { getWmsLayersFromTypes } from '../../utils';
-import { fetchWmsCapabilities, getWmsLegendUrl } from '../../utils/wms-capabilities';
+import { fetchWmsCapabilities, getWmsLayerStyles, getWmsLegendUrl } from '../../utils/wms-capabilities';
 import { loadLegendWms } from '../legend';
 import { FilterBuilder, FilterBuilderTypeEnum } from '../../filter';
 import BaseObject from 'ol/Object';
@@ -404,6 +404,17 @@ export async function WMSChangeLayerStyle(
     onLegendChange(legendUrl, newStyle);
   }
   return legendUrl;
+}
+
+/**
+ * Liste les styles disponibles pour une couche d'une source WMS (TileWms ou ImageWms) :
+ *  - charge (ou récupère du cache) le GetCapabilities du serveur
+ *  - en extrait les styles déclarés pour la couche demandée
+ * @returns les noms de styles dans l'ordre de déclaration du GetCapabilities ([] si la couche est introuvable)
+ */
+export async function WMSGetLayerStyles(options: Required<ICommonWmsOptions>, layerName: string): Promise<string[]> {
+  const capabilities = await fetchWmsCapabilities(options.url, { version: options.version });
+  return getWmsLayerStyles(capabilities, layerName);
 }
 
 export function WMSBuildFilter(

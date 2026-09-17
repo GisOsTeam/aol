@@ -11,6 +11,7 @@ import {
   ICommonWmsOptions,
   WMSChangeLayerStyle,
   WMSFetchLegend,
+  WMSGetLayerStyles,
   WMSGetTypePredicateAsMap,
   WMSHandlePropertyChange,
   WMSInit,
@@ -114,6 +115,10 @@ export class TileWms extends OlTileWMS implements IExtended {
     onLegendChange?: (legendUrl: string | null, styleName: string) => void,
   ): Promise<string | null> {
     return WMSChangeLayerStyle(this, this.options, layerName, newStyle, onLegendChange);
+  }
+
+  public getLayerStyles(layerName: string): Promise<string[]> {
+    return WMSGetLayerStyles(this.options, layerName);
   }
 
   private getLoadFunction(): WMSLoadFunction<Tile> {
