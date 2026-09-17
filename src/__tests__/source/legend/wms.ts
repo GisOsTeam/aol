@@ -5,23 +5,6 @@ import { clearWmsCapabilitiesCache } from '../../../utils/wms-capabilities';
 const WMS_URL = 'https://data.geopf.fr/wms-r/wms';
 const LAYER_NAME = 'CADASTRALPARCELS.PARCELLAIRE_EXPRESS';
 
-describe('loadLegendWms fallback (real network, data.geopf.fr)', () => {
-  const states = new ImageWms({
-    url: WMS_URL,
-    types: [{ id: LAYER_NAME }],
-    params: {},
-  });
-
-  test('LLW2 - falls back to the static LegendURL when GetLegendGraphic fails (real IGN server)', async () => {
-    // Le serveur WMS-r Géoplateforme de l'IGN ne supporte pas GetLegendGraphic : on doit
-    // retomber sur la LegendURL statique du premier style ("normal") déclarée dans le GetCapabilities.
-    const response = await states.fetchLegend();
-    expect<string>(response[LAYER_NAME][0].srcImage).toContain(
-      'https://data.geopf.fr/annexes/ressources/legendes/CADASTRALPARCELS.PARCELLAIRE_EXPRESS-legend.png',
-    );
-  });
-});
-
 // Les tests ci-dessous mockent HttpEngine pour couvrir déterministiquement, sans dépendre du
 // réseau ni du serveur IGN, les branches LLW2/LLW3 de loadLegendWms (cf.
 // wms-capabilities.branches.md). `loadImagesWithHttpEngine: true` fait passer la requête
