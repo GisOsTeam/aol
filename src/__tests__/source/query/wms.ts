@@ -7,7 +7,7 @@ import { IQueryFeatureTypeResponse, IGisRequest, IFeatureType } from '../../../s
 import { ImageWms } from '../../../source/ImageWms';
 
 const states = new ImageWms({
-  url: 'https://download.data.grandlyon.com/wms/rdata',
+  url: 'https://data.grandlyon.com/geoserver/metropole-de-lyon/ows',
   types: [{ id: 'metropole-de-lyon:adr_voie_lieu.adrbanc_latest' }],
   params: {},
 });
