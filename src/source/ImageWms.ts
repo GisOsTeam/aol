@@ -10,6 +10,7 @@ import { IPredicate } from '../filter/predicate';
 import { imageLoadWithHttpEngineFunction } from '../utils/image-load-function.utils';
 import {
   ICommonWmsOptions,
+  WMSChangeLayerStyle,
   WMSFetchLegend,
   WMSGetTypePredicateAsMap,
   WMSHandlePropertyChange,
@@ -105,6 +106,14 @@ export class ImageWms extends OlImageWMS implements IExtended {
 
   public async fetchLegend(options?: IFetchLegendOptions): Promise<Record<string, ILayerLegend[]>> {
     return WMSFetchLegend(this.legendByLayer, this, this.options, options);
+  }
+
+  public changeLayerStyle(
+    layerName: string,
+    newStyle: string,
+    onLegendChange?: (legendUrl: string | null, styleName: string) => void,
+  ): Promise<string | null> {
+    return WMSChangeLayerStyle(this, this.options, layerName, newStyle, onLegendChange);
   }
 
   private getLoadFunction(): WMSLoadFunction<ImageWrapper> {
