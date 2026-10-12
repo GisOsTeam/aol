@@ -13,7 +13,10 @@ import { Options } from 'ol/source/TileWMS';
 import Feature from 'ol/Feature';
 import Projection from 'ol/proj/Projection';
 import { IPredicate } from '../filter/predicate';
-import { tileLoadWithHttpEngineFunction } from '../utils/image-load-function.utils';
+import {
+  createTileLoadWithHttpEngineFunction,
+  tileLoadWithHttpEngineFunction,
+} from '../utils/image-load-function.utils';
 import {
   ICommonWmsOptions,
   WMSChangeLayerStyle,
@@ -66,12 +69,15 @@ export class TileWms extends OlTileWMS implements IExtended, IConfigurableSource
   }
 
   public setSourceOptions(options: ITileWmsOptions): void {
+    const tileLoadFunction = options.loadImagesWithHttpEngine
+      ? createTileLoadWithHttpEngineFunction(options.loadImagesMaxRetries, options.loadImagesRetryDelay)
+      : tileLoadWithHttpEngineFunction;
     WMSSetSourceOptions<ITileWmsOptions, Tile>(
       options,
       this,
       this.getLoadFunction.bind(this),
       this.setLoadFunction.bind(this),
-      tileLoadWithHttpEngineFunction,
+      tileLoadFunction,
       this.defaultTileLoadFunction,
       this.defaultTypePredicateAsMap,
       this.getParams(),

@@ -28,12 +28,20 @@ import { loadLegendWms } from '../legend';
 import { FilterBuilder, FilterBuilderTypeEnum } from '../../filter';
 import BaseObject from 'ol/Object';
 import { DEFAULT_WMS_VERSION, WmsVersion, WmsVersionEnum } from '../types/wmsVersion';
+import {
+  DEFAULT_LOAD_IMAGES_MAX_RETRIES,
+  DEFAULT_LOAD_IMAGES_RETRY_DELAY,
+} from '../../utils/image-load-function.utils';
 
 export { DEFAULT_WMS_VERSION, WmsVersion, WmsVersionEnum };
 
 export interface ICommonWmsOptions extends ISnapshotOptions {
   limit?: number;
   loadImagesWithHttpEngine?: boolean;
+  /** Number of retries after the initial image load attempt. */
+  loadImagesMaxRetries?: number;
+  /** Delay in milliseconds between image load retries. */
+  loadImagesRetryDelay?: number;
   queryWfsUrl?: string | null; // For Wfs query instead of Wms query
   queryMethod?: 'GET' | 'POST';
   queryFormat?: string;
@@ -65,9 +73,13 @@ export const DEFAULT_WMS_OPTIONS: Pick<
   | 'swapXYBBOXRequest'
   | 'limit'
   | 'loadImagesWithHttpEngine'
+  | 'loadImagesMaxRetries'
+  | 'loadImagesRetryDelay'
 > = {
   limit: DEFAULT_WMS_LIMIT,
   loadImagesWithHttpEngine: false,
+  loadImagesMaxRetries: DEFAULT_LOAD_IMAGES_MAX_RETRIES,
+  loadImagesRetryDelay: DEFAULT_LOAD_IMAGES_RETRY_DELAY,
   queryMethod: 'GET',
   queryFormat: DEFAULT_WMS_QUERY_FORMAT, // 'application/json',
   requestProjectionCode: DEFAULT_WMS_PROJECTION_CODE,

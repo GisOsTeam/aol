@@ -18,7 +18,11 @@ import { FilterBuilder, FilterBuilderTypeEnum } from '../filter';
 import { IPredicate } from '../filter/predicate';
 import { loadLegendAgs } from './legend/ags';
 import { LoadFunction as OlImageLoadFunction } from 'ol/Image';
-import { imageLoadWithHttpEngineFunction } from '../utils/image-load-function.utils';
+import {
+  createImageLoadWithHttpEngineFunction,
+  DEFAULT_LOAD_IMAGES_MAX_RETRIES,
+  DEFAULT_LOAD_IMAGES_RETRY_DELAY,
+} from '../utils/image-load-function.utils';
 
 export interface IImageArcGISRestOptions extends ISnapshotOptions, Options {
   types: IFeatureType<number>[];
@@ -26,6 +30,12 @@ export interface IImageArcGISRestOptions extends ISnapshotOptions, Options {
   layersPrefix?: 'all' | 'top' | 'visible';
 
   loadImagesWithHttpEngine?: boolean;
+
+  /** Number of retries after the initial image load attempt. */
+  loadImagesMaxRetries?: number;
+
+  /** Delay in milliseconds between image load retries. */
+  loadImagesRetryDelay?: number;
 }
 
 export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
@@ -36,7 +46,11 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
 
   constructor(options: IImageArcGISRestOptions) {
     super({ crossOrigin: 'anonymous', ...options });
-    this.options = { ...options };
+    this.options = {
+      ...options,
+      loadImagesMaxRetries: options.loadImagesMaxRetries ?? DEFAULT_LOAD_IMAGES_MAX_RETRIES,
+      loadImagesRetryDelay: options.loadImagesRetryDelay ?? DEFAULT_LOAD_IMAGES_RETRY_DELAY,
+    };
     if (this.options.snapshotable != false) {
       this.options.snapshotable = true;
     }
@@ -85,7 +99,11 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
   }
 
   public setSourceOptions(options: IImageArcGISRestOptions): void {
-    this.options = { ...options };
+    this.options = {
+      ...options,
+      loadImagesMaxRetries: options.loadImagesMaxRetries ?? DEFAULT_LOAD_IMAGES_MAX_RETRIES,
+      loadImagesRetryDelay: options.loadImagesRetryDelay ?? DEFAULT_LOAD_IMAGES_RETRY_DELAY,
+    };
     this.un('propertychange', this.handlePropertychange);
     this.set('types', options.types);
     const params = {
@@ -109,14 +127,16 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
       params.LAYERDEFS = JSON.stringify(layerDefsAsObject);
     }
 
-    if (options.loadImagesWithHttpEngine) {
+    if (this.options.loadImagesWithHttpEngine) {
       // Save default OL function
       if (this.defaultImageLoadFunction === undefined) {
         this.defaultImageLoadFunction = this.getImageLoadFunction();
       }
 
       // Register custom tile load funtion with HttpEngine use
-      this.setImageLoadFunction(imageLoadWithHttpEngineFunction);
+      this.setImageLoadFunction(
+        createImageLoadWithHttpEngineFunction(this.options.loadImagesMaxRetries, this.options.loadImagesRetryDelay),
+      );
     } else if (this.defaultImageLoadFunction !== undefined) {
       // There was a custom function : unregister it and restore default OL function
       this.setImageLoadFunction(this.defaultImageLoadFunction);

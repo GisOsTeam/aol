@@ -4,10 +4,18 @@ import { SourceType, SourceTypeEnum } from './types/sourceType';
 import { LayerType, LayerTypeEnum } from './types/layerType';
 import { Options } from 'ol/source/XYZ';
 import { LoadFunction as OlTileLoadFunction } from 'ol/Tile';
-import { tileLoadWithHttpEngineFunction } from '../utils/image-load-function.utils';
+import {
+  createTileLoadWithHttpEngineFunction,
+  DEFAULT_LOAD_IMAGES_MAX_RETRIES,
+  DEFAULT_LOAD_IMAGES_RETRY_DELAY,
+} from '../utils/image-load-function.utils';
 
 export interface IXyzOptions extends ISnapshotOptions, Options {
   loadImagesWithHttpEngine?: boolean;
+  /** Number of retries after the initial image load attempt. */
+  loadImagesMaxRetries?: number;
+  /** Delay in milliseconds between image load retries. */
+  loadImagesRetryDelay?: number;
 }
 
 export class Xyz extends OlXyz implements ISnapshotSource {
@@ -16,7 +24,11 @@ export class Xyz extends OlXyz implements ISnapshotSource {
 
   constructor(options: IXyzOptions) {
     super({ crossOrigin: 'anonymous', ...options });
-    this.options = { ...options };
+    this.options = {
+      ...options,
+      loadImagesMaxRetries: options.loadImagesMaxRetries ?? DEFAULT_LOAD_IMAGES_MAX_RETRIES,
+      loadImagesRetryDelay: options.loadImagesRetryDelay ?? DEFAULT_LOAD_IMAGES_RETRY_DELAY,
+    };
     if (this.options.snapshotable != false) {
       this.options.snapshotable = true;
     }
@@ -39,16 +51,22 @@ export class Xyz extends OlXyz implements ISnapshotSource {
   }
 
   public setSourceOptions(options: IXyzOptions): void {
-    this.options = { ...options };
+    this.options = {
+      ...options,
+      loadImagesMaxRetries: options.loadImagesMaxRetries ?? DEFAULT_LOAD_IMAGES_MAX_RETRIES,
+      loadImagesRetryDelay: options.loadImagesRetryDelay ?? DEFAULT_LOAD_IMAGES_RETRY_DELAY,
+    };
 
-    if (options.loadImagesWithHttpEngine) {
+    if (this.options.loadImagesWithHttpEngine) {
       // Save default OL function
       if (this.defaultTileLoadFunction === undefined) {
         this.defaultTileLoadFunction = this.getTileLoadFunction();
       }
 
       // Register custom tile load function with HttpEngine use
-      this.setTileLoadFunction(tileLoadWithHttpEngineFunction);
+      this.setTileLoadFunction(
+        createTileLoadWithHttpEngineFunction(this.options.loadImagesMaxRetries, this.options.loadImagesRetryDelay),
+      );
     } else if (this.defaultTileLoadFunction !== undefined) {
       // There was a custom function : unregister it and restore default OL function
       this.setTileLoadFunction(this.defaultTileLoadFunction);
