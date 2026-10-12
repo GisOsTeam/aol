@@ -3,11 +3,16 @@ import { ISnapshotOptions, ISnapshotSource } from './IExtended';
 import { SourceType, SourceTypeEnum } from './types/sourceType';
 import { LayerType, LayerTypeEnum } from './types/layerType';
 import { Options } from 'ol/source/XYZ';
+import { LoadFunction as OlTileLoadFunction } from 'ol/Tile';
+import { tileLoadWithHttpEngineFunction } from '../utils/image-load-function.utils';
 
-export interface IXyzOptions extends ISnapshotOptions, Options {}
+export interface IXyzOptions extends ISnapshotOptions, Options {
+  loadImagesWithHttpEngine?: boolean;
+}
 
 export class Xyz extends OlXyz implements ISnapshotSource {
   protected options: IXyzOptions;
+  private defaultTileLoadFunction: OlTileLoadFunction | undefined;
 
   constructor(options: IXyzOptions) {
     super({ crossOrigin: 'anonymous', ...options });
@@ -21,6 +26,8 @@ export class Xyz extends OlXyz implements ISnapshotSource {
     if (this.options.removable != false) {
       this.options.removable = true;
     }
+
+    this.setSourceOptions(this.options);
   }
 
   public getSourceType(): SourceType {
@@ -33,6 +40,20 @@ export class Xyz extends OlXyz implements ISnapshotSource {
 
   public setSourceOptions(options: IXyzOptions): void {
     this.options = { ...options };
+
+    if (options.loadImagesWithHttpEngine) {
+      // Save default OL function
+      if (this.defaultTileLoadFunction === undefined) {
+        this.defaultTileLoadFunction = this.getTileLoadFunction();
+      }
+
+      // Register custom tile load function with HttpEngine use
+      this.setTileLoadFunction(tileLoadWithHttpEngineFunction);
+    } else if (this.defaultTileLoadFunction !== undefined) {
+      // There was a custom function : unregister it and restore default OL function
+      this.setTileLoadFunction(this.defaultTileLoadFunction);
+      this.defaultTileLoadFunction = undefined;
+    }
   }
 
   public getLayerType(): LayerType {
