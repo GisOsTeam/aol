@@ -1,11 +1,16 @@
 import OlWmts, { Options } from 'ol/source/WMTS';
 import { ISnapshotOptions, ISnapshotSource } from './IExtended';
 import { LayerTypeEnum, SourceTypeEnum } from './types';
+import { LoadFunction as OlTileLoadFunction } from 'ol/Tile';
+import { tileLoadWithHttpEngineFunction } from '../utils/image-load-function.utils';
 
-export interface IWmtsOptions extends ISnapshotOptions, Options {}
+export interface IWmtsOptions extends ISnapshotOptions, Options {
+  loadImagesWithHttpEngine?: boolean;
+}
 
 export class Wmts extends OlWmts implements ISnapshotSource {
   protected options: IWmtsOptions;
+  private defaultTileLoadFunction: OlTileLoadFunction | undefined;
 
   constructor(options: IWmtsOptions) {
     super({ crossOrigin: 'anonymous', ...options });
@@ -19,6 +24,8 @@ export class Wmts extends OlWmts implements ISnapshotSource {
     if (this.options.removable != false) {
       this.options.removable = true;
     }
+
+    this.setSourceOptions(this.options);
   }
 
   public getLayerType(): LayerTypeEnum {
@@ -47,5 +54,19 @@ export class Wmts extends OlWmts implements ISnapshotSource {
 
   public setSourceOptions(options: IWmtsOptions): void {
     this.options = { ...options };
+
+    if (options.loadImagesWithHttpEngine) {
+      // Save default OL function
+      if (this.defaultTileLoadFunction === undefined) {
+        this.defaultTileLoadFunction = this.getTileLoadFunction();
+      }
+
+      // Register custom tile load function with HttpEngine use
+      this.setTileLoadFunction(tileLoadWithHttpEngineFunction);
+    } else if (this.defaultTileLoadFunction !== undefined) {
+      // There was a custom function : unregister it and restore default OL function
+      this.setTileLoadFunction(this.defaultTileLoadFunction);
+      this.defaultTileLoadFunction = undefined;
+    }
   }
 }

@@ -63,8 +63,6 @@ export class AgsQueryRequest implements AgsQueryRequestParameters {
   units: string;
   where: string;
 
-  private format = new EsriJSON();
-
   constructor(source: IExtended, type: IFeatureType<number>, request: IQueryRequest) {
     const { geometryProjection, filters } = request;
     this.inSR = '3857';
@@ -87,7 +85,7 @@ export class AgsQueryRequest implements AgsQueryRequestParameters {
       if (geometry.getType() === 'Circle') {
         geometry = fromCircle(geometry as Circle);
       }
-      const geometryStr = this.format.writeGeometry(geometry, {
+      const geometryStr = new EsriJSON().writeGeometry(geometry, {
         featureProjection: geometryProjection,
         dataProjection: 'EPSG:' + this.inSR,
       });
