@@ -41,8 +41,6 @@ export class AgsIdentifyRequest implements AgsIdentifyRequestParameters {
   sr: string;
   tolerance: string;
 
-  private format = new EsriJSON();
-
   constructor(source: IExtended, types: IFeatureType<number>[], request: IIdentifyRequest) {
     const { olMap, geometryProjection } = request;
     this.sr = '3857';
@@ -59,7 +57,7 @@ export class AgsIdentifyRequest implements AgsIdentifyRequestParameters {
       if (geometry.getType() === 'Circle') {
         geometry = fromCircle(geometry as Circle);
       }
-      const geometryStr = this.format.writeGeometry(geometry, {
+      const geometryStr = new EsriJSON().writeGeometry(geometry, {
         featureProjection: geometryProjection,
         dataProjection: 'EPSG:' + this.sr,
       });
