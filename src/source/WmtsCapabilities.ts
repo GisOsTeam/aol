@@ -1,5 +1,5 @@
 import WMTS, { Options } from 'ol/source/WMTS';
-import { ISnapshotOptions, IInitSource } from './IExtended';
+import { IRetryable, ISnapshotOptions, IInitSource } from './IExtended';
 import { LayerTypeEnum, SourceTypeEnum } from './types';
 import { WmtsProvider } from './provider';
 import { IWmtsOptions } from './Wmts';
@@ -7,9 +7,10 @@ import { DEFAULT_LOAD_IMAGES_MAX_RETRIES, DEFAULT_LOAD_IMAGES_RETRY_DELAY } from
 
 export interface IWmtsCapabilitiesOptions
   extends ISnapshotOptions,
+    IRetryable,
     Pick<Options, 'layer'>,
     Partial<Omit<Options, 'layer'>>,
-    Pick<IWmtsOptions, 'loadImagesWithHttpEngine' | 'loadImagesMaxRetries' | 'loadImagesRetryDelay'> {
+    Pick<IWmtsOptions, 'loadImagesWithHttpEngine'> {
   /**
    * Url complete utilisée pour récupérer les capabilities de la source (doit contenir la query, exemple SERVICE=WMTS&REQUEST=GetCapabilities&VERSION=1.0.0)
    */

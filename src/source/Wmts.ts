@@ -1,5 +1,5 @@
 import OlWmts, { Options } from 'ol/source/WMTS';
-import { ISnapshotOptions, ISnapshotSource } from './IExtended';
+import { IRetryable, ISnapshotOptions, ISnapshotSource } from './IExtended';
 import { LayerTypeEnum, SourceTypeEnum } from './types';
 import { LoadFunction as OlTileLoadFunction } from 'ol/Tile';
 import {
@@ -8,12 +8,8 @@ import {
   DEFAULT_LOAD_IMAGES_RETRY_DELAY,
 } from '../utils/image-load-function.utils';
 
-export interface IWmtsOptions extends ISnapshotOptions, Options {
+export interface IWmtsOptions extends ISnapshotOptions, IRetryable, Options {
   loadImagesWithHttpEngine?: boolean;
-  /** Number of retries after the initial image load attempt. */
-  loadImagesMaxRetries?: number;
-  /** Delay in milliseconds between image load retries. */
-  loadImagesRetryDelay?: number;
 }
 
 export class Wmts extends OlWmts implements ISnapshotSource {

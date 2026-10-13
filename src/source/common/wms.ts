@@ -10,6 +10,7 @@ import {
   IQueryFeatureTypeResponse,
   IQueryResponse,
   IQuerySource,
+  IRetryable,
   ISnapshotOptions,
   ISnapshotSource,
 } from '../IExtended';
@@ -35,13 +36,9 @@ import {
 
 export { DEFAULT_WMS_VERSION, WmsVersion, WmsVersionEnum };
 
-export interface ICommonWmsOptions extends ISnapshotOptions {
+export interface ICommonWmsOptions extends ISnapshotOptions, IRetryable {
   limit?: number;
   loadImagesWithHttpEngine?: boolean;
-  /** Number of retries after the initial image load attempt. */
-  loadImagesMaxRetries?: number;
-  /** Delay in milliseconds between image load retries. */
-  loadImagesRetryDelay?: number;
   queryWfsUrl?: string | null; // For Wfs query instead of Wms query
   queryMethod?: 'GET' | 'POST';
   queryFormat?: string;

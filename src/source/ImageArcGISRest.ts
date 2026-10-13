@@ -8,6 +8,7 @@ import {
   IQueryResponse,
   ISnapshotOptions,
   IQueryUntypedResponse,
+  IRetryable,
 } from './IExtended';
 import { getAgsLayersFromTypes } from '../utils';
 import { LayerType, LayerTypeEnum, SourceType, SourceTypeEnum } from './types';
@@ -24,18 +25,12 @@ import {
   DEFAULT_LOAD_IMAGES_RETRY_DELAY,
 } from '../utils/image-load-function.utils';
 
-export interface IImageArcGISRestOptions extends ISnapshotOptions, Options {
+export interface IImageArcGISRestOptions extends ISnapshotOptions, IRetryable, Options {
   types: IFeatureType<number>[];
 
   layersPrefix?: 'all' | 'top' | 'visible';
 
   loadImagesWithHttpEngine?: boolean;
-
-  /** Number of retries after the initial image load attempt. */
-  loadImagesMaxRetries?: number;
-
-  /** Delay in milliseconds between image load retries. */
-  loadImagesRetryDelay?: number;
 }
 
 export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {

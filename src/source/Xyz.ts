@@ -1,5 +1,5 @@
 import OlXyz from 'ol/source/XYZ';
-import { ISnapshotOptions, ISnapshotSource } from './IExtended';
+import { IRetryable, ISnapshotOptions, ISnapshotSource } from './IExtended';
 import { SourceType, SourceTypeEnum } from './types/sourceType';
 import { LayerType, LayerTypeEnum } from './types/layerType';
 import { Options } from 'ol/source/XYZ';
@@ -10,12 +10,8 @@ import {
   DEFAULT_LOAD_IMAGES_RETRY_DELAY,
 } from '../utils/image-load-function.utils';
 
-export interface IXyzOptions extends ISnapshotOptions, Options {
+export interface IXyzOptions extends ISnapshotOptions, IRetryable, Options {
   loadImagesWithHttpEngine?: boolean;
-  /** Number of retries after the initial image load attempt. */
-  loadImagesMaxRetries?: number;
-  /** Delay in milliseconds between image load retries. */
-  loadImagesRetryDelay?: number;
 }
 
 export class Xyz extends OlXyz implements ISnapshotSource {
