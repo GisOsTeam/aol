@@ -32,6 +32,7 @@ import {
   WMSRetrieveFeature,
   WMSSetSourceOptions,
 } from './common/wms';
+import { SourceRetryableOptionsSanitizer } from './sanitizers/source-retryable.sanitizer';
 
 export interface IImageWmsOptions extends ICommonWmsOptions, Omit<Options, 'url'> {}
 
@@ -70,7 +71,7 @@ export class ImageWms extends OlImageWMS implements IExtended, IConfigurableSour
 
   public setSourceOptions(options: IImageWmsOptions, forceRefresh = true): void {
     const imageLoadFunction = options.loadImagesWithHttpEngine
-      ? createImageLoadWithHttpEngineFunction(options.loadImagesMaxRetries, options.loadImagesRetryDelay)
+      ? createImageLoadWithHttpEngineFunction(SourceRetryableOptionsSanitizer.sanitize(options))
       : imageLoadWithHttpEngineFunction;
     WMSSetSourceOptions<IImageWmsOptions, ImageWrapper>(
       options,

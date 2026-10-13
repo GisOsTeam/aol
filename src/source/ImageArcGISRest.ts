@@ -19,10 +19,8 @@ import { FilterBuilder, FilterBuilderTypeEnum } from '../filter';
 import { IPredicate } from '../filter/predicate';
 import { loadLegendAgs } from './legend/ags';
 import { LoadFunction as OlImageLoadFunction } from 'ol/Image';
-import {
-  createImageLoadWithHttpEngineFunction,
-} from '../utils/image-load-function.utils';
-import { SourceRetryableOptionsSanitizer } from '../sanitizers/source-retryable.sanitizer';
+import { createImageLoadWithHttpEngineFunction } from '../utils/image-load-function.utils';
+import { SourceRetryableOptionsSanitizer } from './sanitizers/source-retryable.sanitizer';
 
 export interface IImageArcGISRestOptions extends ISnapshotOptions, IRetryable, Options {
   types: IFeatureType<number>[];
@@ -42,7 +40,7 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
     super({ crossOrigin: 'anonymous', ...options });
     this.options = {
       ...options,
-      ...SourceRetryableOptionsSanitizer.sanitize(options)
+      ...SourceRetryableOptionsSanitizer.sanitize(options),
     };
     if (this.options.snapshotable != false) {
       this.options.snapshotable = true;
@@ -94,7 +92,7 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
   public setSourceOptions(options: IImageArcGISRestOptions): void {
     this.options = {
       ...options,
-      ...SourceRetryableOptionsSanitizer.sanitize(options)
+      ...SourceRetryableOptionsSanitizer.sanitize(options),
     };
     this.un('propertychange', this.handlePropertychange);
     this.set('types', options.types);
@@ -126,9 +124,7 @@ export class ImageArcGISRest extends OlImageArcGISRest implements IExtended {
       }
 
       // Register custom tile load funtion with HttpEngine use
-      this.setImageLoadFunction(
-        createImageLoadWithHttpEngineFunction(this.options),
-      );
+      this.setImageLoadFunction(createImageLoadWithHttpEngineFunction(this.options));
     } else if (this.defaultImageLoadFunction !== undefined) {
       // There was a custom function : unregister it and restore default OL function
       this.setImageLoadFunction(this.defaultImageLoadFunction);

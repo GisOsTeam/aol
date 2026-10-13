@@ -32,6 +32,7 @@ import {
   WMSSetSourceOptions,
 } from './common/wms';
 import { Tile } from 'ol';
+import { SourceRetryableOptionsSanitizer } from './sanitizers';
 
 export interface ITileWmsOptions extends ICommonWmsOptions, Omit<Options, 'url'> {}
 
@@ -70,7 +71,7 @@ export class TileWms extends OlTileWMS implements IExtended, IConfigurableSource
 
   public setSourceOptions(options: ITileWmsOptions): void {
     const tileLoadFunction = options.loadImagesWithHttpEngine
-      ? createTileLoadWithHttpEngineFunction(options.loadImagesMaxRetries, options.loadImagesRetryDelay)
+      ? createTileLoadWithHttpEngineFunction(SourceRetryableOptionsSanitizer.sanitize(options))
       : tileLoadWithHttpEngineFunction;
     WMSSetSourceOptions<ITileWmsOptions, Tile>(
       options,

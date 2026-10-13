@@ -1,4 +1,4 @@
-import { IRetryable } from '../source/IExtended';
+import { IRetryable } from '../IExtended';
 
 /**
  * Sanitizer of source retryable options.

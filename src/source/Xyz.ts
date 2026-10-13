@@ -4,10 +4,8 @@ import { SourceType, SourceTypeEnum } from './types/sourceType';
 import { LayerType, LayerTypeEnum } from './types/layerType';
 import { Options } from 'ol/source/XYZ';
 import { LoadFunction as OlTileLoadFunction } from 'ol/Tile';
-import {
-  createTileLoadWithHttpEngineFunction,
-} from '../utils/image-load-function.utils';
-import { SourceRetryableOptionsSanitizer } from '../sanitizers/source-retryable.sanitizer';
+import { createTileLoadWithHttpEngineFunction } from '../utils/image-load-function.utils';
+import { SourceRetryableOptionsSanitizer } from './sanitizers/source-retryable.sanitizer';
 
 export interface IXyzOptions extends ISnapshotOptions, IRetryable, Options {
   loadImagesWithHttpEngine?: boolean;
@@ -21,7 +19,7 @@ export class Xyz extends OlXyz implements ISnapshotSource {
     super({ crossOrigin: 'anonymous', ...options });
     this.options = {
       ...options,
-      ...SourceRetryableOptionsSanitizer.sanitize(options)
+      ...SourceRetryableOptionsSanitizer.sanitize(options),
     };
     if (this.options.snapshotable != false) {
       this.options.snapshotable = true;
@@ -47,7 +45,7 @@ export class Xyz extends OlXyz implements ISnapshotSource {
   public setSourceOptions(options: IXyzOptions): void {
     this.options = {
       ...options,
-      ...SourceRetryableOptionsSanitizer.sanitize(options)
+      ...SourceRetryableOptionsSanitizer.sanitize(options),
     };
 
     if (this.options.loadImagesWithHttpEngine) {
@@ -57,9 +55,7 @@ export class Xyz extends OlXyz implements ISnapshotSource {
       }
 
       // Register custom tile load function with HttpEngine use
-      this.setTileLoadFunction(
-        createTileLoadWithHttpEngineFunction(this.options),
-      );
+      this.setTileLoadFunction(createTileLoadWithHttpEngineFunction(this.options));
     } else if (this.defaultTileLoadFunction !== undefined) {
       // There was a custom function : unregister it and restore default OL function
       this.setTileLoadFunction(this.defaultTileLoadFunction);

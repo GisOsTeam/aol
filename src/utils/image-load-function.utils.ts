@@ -5,7 +5,7 @@ import { LoadFunction as OlImageLoadFunction } from 'ol/Image';
 import { LoadFunction as OlTileLoadFunction } from 'ol/Tile';
 import TileState from 'ol/TileState';
 import { IRetryable } from '../source/IExtended';
-import { SourceRetryableOptionsSanitizer } from '../sanitizers/source-retryable.sanitizer';
+import { SourceRetryableOptionsSanitizer } from '../source/sanitizers/source-retryable.sanitizer';
 
 /** Triggers OpenLayers' terminal image error after retries are exhausted. */
 const INVALID_IMAGE_SRC = 'data:image/png;base64,';
@@ -122,9 +122,7 @@ function setImageSource(image: HTMLImageElement | HTMLVideoElement, src: string)
  * @returns An OpenLayers image load function.
  * @throws {RangeError} If the retry count or delay is invalid.
  */
-export function createImageLoadWithHttpEngineFunction(
-  sourceOptions: IRetryable,
-): OlImageLoadFunction {
+export function createImageLoadWithHttpEngineFunction(sourceOptions: IRetryable): OlImageLoadFunction {
   const imageLoadRetryOptions = getRetryOptions(sourceOptions);
 
   return async (olImage: OlImage, src: string) => {
@@ -135,7 +133,11 @@ export function createImageLoadWithHttpEngineFunction(
         const url = await loadImageUrlWithRetries(src, imageLoadRetryOptions);
         setImageSource(image, url);
       } catch (error) {
-        console.error(`Error loading image with http engine after ${imageLoadRetryOptions.maxRetries} retries`, src, error);
+        console.error(
+          `Error loading image with http engine after ${imageLoadRetryOptions.maxRetries} retries`,
+          src,
+          error,
+        );
         // Signal the final failure so OpenLayers can leave its loading state.
         image.src = INVALID_IMAGE_SRC;
       }
@@ -151,9 +153,7 @@ export function createImageLoadWithHttpEngineFunction(
  * @returns An OpenLayers tile load function that remains pending through retries.
  * @throws {RangeError} If the retry count or delay is invalid.
  */
-export function createTileLoadWithHttpEngineFunction(
-  sourceOptions: IRetryable,
-): OlTileLoadFunction {
+export function createTileLoadWithHttpEngineFunction(sourceOptions: IRetryable): OlTileLoadFunction {
   const imageLoadRetryOptions = getRetryOptions(sourceOptions);
 
   return async (olTile: OlTile, src: string) => {

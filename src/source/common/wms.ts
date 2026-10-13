@@ -29,7 +29,7 @@ import { loadLegendWms } from '../legend';
 import { FilterBuilder, FilterBuilderTypeEnum } from '../../filter';
 import BaseObject from 'ol/Object';
 import { DEFAULT_WMS_VERSION, WmsVersion, WmsVersionEnum } from '../types/wmsVersion';
-import { SourceRetryableOptionsSanitizer } from '../../sanitizers';
+import { SourceRetryableOptionsSanitizer } from '../sanitizers';
 
 export { DEFAULT_WMS_VERSION, WmsVersion, WmsVersionEnum };
 

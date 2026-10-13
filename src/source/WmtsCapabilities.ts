@@ -3,7 +3,7 @@ import { IRetryable, ISnapshotOptions, IInitSource } from './IExtended';
 import { LayerTypeEnum, SourceTypeEnum } from './types';
 import { WmtsProvider } from './provider';
 import { IWmtsOptions } from './Wmts';
-import { SourceRetryableOptionsSanitizer } from '../sanitizers/source-retryable.sanitizer';
+import { SourceRetryableOptionsSanitizer } from './sanitizers/source-retryable.sanitizer';
 
 export interface IWmtsCapabilitiesOptions
   extends ISnapshotOptions,
@@ -24,7 +24,7 @@ export class WmtsCapabilities extends WMTS implements IInitSource {
     super({ ...options } as any);
     this.options = {
       ...options,
-      ...SourceRetryableOptionsSanitizer.sanitize(options)
+      ...SourceRetryableOptionsSanitizer.sanitize(options),
     };
     if (this.options.snapshotable != false) {
       this.options.snapshotable = true;
@@ -82,7 +82,7 @@ export class WmtsCapabilities extends WMTS implements IInitSource {
   public setSourceOptions(options: IWmtsCapabilitiesOptions): void {
     this.options = {
       ...options,
-      ...SourceRetryableOptionsSanitizer.sanitize(options)
+      ...SourceRetryableOptionsSanitizer.sanitize(options),
     };
   }
 }
