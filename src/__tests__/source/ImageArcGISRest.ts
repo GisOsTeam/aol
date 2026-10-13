@@ -33,6 +33,25 @@ describe('aol.source.imageArcGISRest', () => {
         Date.now = jest.fn(() => 1487076708000);
       });
     });
+
+    describe('image load retry options', () => {
+      test('uses the default retry count and delay', () => {
+        const imageArcGISRest = new ImageArcGISRest({ ...sourceOptions });
+        expect(imageArcGISRest.getSourceOptions().loadImagesMaxRetries).toBe(0);
+        expect(imageArcGISRest.getSourceOptions().loadImagesRetryDelay).toBe(1000);
+      });
+
+      test('preserves configured retry count and delay', () => {
+        const imageArcGISRest = new ImageArcGISRest({
+          ...sourceOptions,
+          loadImagesMaxRetries: 5,
+          loadImagesRetryDelay: 250,
+        });
+        expect(imageArcGISRest.getSourceOptions().loadImagesMaxRetries).toBe(5);
+        expect(imageArcGISRest.getSourceOptions().loadImagesRetryDelay).toBe(250);
+      });
+    });
+
     const imageLoadFunction = (image: ImageWrapper, src: string) => {
       expect(src).toMatchSnapshot();
     };

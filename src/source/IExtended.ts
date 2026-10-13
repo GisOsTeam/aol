@@ -19,6 +19,13 @@ export interface ISnapshotOptions extends Options {
   removable?: boolean;
 }
 
+export interface IRetryable {
+  /** Number of retries after the initial image load attempt. */
+  loadImagesMaxRetries?: number;
+  /** Delay in milliseconds between image load retries. */
+  loadImagesRetryDelay?: number;
+}
+
 export interface ISnapshotSource extends Source {
   getSourceType(): SourceType;
 

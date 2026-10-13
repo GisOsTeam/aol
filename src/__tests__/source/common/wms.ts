@@ -66,6 +66,8 @@ const BASE_OPTIONS = {
   swapXYBBOXRequest: false,
   limit: DEFAULT_WMS_LIMIT,
   loadImagesWithHttpEngine: false,
+  loadImagesMaxRetries: 0,
+  loadImagesRetryDelay: 1000,
   queryWfsUrl: null,
   snapshotable: true,
   listable: true,
@@ -181,7 +183,19 @@ describe('aol.source.common.wms', () => {
       expect(result.requestProjectionCode).toBe(DEFAULT_WMS_PROJECTION_CODE);
       expect(result.limit).toBe(DEFAULT_WMS_LIMIT);
       expect(result.loadImagesWithHttpEngine).toBe(false);
+      expect(result.loadImagesMaxRetries).toBe(0);
+      expect(result.loadImagesRetryDelay).toBe(1000);
       expect(result.queryMethod).toBe('GET');
+    });
+
+    test('I11 — retry options définies → conservées', () => {
+      const result = WMSInitializeOptions({
+        ...baseInput,
+        loadImagesMaxRetries: 5,
+        loadImagesRetryDelay: 250,
+      });
+      expect(result.loadImagesMaxRetries).toBe(5);
+      expect(result.loadImagesRetryDelay).toBe(250);
     });
   });
 

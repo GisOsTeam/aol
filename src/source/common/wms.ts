@@ -10,6 +10,7 @@ import {
   IQueryFeatureTypeResponse,
   IQueryResponse,
   IQuerySource,
+  IRetryable,
   ISnapshotOptions,
   ISnapshotSource,
 } from '../IExtended';
@@ -28,10 +29,11 @@ import { loadLegendWms } from '../legend';
 import { FilterBuilder, FilterBuilderTypeEnum } from '../../filter';
 import BaseObject from 'ol/Object';
 import { DEFAULT_WMS_VERSION, WmsVersion, WmsVersionEnum } from '../types/wmsVersion';
+import { SourceRetryableOptionsSanitizer } from '../sanitizers';
 
 export { DEFAULT_WMS_VERSION, WmsVersion, WmsVersionEnum };
 
-export interface ICommonWmsOptions extends ISnapshotOptions {
+export interface ICommonWmsOptions extends ISnapshotOptions, IRetryable {
   limit?: number;
   loadImagesWithHttpEngine?: boolean;
   queryWfsUrl?: string | null; // For Wfs query instead of Wms query
@@ -65,9 +67,13 @@ export const DEFAULT_WMS_OPTIONS: Pick<
   | 'swapXYBBOXRequest'
   | 'limit'
   | 'loadImagesWithHttpEngine'
+  | 'loadImagesMaxRetries'
+  | 'loadImagesRetryDelay'
 > = {
   limit: DEFAULT_WMS_LIMIT,
   loadImagesWithHttpEngine: false,
+  loadImagesMaxRetries: SourceRetryableOptionsSanitizer.DEFAULT_LOAD_IMAGES_MAX_RETRIES,
+  loadImagesRetryDelay: SourceRetryableOptionsSanitizer.DEFAULT_LOAD_IMAGES_RETRY_DELAY,
   queryMethod: 'GET',
   queryFormat: DEFAULT_WMS_QUERY_FORMAT, // 'application/json',
   requestProjectionCode: DEFAULT_WMS_PROJECTION_CODE,

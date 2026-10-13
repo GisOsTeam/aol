@@ -14,7 +14,10 @@ import Feature from 'ol/Feature';
 import Projection from 'ol/proj/Projection';
 import ImageWrapper from 'ol/Image';
 import { IPredicate } from '../filter/predicate';
-import { imageLoadWithHttpEngineFunction } from '../utils/image-load-function.utils';
+import {
+  createImageLoadWithHttpEngineFunction,
+  imageLoadWithHttpEngineFunction,
+} from '../utils/image-load-function.utils';
 import {
   ICommonWmsOptions,
   WMSChangeLayerStyle,
@@ -29,6 +32,7 @@ import {
   WMSRetrieveFeature,
   WMSSetSourceOptions,
 } from './common/wms';
+import { SourceRetryableOptionsSanitizer } from './sanitizers/source-retryable.sanitizer';
 
 export interface IImageWmsOptions extends ICommonWmsOptions, Omit<Options, 'url'> {}
 
@@ -66,12 +70,15 @@ export class ImageWms extends OlImageWMS implements IExtended, IConfigurableSour
   }
 
   public setSourceOptions(options: IImageWmsOptions, forceRefresh = true): void {
+    const imageLoadFunction = options.loadImagesWithHttpEngine
+      ? createImageLoadWithHttpEngineFunction(SourceRetryableOptionsSanitizer.sanitize(options))
+      : imageLoadWithHttpEngineFunction;
     WMSSetSourceOptions<IImageWmsOptions, ImageWrapper>(
       options,
       this,
       this.getLoadFunction.bind(this),
       this.setLoadFunction.bind(this),
-      imageLoadWithHttpEngineFunction,
+      imageLoadFunction,
       this.defaultImageLoadFunction,
       this.defaultTypePredicateAsMap,
       this.getParams(),
