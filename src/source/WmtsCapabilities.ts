@@ -3,7 +3,7 @@ import { IRetryable, ISnapshotOptions, IInitSource } from './IExtended';
 import { LayerTypeEnum, SourceTypeEnum } from './types';
 import { WmtsProvider } from './provider';
 import { IWmtsOptions } from './Wmts';
-import { DEFAULT_LOAD_IMAGES_MAX_RETRIES, DEFAULT_LOAD_IMAGES_RETRY_DELAY } from '../utils/image-load-function.utils';
+import { SourceRetryableOptionsSanitizer } from '../sanitizers/source-retryable.sanitizer';
 
 export interface IWmtsCapabilitiesOptions
   extends ISnapshotOptions,
@@ -24,8 +24,7 @@ export class WmtsCapabilities extends WMTS implements IInitSource {
     super({ ...options } as any);
     this.options = {
       ...options,
-      loadImagesMaxRetries: options.loadImagesMaxRetries ?? DEFAULT_LOAD_IMAGES_MAX_RETRIES,
-      loadImagesRetryDelay: options.loadImagesRetryDelay ?? DEFAULT_LOAD_IMAGES_RETRY_DELAY,
+      ...SourceRetryableOptionsSanitizer.sanitize(options)
     };
     if (this.options.snapshotable != false) {
       this.options.snapshotable = true;
@@ -83,8 +82,7 @@ export class WmtsCapabilities extends WMTS implements IInitSource {
   public setSourceOptions(options: IWmtsCapabilitiesOptions): void {
     this.options = {
       ...options,
-      loadImagesMaxRetries: options.loadImagesMaxRetries ?? DEFAULT_LOAD_IMAGES_MAX_RETRIES,
-      loadImagesRetryDelay: options.loadImagesRetryDelay ?? DEFAULT_LOAD_IMAGES_RETRY_DELAY,
+      ...SourceRetryableOptionsSanitizer.sanitize(options)
     };
   }
 }

@@ -4,17 +4,14 @@ import { ImageLike } from 'ol/DataTile';
 import { LoadFunction as OlImageLoadFunction } from 'ol/Image';
 import { LoadFunction as OlTileLoadFunction } from 'ol/Tile';
 import TileState from 'ol/TileState';
-
-/** Default retries after the initial image load attempt. */
-export const DEFAULT_LOAD_IMAGES_MAX_RETRIES = 0;
-/** Default delay between image load retries, in milliseconds. */
-export const DEFAULT_LOAD_IMAGES_RETRY_DELAY = 1000;
+import { IRetryable } from '../source/IExtended';
+import { SourceRetryableOptionsSanitizer } from '../sanitizers/source-retryable.sanitizer';
 
 /** Triggers OpenLayers' terminal image error after retries are exhausted. */
 const INVALID_IMAGE_SRC = 'data:image/png;base64,';
 
 /** Retry settings shared by the image and tile loaders. */
-interface ImageLoadRetryOptions {
+interface IImageLoadRetryOptions {
   maxRetries: number;
   retryDelay: number;
 }
@@ -26,13 +23,21 @@ interface ImageLoadRetryOptions {
  * @returns Validated retry settings.
  * @throws {RangeError} If either setting is outside its supported range.
  */
-function getRetryOptions(maxRetries: number, retryDelay: number): ImageLoadRetryOptions {
+function getRetryOptions(sourceOptions: IRetryable): IImageLoadRetryOptions {
+  // Default values
+  const {
+    loadImagesMaxRetries: maxRetries = SourceRetryableOptionsSanitizer.DEFAULT_LOAD_IMAGES_MAX_RETRIES,
+    loadImagesRetryDelay: retryDelay = SourceRetryableOptionsSanitizer.DEFAULT_LOAD_IMAGES_RETRY_DELAY,
+  } = sourceOptions;
+
   if (!Number.isInteger(maxRetries) || maxRetries < 0) {
     throw new RangeError('loadImagesMaxRetries must be a non-negative integer');
   }
+
   if (!Number.isFinite(retryDelay) || retryDelay < 0) {
     throw new RangeError('loadImagesRetryDelay must be a non-negative finite number');
   }
+
   return { maxRetries, retryDelay };
 }
 
@@ -74,7 +79,7 @@ function waitForImageLoad(src: string): Promise<void> {
  */
 async function loadImageUrlWithRetries(
   src: string,
-  retryOptions: ImageLoadRetryOptions,
+  retryOptions: IImageLoadRetryOptions,
   retriesRemaining = retryOptions.maxRetries,
 ): Promise<string> {
   let objectUrl: string | undefined;
@@ -113,26 +118,24 @@ function setImageSource(image: HTMLImageElement | HTMLVideoElement, src: string)
 
 /**
  * Create an OpenLayers image loader backed by HttpEngine.
- * @param loadImagesMaxRetries Retries after the initial request; zero disables retries.
- * @param loadImagesRetryDelay Delay between retries, in milliseconds.
+ * @param sourceOptions Options of retryable source
  * @returns An OpenLayers image load function.
  * @throws {RangeError} If the retry count or delay is invalid.
  */
 export function createImageLoadWithHttpEngineFunction(
-  loadImagesMaxRetries = DEFAULT_LOAD_IMAGES_MAX_RETRIES,
-  loadImagesRetryDelay = DEFAULT_LOAD_IMAGES_RETRY_DELAY,
+  sourceOptions: IRetryable,
 ): OlImageLoadFunction {
-  const retryOptions = getRetryOptions(loadImagesMaxRetries, loadImagesRetryDelay);
+  const imageLoadRetryOptions = getRetryOptions(sourceOptions);
 
   return async (olImage: OlImage, src: string) => {
     const image: ImageLike = olImage.getImage();
 
     if ('src' in image) {
       try {
-        const url = await loadImageUrlWithRetries(src, retryOptions);
+        const url = await loadImageUrlWithRetries(src, imageLoadRetryOptions);
         setImageSource(image, url);
       } catch (error) {
-        console.error(`Error loading image with http engine after ${retryOptions.maxRetries} retries`, src, error);
+        console.error(`Error loading image with http engine after ${imageLoadRetryOptions.maxRetries} retries`, src, error);
         // Signal the final failure so OpenLayers can leave its loading state.
         image.src = INVALID_IMAGE_SRC;
       }
@@ -144,16 +147,14 @@ export function createImageLoadWithHttpEngineFunction(
 
 /**
  * Create an OpenLayers tile loader backed by HttpEngine.
- * @param loadImagesMaxRetries Retries after the initial request; zero disables retries.
- * @param loadImagesRetryDelay Delay between retries, in milliseconds.
+ * @param sourceOptions Options of retryable source
  * @returns An OpenLayers tile load function that remains pending through retries.
  * @throws {RangeError} If the retry count or delay is invalid.
  */
 export function createTileLoadWithHttpEngineFunction(
-  loadImagesMaxRetries = DEFAULT_LOAD_IMAGES_MAX_RETRIES,
-  loadImagesRetryDelay = DEFAULT_LOAD_IMAGES_RETRY_DELAY,
+  sourceOptions: IRetryable,
 ): OlTileLoadFunction {
-  const retryOptions = getRetryOptions(loadImagesMaxRetries, loadImagesRetryDelay);
+  const imageLoadRetryOptions = getRetryOptions(sourceOptions);
 
   return async (olTile: OlTile, src: string) => {
     if ('getImage' in olTile && typeof olTile.getImage === 'function') {
@@ -164,11 +165,11 @@ export function createTileLoadWithHttpEngineFunction(
           if (olTile.getState() !== TileState.LOADING) {
             olTile.setState(TileState.LOADING);
           }
-          const url = await loadImageUrlWithRetries(src, retryOptions);
+          const url = await loadImageUrlWithRetries(src, imageLoadRetryOptions);
           setImageSource(image, url);
         } catch (error) {
           console.error(
-            `Error loading tile image with http engine after ${retryOptions.maxRetries} retries`,
+            `Error loading tile image with http engine after ${imageLoadRetryOptions.maxRetries} retries`,
             src,
             error,
           );
@@ -186,5 +187,5 @@ export function createTileLoadWithHttpEngineFunction(
   };
 }
 
-export const imageLoadWithHttpEngineFunction = createImageLoadWithHttpEngineFunction();
-export const tileLoadWithHttpEngineFunction = createTileLoadWithHttpEngineFunction();
+export const imageLoadWithHttpEngineFunction = createImageLoadWithHttpEngineFunction({});
+export const tileLoadWithHttpEngineFunction = createTileLoadWithHttpEngineFunction({});

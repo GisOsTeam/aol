@@ -4,9 +4,8 @@ import { LayerTypeEnum, SourceTypeEnum } from './types';
 import { LoadFunction as OlTileLoadFunction } from 'ol/Tile';
 import {
   createTileLoadWithHttpEngineFunction,
-  DEFAULT_LOAD_IMAGES_MAX_RETRIES,
-  DEFAULT_LOAD_IMAGES_RETRY_DELAY,
 } from '../utils/image-load-function.utils';
+import { SourceRetryableOptionsSanitizer } from '../sanitizers';
 
 export interface IWmtsOptions extends ISnapshotOptions, IRetryable, Options {
   loadImagesWithHttpEngine?: boolean;
@@ -20,8 +19,7 @@ export class Wmts extends OlWmts implements ISnapshotSource {
     super({ crossOrigin: 'anonymous', ...options });
     this.options = {
       ...options,
-      loadImagesMaxRetries: options.loadImagesMaxRetries ?? DEFAULT_LOAD_IMAGES_MAX_RETRIES,
-      loadImagesRetryDelay: options.loadImagesRetryDelay ?? DEFAULT_LOAD_IMAGES_RETRY_DELAY,
+      ...SourceRetryableOptionsSanitizer.sanitize(options)
     };
     if (this.options.snapshotable != false) {
       this.options.snapshotable = true;
@@ -63,8 +61,7 @@ export class Wmts extends OlWmts implements ISnapshotSource {
   public setSourceOptions(options: IWmtsOptions): void {
     this.options = {
       ...options,
-      loadImagesMaxRetries: options.loadImagesMaxRetries ?? DEFAULT_LOAD_IMAGES_MAX_RETRIES,
-      loadImagesRetryDelay: options.loadImagesRetryDelay ?? DEFAULT_LOAD_IMAGES_RETRY_DELAY,
+      ...SourceRetryableOptionsSanitizer.sanitize(options)
     };
 
     if (this.options.loadImagesWithHttpEngine) {
@@ -75,7 +72,7 @@ export class Wmts extends OlWmts implements ISnapshotSource {
 
       // Register custom tile load function with HttpEngine use
       this.setTileLoadFunction(
-        createTileLoadWithHttpEngineFunction(this.options.loadImagesMaxRetries, this.options.loadImagesRetryDelay),
+        createTileLoadWithHttpEngineFunction(this.options),
       );
     } else if (this.defaultTileLoadFunction !== undefined) {
       // There was a custom function : unregister it and restore default OL function

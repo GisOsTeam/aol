@@ -29,10 +29,7 @@ import { loadLegendWms } from '../legend';
 import { FilterBuilder, FilterBuilderTypeEnum } from '../../filter';
 import BaseObject from 'ol/Object';
 import { DEFAULT_WMS_VERSION, WmsVersion, WmsVersionEnum } from '../types/wmsVersion';
-import {
-  DEFAULT_LOAD_IMAGES_MAX_RETRIES,
-  DEFAULT_LOAD_IMAGES_RETRY_DELAY,
-} from '../../utils/image-load-function.utils';
+import { SourceRetryableOptionsSanitizer } from '../../sanitizers';
 
 export { DEFAULT_WMS_VERSION, WmsVersion, WmsVersionEnum };
 
@@ -75,8 +72,8 @@ export const DEFAULT_WMS_OPTIONS: Pick<
 > = {
   limit: DEFAULT_WMS_LIMIT,
   loadImagesWithHttpEngine: false,
-  loadImagesMaxRetries: DEFAULT_LOAD_IMAGES_MAX_RETRIES,
-  loadImagesRetryDelay: DEFAULT_LOAD_IMAGES_RETRY_DELAY,
+  loadImagesMaxRetries: SourceRetryableOptionsSanitizer.DEFAULT_LOAD_IMAGES_MAX_RETRIES,
+  loadImagesRetryDelay: SourceRetryableOptionsSanitizer.DEFAULT_LOAD_IMAGES_RETRY_DELAY,
   queryMethod: 'GET',
   queryFormat: DEFAULT_WMS_QUERY_FORMAT, // 'application/json',
   requestProjectionCode: DEFAULT_WMS_PROJECTION_CODE,
