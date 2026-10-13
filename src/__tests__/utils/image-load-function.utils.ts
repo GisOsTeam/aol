@@ -87,7 +87,9 @@ describe('image load functions with retries', () => {
       .mockRejectedValueOnce(new Error('network error'))
       .mockResolvedValueOnce('blob:tile');
 
-    const tile = createTile(createTileLoadWithHttpEngineFunction(2, 1000));
+    const tile = createTile(
+      createTileLoadWithHttpEngineFunction({ loadImagesMaxRetries: 2, loadImagesRetryDelay: 1000 }),
+    );
     tile.load();
     expect(tile.getState()).toBe(TileState.LOADING);
 
@@ -111,7 +113,9 @@ describe('image load functions with retries', () => {
   test('marks a tile as errored only after the initial request and all three retries fail', async () => {
     loadImageMock.mockRejectedValue(new Error('network error'));
 
-    const tile = createTile(createTileLoadWithHttpEngineFunction(3, 1000));
+    const tile = createTile(
+      createTileLoadWithHttpEngineFunction({ loadImagesMaxRetries: 3, loadImagesRetryDelay: 1000 }),
+    );
     tile.load();
     await flushPromises();
 
@@ -130,7 +134,9 @@ describe('image load functions with retries', () => {
   test('uses the configured retry count and delay for tiles', async () => {
     loadImageMock.mockRejectedValueOnce(new Error('network error')).mockResolvedValueOnce('blob:tile');
 
-    const tile = createTile(createTileLoadWithHttpEngineFunction(1, 100));
+    const tile = createTile(
+      createTileLoadWithHttpEngineFunction({ loadImagesMaxRetries: 1, loadImagesRetryDelay: 100 }),
+    );
     tile.load();
     await flushPromises();
 
@@ -159,7 +165,9 @@ describe('image load functions with retries', () => {
   test('uses the configured retry count and delay for image sources', async () => {
     loadImageMock.mockRejectedValueOnce(new Error('network error')).mockResolvedValueOnce('blob:image');
 
-    const image = createImageWrapper(createImageLoadWithHttpEngineFunction(1, 100));
+    const image = createImageWrapper(
+      createImageLoadWithHttpEngineFunction({ loadImagesMaxRetries: 1, loadImagesRetryDelay: 100 }),
+    );
     image.load();
     await flushPromises();
 
@@ -292,7 +300,9 @@ describe('image load functions with retries', () => {
     loadImageMock.mockResolvedValueOnce('blob:invalid').mockResolvedValueOnce('blob:valid');
     blobImageLoadOutcomes = [false, true, true];
 
-    const image = createImageWrapper(createImageLoadWithHttpEngineFunction(1, 1000));
+    const image = createImageWrapper(
+      createImageLoadWithHttpEngineFunction({ loadImagesMaxRetries: 1, loadImagesRetryDelay: 1000 }),
+    );
     image.load();
     await flushPromises();
 
